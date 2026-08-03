@@ -1,0 +1,14 @@
+主要设计宽度：390px
+支持范围：320px–430px
+App 最大宽度：430px
+页面横向 Padding：16px
+最小触控区域：44px
+主要按钮高度：48px
+底部导航高度：64px + safe area
+页面高度：优先 100dvh
+Bottom Sheet 最大高度：90dvh
+Chat 页面隐藏主 Bottom Navigation
+重要页面必须测试软键盘
+不得依赖 Hover
+不得固定完整页面高度
+不得禁用页面缩放
