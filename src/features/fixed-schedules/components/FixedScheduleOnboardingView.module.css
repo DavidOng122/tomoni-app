@@ -1,0 +1,194 @@
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+}
+
+.fieldset {
+  border: 0;
+  padding: 0;
+  margin: 0;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.legend {
+  font-size: 15px;
+  font-weight: 600;
+  color: #000000;
+  margin-bottom: 4px;
+  padding: 0;
+}
+
+.title {
+  font-size: 22px;
+  font-weight: 600;
+  margin: 0 0 8px 0;
+  color: #000000;
+}
+
+.description {
+  font-size: 14px;
+  color: #666666;
+  margin: 0;
+}
+
+/* Location */
+.locationInputWrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.locationIcon {
+  position: absolute;
+  left: 16px;
+  color: #A8A8A8;
+}
+
+.locationInput {
+  width: 100%;
+  height: 51px;
+  border-radius: 11px;
+  border: 1px solid #A8A8A8;
+  padding: 0 16px 0 44px;
+  font-size: 15px;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  outline: none;
+  transition: border-color 0.2s;
+  box-sizing: border-box;
+  -webkit-appearance: none;
+}
+
+.locationInput:focus {
+  border-color: #FF8861;
+}
+
+/* Activity Grid */
+.activityGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+}
+
+.activityButton {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  height: 84px;
+  border: 1px solid #E5E7EB;
+  border-radius: 12px;
+  background: #FFFFFF;
+  color: #333333;
+  font-size: 13px;
+  cursor: pointer;
+  position: relative;
+  transition: all 0.2s ease;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+  outline: none;
+  padding: 0;
+}
+
+.activityButton[aria-pressed="true"] {
+  border: 2px solid #101828;
+  background: #F9FAFB;
+  font-weight: 600;
+}
+
+.checkIcon {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  color: #101828;
+}
+
+/* Weekday Grid */
+.weekdayGrid {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 6px;
+}
+
+.weekdayButton {
+  width: 100%;
+  min-width: 0;
+  height: 39px;
+  padding: 0;
+  border: 1px solid #E5E7EB;
+  border-radius: 8px;
+  background: #FFFFFF;
+  color: #333333;
+  font-size: 13px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+  outline: none;
+}
+
+.weekdayButton[aria-pressed="true"] {
+  border: 2px solid #101828;
+  background: #F9FAFB;
+  font-weight: 600;
+}
+
+/* TimeSlot Grid */
+.timeSlotGrid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: clamp(6px, 2vw, 14px);
+}
+
+.timeSlotButton {
+  width: 100%;
+  min-width: 0;
+  height: 39px;
+  padding: 0;
+  border: 1px solid #E5E7EB;
+  border-radius: 8px;
+  background: #FFFFFF;
+  color: #333333;
+  font-size: 13px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+  outline: none;
+}
+
+.timeSlotButton[aria-pressed="true"] {
+  border: 2px solid #101828;
+  background: #F9FAFB;
+  font-weight: 600;
+}
+
+/* Top Progress Bar */
+.progressContainer {
+  margin-top: 16px;
+  margin-bottom: 24px;
+}
+
+.progressBarBg {
+  height: 6px;
+  background-color: #EDEDED;
+  border-radius: 999px;
+  width: 100%;
+  overflow: hidden;
+}
+
+.progressBarFill {
+  height: 100%;
+  background-color: #FF8861;
+  width: 33.33%;
+  border-radius: 999px;
+}
+
+.submitButtonEnabled {
+  background-color: #FF8861 !important;
+  color: #FFFFFF !important;
+}
