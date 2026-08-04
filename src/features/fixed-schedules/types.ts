@@ -27,3 +27,7 @@ export type FixedScheduleDraft = {
   timeSlot: TimeSlot | null;
   locationQuery: string;
 };
+
+export type FixedScheduleDraftItem = FixedScheduleDraft & {
+  clientId: string;
+};

@@ -1,10 +1,12 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import styles from './FixedScheduleOnboardingView.module.css';
 import { ActivityType, DayOfWeek, TimeSlot, FixedScheduleDraft } from '../types';
 import { Button } from '@/components/ui/Button';
 import { FixedActionArea } from '@/components/layout/FixedActionArea';
+import { useOnboardingSchedules } from '../onboarding/useOnboardingSchedules';
 import {
   WalkingIcon,
   RunningIcon,
@@ -41,12 +43,37 @@ const TIME_SLOTS: { key: TimeSlot; label: string }[] = [
 ];
 
 export const FixedScheduleOnboardingView: React.FC = () => {
-  const [draft, setDraft] = useState<FixedScheduleDraft>({
-    activityType: null,
-    daysOfWeek: [],
-    timeSlot: null,
-    locationQuery: '',
+  const router = useRouter();
+  const { schedules, editingScheduleId, addSchedule, updateSchedule, clearEditing } = useOnboardingSchedules();
+
+  const [draft, setDraft] = useState<FixedScheduleDraft>(() => {
+    if (editingScheduleId) {
+      const editingSchedule = schedules.find((s) => s.clientId === editingScheduleId);
+      if (editingSchedule) {
+        return {
+          activityType: editingSchedule.activityType,
+          daysOfWeek: [...editingSchedule.daysOfWeek],
+          timeSlot: editingSchedule.timeSlot,
+          locationQuery: editingSchedule.locationQuery,
+        };
+      }
+    }
+    return {
+      activityType: null,
+      daysOfWeek: [],
+      timeSlot: null,
+      locationQuery: '',
+    };
   });
+
+  useEffect(() => {
+    if (editingScheduleId) {
+      const editingSchedule = schedules.find((s) => s.clientId === editingScheduleId);
+      if (!editingSchedule) {
+        clearEditing();
+      }
+    }
+  }, [editingScheduleId, schedules, clearEditing]);
 
   const isNextEnabled =
     draft.activityType !== null &&
@@ -57,7 +84,13 @@ export const FixedScheduleOnboardingView: React.FC = () => {
     e.preventDefault();
     if (!isNextEnabled) return;
     
-    // valid, but doing nothing right now (no API, no routing)
+    if (editingScheduleId) {
+      updateSchedule(editingScheduleId, draft);
+    } else {
+      addSchedule(draft);
+    }
+    clearEditing();
+    router.push('/onboarding/schedules');
   };
 
   const handleActivityChange = (activityType: ActivityType) => {

@@ -1,0 +1,97 @@
+.container {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  background-color: #FFFFFF;
+  padding: 24px 26px;
+  box-sizing: border-box;
+}
+
+.title {
+  margin: 0 0 24px 0;
+  font-size: 22px;
+  font-weight: 500;
+  line-height: 27.18px;
+  color: #000000;
+}
+
+.cardList {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.card {
+  width: 100%;
+  padding: 16px 20px;
+  background: #FFFFFF;
+  border: 1px solid #C5C5C5;
+  border-radius: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.activityName {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 600;
+  line-height: 24px;
+  color: #101828;
+}
+
+.scheduleSummary {
+  margin: 4px 0 0 0;
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 20px;
+  color: #6A7282;
+}
+
+.actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.actionButton {
+  background: none;
+  border: none;
+  padding: 0;
+  font-size: 14px;
+  font-weight: 400;
+  color: #6A7282;
+  cursor: pointer;
+  outline: none;
+  font-family: inherit;
+}
+
+.actionButton:hover {
+  text-decoration: underline;
+}
+
+.divider {
+  width: 1px;
+  height: 14px;
+  background: #E5E7EB;
+}
+
+.addAnotherButton {
+  margin-top: 24px;
+  background: none;
+  border: none;
+  padding: 12px 0;
+  color: #000000;
+  font-size: 15px;
+  font-weight: 500;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  align-self: flex-start;
+  font-family: inherit;
+}
+
+.addAnotherButton:hover {
+  opacity: 0.8;
+}
