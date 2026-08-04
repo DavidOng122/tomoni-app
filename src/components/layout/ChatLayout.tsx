@@ -16,7 +16,8 @@ export const ChatLayout: React.FC<ChatLayoutProps> = ({
       style={{
         display: 'flex',
         flexDirection: 'column',
-        height: '100dvh', // Use dvh to adjust for soft keyboard automatically on supported mobile browsers
+        flex: 1, // Fill AppShell
+        height: '100%',
         width: '100%',
         margin: '0 auto',
       }}
