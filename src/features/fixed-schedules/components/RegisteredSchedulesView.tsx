@@ -76,7 +76,9 @@ export const RegisteredSchedulesView: React.FC = () => {
 
   const handleNext = (e: React.FormEvent) => {
     e.preventDefault();
-    // Do not navigate since /onboarding/profile is not created
+    if (schedules.length > 0) {
+      router.push('/onboarding/profile');
+    }
   };
 
   return (
