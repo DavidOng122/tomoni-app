@@ -27,7 +27,26 @@ export async function updateSession(request: NextRequest) {
     }
   );
 
-  await supabase.auth.getClaims();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  const url = request.nextUrl.clone();
+  const path = url.pathname;
+
+  const isPublicRoute =
+    path === '/welcome' ||
+    path.startsWith('/auth/callback') ||
+    path.startsWith('/auth/confirm');
+
+  // Basic unauthenticated route protection
+  if (!user && !isPublicRoute) {
+    url.pathname = '/welcome';
+    return NextResponse.redirect(url);
+  }
+
+  // If user is logged in and tries to access /welcome, we let the server page handle it
+  // (Server page will use getAuthDestination to redirect them appropriately)
 
   return supabaseResponse;
 }
