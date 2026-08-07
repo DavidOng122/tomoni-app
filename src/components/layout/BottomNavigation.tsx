@@ -4,6 +4,8 @@ interface BottomNavigationItem {
   label: string;
   icon: React.ReactNode;
   isActive?: boolean;
+  activeColor?: string;
+  activeIconBgColor?: string;
   onClick: () => void;
 }
 
@@ -47,14 +49,23 @@ export const BottomNavigation: React.FC<BottomNavigationProps> = ({ items }) => 
             background: 'transparent',
             padding: '8px 0',
             cursor: 'pointer',
-            color: item.isActive ? 'var(--color-primary)' : 'var(--color-text)',
+            color: item.isActive ? (item.activeColor || 'var(--color-primary)') : 'var(--color-text)',
             opacity: item.isActive ? 1 : 0.6,
             minWidth: '44px',
             minHeight: '44px',
             transition: 'background-color 0.2s ease',
           }}
         >
-          <div style={{ marginBottom: '4px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <div style={{
+            marginBottom: '4px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            background: item.isActive && item.activeIconBgColor ? item.activeIconBgColor : 'transparent',
+            borderRadius: '16px',
+            padding: item.isActive && item.activeIconBgColor ? '4px 16px' : '4px',
+            transition: 'all 0.2s ease',
+          }}>
             {item.icon}
           </div>
           <span style={{ fontSize: '11px', fontWeight: item.isActive ? 600 : 400 }}>
