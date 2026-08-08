@@ -1,7 +1,7 @@
 /// <reference types="@types/google.maps" />
 import { useState, useCallback } from 'react';
 import { initGooglePlaces } from '../lib/googlePlaces';
-import { SelectedPlace } from '@/features/fixed-schedules/types';
+import { SelectedPlace } from '@/features/locations/types';
 
 export const usePlaceAutocomplete = () => {
   const [predictions, setPredictions] = useState<google.maps.places.AutocompletePrediction[]>([]);

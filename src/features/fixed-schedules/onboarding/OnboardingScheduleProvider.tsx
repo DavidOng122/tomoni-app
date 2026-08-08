@@ -1,13 +1,13 @@
 "use client";
 
 import React, { createContext, useState, ReactNode } from 'react';
-import { FixedScheduleDraft, FixedScheduleDraftItem } from '../types';
+import { FixedPlanDraft } from '../types';
 
 export interface OnboardingScheduleContextType {
-  schedules: FixedScheduleDraftItem[];
+  schedules: FixedPlanDraft[];
   editingScheduleId: string | null;
-  addSchedule: (draft: FixedScheduleDraft) => void;
-  updateSchedule: (clientId: string, draft: FixedScheduleDraft) => void;
+  addSchedule: (draft: Omit<FixedPlanDraft, 'clientId'>) => void;
+  updateSchedule: (clientId: string, draft: Omit<FixedPlanDraft, 'clientId'>) => void;
   deleteSchedule: (clientId: string) => void;
   beginEditing: (clientId: string) => void;
   clearEditing: () => void;
@@ -16,17 +16,17 @@ export interface OnboardingScheduleContextType {
 export const OnboardingScheduleContext = createContext<OnboardingScheduleContextType | null>(null);
 
 export const OnboardingScheduleProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
-  const [schedules, setSchedules] = useState<FixedScheduleDraftItem[]>([]);
+  const [schedules, setSchedules] = useState<FixedPlanDraft[]>([]);
   const [editingScheduleId, setEditingScheduleId] = useState<string | null>(null);
 
-  const addSchedule = (draft: FixedScheduleDraft) => {
+  const addSchedule = (draft: Omit<FixedPlanDraft, 'clientId'>) => {
     setSchedules((current) => [
       ...current,
       { ...draft, clientId: crypto.randomUUID() },
     ]);
   };
 
-  const updateSchedule = (clientId: string, draft: FixedScheduleDraft) => {
+  const updateSchedule = (clientId: string, draft: Omit<FixedPlanDraft, 'clientId'>) => {
     setSchedules((current) =>
       current.map((item) =>
         item.clientId === clientId ? { ...draft, clientId } : item

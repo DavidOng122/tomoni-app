@@ -4,13 +4,13 @@ import React, { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import styles from './RegisteredSchedulesView.module.css';
 import { useOnboardingSchedules } from '../onboarding/useOnboardingSchedules';
-import { ActivityType, DayOfWeek, TimeSlot } from '../types';
+import { ActivityType, DayOfWeek } from '../types';
 import { Button } from '@/components/ui/Button';
 import { FixedActionArea } from '@/components/layout/FixedActionArea';
 
 const ACTIVITY_LABELS: Record<ActivityType, string> = {
   walking: '散歩',
-  running: 'ランニング',
+  event: 'イベント',
   dog_walking: '犬の散歩',
   study_reading: '勉強・読書',
   sports: 'スポーツ',
@@ -18,30 +18,23 @@ const ACTIVITY_LABELS: Record<ActivityType, string> = {
 };
 
 const DAY_LABELS: Record<DayOfWeek, string> = {
-  monday: '月',
-  tuesday: '火',
-  wednesday: '水',
-  thursday: '木',
-  friday: '金',
-  saturday: '土',
-  sunday: '日',
-};
-
-const TIME_LABELS: Record<TimeSlot, string> = {
-  morning: '朝',
-  daytime: '昼',
-  evening: '夕方',
-  night: '夜',
+  mon: '月',
+  tue: '火',
+  wed: '水',
+  thu: '木',
+  fri: '金',
+  sat: '土',
+  sun: '日',
 };
 
 const DAY_ORDER: Record<DayOfWeek, number> = {
-  monday: 1,
-  tuesday: 2,
-  wednesday: 3,
-  thursday: 4,
-  friday: 5,
-  saturday: 6,
-  sunday: 7,
+  mon: 1,
+  tue: 2,
+  wed: 3,
+  thu: 4,
+  fri: 5,
+  sat: 6,
+  sun: 7,
 };
 
 export const RegisteredSchedulesView: React.FC = () => {
@@ -89,7 +82,7 @@ export const RegisteredSchedulesView: React.FC = () => {
         {schedules.map((schedule) => {
           const sortedDays = [...schedule.daysOfWeek].sort((a, b) => DAY_ORDER[a] - DAY_ORDER[b]);
           const daysStr = sortedDays.map(d => DAY_LABELS[d]).join('・');
-          const timeStr = schedule.timeSlot ? ` | ${TIME_LABELS[schedule.timeSlot]}` : '';
+          const timeStr = schedule.startTime ? ` | ${schedule.startTime}` : '';
           
           return (
             <div key={schedule.clientId} className={styles.card}>

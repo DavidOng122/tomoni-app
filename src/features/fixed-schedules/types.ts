@@ -1,40 +1,27 @@
+import { SelectedPlace } from '@/features/locations/types';
+
 export type ActivityType =
   | "walking"
-  | "running"
+  | "event"
   | "dog_walking"
   | "study_reading"
   | "sports"
   | "other";
 
 export type DayOfWeek =
-  | "monday"
-  | "tuesday"
-  | "wednesday"
-  | "thursday"
-  | "friday"
-  | "saturday"
-  | "sunday";
+  | "mon"
+  | "tue"
+  | "wed"
+  | "thu"
+  | "fri"
+  | "sat"
+  | "sun";
 
-export type TimeSlot =
-  | "morning"
-  | "daytime"
-  | "evening"
-  | "night";
-
-export type FixedScheduleDraft = {
-  activityType: ActivityType | null;
-  daysOfWeek: DayOfWeek[];
-  timeSlot: TimeSlot | null;
-  locationQuery: string;
-};
-
-export type FixedScheduleDraftItem = FixedScheduleDraft & {
+export type FixedPlanDraft = {
   clientId: string;
-};
-
-export type SelectedPlace = {
-  placeId: string;
-  placeName: string;
-  latitude: number;
-  longitude: number;
+  place: SelectedPlace | null;
+  activityType: ActivityType | null;
+  customActivityName: string | null;
+  daysOfWeek: DayOfWeek[];
+  startTime: string;
 };
