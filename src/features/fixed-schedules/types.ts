@@ -31,3 +31,10 @@ export type FixedScheduleDraft = {
 export type FixedScheduleDraftItem = FixedScheduleDraft & {
   clientId: string;
 };
+
+export type SelectedPlace = {
+  placeId: string;
+  placeName: string;
+  latitude: number;
+  longitude: number;
+};
