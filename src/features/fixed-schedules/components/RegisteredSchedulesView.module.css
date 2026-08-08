@@ -3,15 +3,14 @@
   flex-direction: column;
   flex: 1;
   background-color: #FFFFFF;
-  padding: 24px 26px;
+  padding: 16px 26px 24px 26px; /* slightly smaller top padding to accommodate progress bar */
   box-sizing: border-box;
 }
 
 .title {
   margin: 0 0 24px 0;
   font-size: 22px;
-  font-weight: 500;
-  line-height: 27.18px;
+  font-weight: 600;
   color: #000000;
 }
 
@@ -21,59 +20,24 @@
   gap: 16px;
 }
 
-.card {
+/* Top Progress Bar */
+.progressContainer {
+  margin-bottom: 24px;
+}
+
+.progressBarBg {
+  height: 6px;
+  background-color: #EDEDED;
+  border-radius: 999px;
   width: 100%;
-  padding: 16px 20px;
-  background: #FFFFFF;
-  border: 1px solid #C5C5C5;
-  border-radius: 16px;
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
+  overflow: hidden;
 }
 
-.activityName {
-  margin: 0;
-  font-size: 16px;
-  font-weight: 600;
-  line-height: 24px;
-  color: #101828;
-}
-
-.scheduleSummary {
-  margin: 4px 0 0 0;
-  font-size: 14px;
-  font-weight: 400;
-  line-height: 20px;
-  color: #6A7282;
-}
-
-.actions {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-
-.actionButton {
-  background: none;
-  border: none;
-  padding: 0;
-  font-size: 14px;
-  font-weight: 400;
-  color: #6A7282;
-  cursor: pointer;
-  outline: none;
-  font-family: inherit;
-}
-
-.actionButton:hover {
-  text-decoration: underline;
-}
-
-.divider {
-  width: 1px;
-  height: 14px;
-  background: #E5E7EB;
+.progressBarFill {
+  height: 100%;
+  background-color: #FF8861;
+  width: 66.66%; /* Registered schedules implies step 2 complete? Or similar to first step? Figma should decide, let's keep 33.33% or 66% */
+  border-radius: 999px;
 }
 
 .addAnotherButton {
