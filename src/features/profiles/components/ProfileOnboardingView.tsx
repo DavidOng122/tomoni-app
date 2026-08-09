@@ -43,20 +43,13 @@ const TAG_OPTIONS = [
 
 export const ProfileOnboardingView: React.FC = () => {
   const router = useRouter();
-  const { schedules } = useOnboardingSchedules();
+  const { schedules, profileDraft: draft, setProfileDraft: setDraft } = useOnboardingSchedules();
   const fileInputRef = useRef<HTMLInputElement>(null);
-
-  const [draft, setDraft] = useState<ProfileDraft>({
-    nickname: '',
-    gender: null,
-    ageRange: null,
-    avatarUrl: null,
-    tags: [],
-    bio: '',
-  });
 
   const [avatarPreviewUrl, setAvatarPreviewUrl] = useState<string | null>(null);
   const [isUploading, setIsUploading] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
 
   useEffect(() => {
     return () => {
@@ -69,10 +62,10 @@ export const ProfileOnboardingView: React.FC = () => {
 
 
   const handleTagToggle = (tagValue: string) => {
-    setDraft((prev) => {
+    setDraft((prev: ProfileDraft) => {
       const isSelected = prev.tags.includes(tagValue);
       if (isSelected) {
-        return { ...prev, tags: prev.tags.filter(t => t !== tagValue) };
+        return { ...prev, tags: prev.tags.filter((t: string) => t !== tagValue) };
       }
       if (prev.tags.length >= 5) {
         return prev;
@@ -101,12 +94,12 @@ export const ProfileOnboardingView: React.FC = () => {
       }
 
       const publicUrl = await uploadAvatar(user.id, file);
-      setDraft(prev => ({ ...prev, avatarUrl: publicUrl }));
+        setDraft((prev: ProfileDraft) => ({ ...prev, avatarUrl: publicUrl }));
 
     } catch (error) {
       console.error("Avatar upload failed", error);
       // Ensure we don't save a fake URL if upload fails
-      setDraft(prev => ({ ...prev, avatarUrl: null }));
+      setDraft((prev: ProfileDraft) => ({ ...prev, avatarUrl: null }));
     } finally {
       setIsUploading(false);
     }
@@ -120,12 +113,69 @@ export const ProfileOnboardingView: React.FC = () => {
     draft.tags.length <= 5 &&
     !isUploading;
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!isValid) return;
+    if (!isValid || isSubmitting) return;
     
-    // complete_onboarding will be called here later
-    // console.log("Profile draft:", draft);
+    setIsSubmitting(true);
+    setSubmitError(null);
+
+    try {
+      const supabase = createClient();
+      const { data: { user } } = await supabase.auth.getUser();
+      
+      if (!user) {
+        throw new Error("認証エラー: ログインし直してください。");
+      }
+
+      const p_profile = {
+        nickname: draft.nickname.trim(),
+        avatar_url: draft.avatarUrl,
+        age_range: draft.ageRange,
+        gender: draft.gender,
+        tags: draft.tags,
+        bio: draft.bio.trim() === "" ? null : draft.bio.trim()
+      };
+
+      const p_schedules = schedules.map(plan => ({
+        activity_type: plan.activityType,
+        custom_activity_name: plan.activityType === "other" ? plan.customActivityName?.trim() || null : null,
+        days_of_week: plan.daysOfWeek,
+        start_time: plan.startTime + ":00",
+        place_id: plan.place?.placeId || '',
+        place_name: plan.place?.placeName || '',
+        latitude: plan.place?.latitude || 0,
+        longitude: plan.place?.longitude || 0
+      }));
+
+      const { error } = await supabase.rpc('complete_onboarding', {
+        p_profile,
+        p_schedules
+      });
+
+      if (error) {
+        if (error.code === 'TM005') {
+          const { data: userData } = await supabase
+            .from('users')
+            .select('onboarding_status')
+            .eq('id', user.id)
+            .single();
+
+          if (userData?.onboarding_status === 'completed') {
+            router.replace('/discover');
+            return;
+          }
+        }
+        console.error("RPC Error:", error);
+        throw new Error("登録処理に失敗しました。もう一度お試しください。");
+      }
+
+      router.replace('/discover');
+    } catch (error: any) {
+      console.error(error);
+      setSubmitError(error.message || "エラーが発生しました");
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -196,7 +246,7 @@ export const ProfileOnboardingView: React.FC = () => {
           className={styles.textInput}
           placeholder="例：Mika"
           value={draft.nickname}
-          onChange={(e) => setDraft((prev) => ({ ...prev, nickname: e.target.value }))}
+          onChange={(e) => setDraft((prev: ProfileDraft) => ({ ...prev, nickname: e.target.value }))}
         />
         <p className={styles.helpText}>本名でなくても構いません</p>
       </div>
@@ -208,7 +258,7 @@ export const ProfileOnboardingView: React.FC = () => {
         <select
           className={styles.select}
           value={draft.ageRange || ''}
-          onChange={(e) => setDraft(prev => ({ ...prev, ageRange: e.target.value as AgeRange }))}
+          onChange={(e) => setDraft((prev: ProfileDraft) => ({ ...prev, ageRange: e.target.value as AgeRange }))}
         >
           <option value="" disabled>年齢を選択</option>
           {AGE_OPTIONS.map((opt) => (
@@ -224,7 +274,7 @@ export const ProfileOnboardingView: React.FC = () => {
         <select
           className={styles.select}
           value={draft.gender || ''}
-          onChange={(e) => setDraft(prev => ({ ...prev, gender: e.target.value as Gender }))}
+          onChange={(e) => setDraft((prev: ProfileDraft) => ({ ...prev, gender: e.target.value as Gender }))}
         >
           <option value="" disabled>性別を選択</option>
           {GENDER_OPTIONS.map((opt) => (
@@ -270,18 +320,39 @@ export const ProfileOnboardingView: React.FC = () => {
           className={styles.textarea}
           placeholder={`例：週末に散歩や地域イベントへ行くのが好きです。\n気軽に話せる人と出会えたらうれしいです。`}
           value={draft.bio}
-          onChange={(e) => setDraft(prev => ({ ...prev, bio: e.target.value }))}
+          onChange={(e) => setDraft((prev: ProfileDraft) => ({ ...prev, bio: e.target.value }))}
         />
       </fieldset>
 
       <FixedActionArea transparentBorder={true}>
+        {submitError && (
+          <div style={{ color: 'red', fontSize: '14px', marginBottom: '16px', textAlign: 'center' }}>
+            {submitError}
+          </div>
+        )}
         <Button
           type="submit"
           fullWidth
-          disabled={!isValid}
-          style={isValid ? { backgroundColor: '#FF845B', color: '#FFFFFF' } : undefined}
+          disabled={!isValid || isSubmitting || isUploading}
+          style={isValid && !isSubmitting && !isUploading ? { backgroundColor: '#FF845B', color: '#FFFFFF' } : undefined}
         >
-          登録を完了する
+          {isSubmitting ? '登録中...' : '登録を完了する'}
+        </Button>
+        <Button
+          type="button"
+          variant="ghost"
+          fullWidth
+          disabled={isSubmitting}
+          onClick={() => {
+            if (schedules.length === 0) {
+              router.push('/onboarding/schedule');
+            } else {
+              router.push('/onboarding/schedules');
+            }
+          }}
+          style={{ marginTop: '12px' }}
+        >
+          戻る
         </Button>
       </FixedActionArea>
     </form>

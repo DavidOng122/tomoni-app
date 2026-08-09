@@ -2,6 +2,7 @@
 
 import React, { createContext, useState, ReactNode } from 'react';
 import { FixedPlanDraft } from '../types';
+import { ProfileDraft } from '@/features/profiles/types';
 
 export interface OnboardingScheduleContextType {
   schedules: FixedPlanDraft[];
@@ -11,6 +12,8 @@ export interface OnboardingScheduleContextType {
   deleteSchedule: (clientId: string) => void;
   beginEditing: (clientId: string) => void;
   clearEditing: () => void;
+  profileDraft: ProfileDraft;
+  setProfileDraft: React.Dispatch<React.SetStateAction<ProfileDraft>>;
 }
 
 export const OnboardingScheduleContext = createContext<OnboardingScheduleContextType | null>(null);
@@ -18,6 +21,15 @@ export const OnboardingScheduleContext = createContext<OnboardingScheduleContext
 export const OnboardingScheduleProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [schedules, setSchedules] = useState<FixedPlanDraft[]>([]);
   const [editingScheduleId, setEditingScheduleId] = useState<string | null>(null);
+  
+  const [profileDraft, setProfileDraft] = useState<ProfileDraft>({
+    nickname: '',
+    gender: null,
+    ageRange: null,
+    avatarUrl: null,
+    tags: [],
+    bio: '',
+  });
 
   const addSchedule = (draft: Omit<FixedPlanDraft, 'clientId'>) => {
     setSchedules((current) => [
@@ -56,6 +68,8 @@ export const OnboardingScheduleProvider: React.FC<{ children: ReactNode }> = ({ 
         deleteSchedule,
         beginEditing,
         clearEditing,
+        profileDraft,
+        setProfileDraft,
       }}
     >
       {children}
