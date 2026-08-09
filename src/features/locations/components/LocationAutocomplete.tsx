@@ -37,8 +37,10 @@ export const LocationAutocomplete: React.FC<LocationAutocompleteProps> = ({ valu
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const val = e.target.value;
     setInputValue(val);
-    if (!val) {
+    if (value) {
       onChange(null);
+    }
+    if (!val) {
       setIsOpen(false);
     } else {
       fetchAutocompleteSuggestions(val);

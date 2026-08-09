@@ -59,12 +59,6 @@ export const ProfileOnboardingView: React.FC = () => {
   const [isUploading, setIsUploading] = useState(false);
 
   useEffect(() => {
-    if (schedules.length === 0) {
-      router.replace('/onboarding/schedule');
-    }
-  }, [router, schedules.length]);
-
-  useEffect(() => {
     return () => {
       if (avatarPreviewUrl) {
         URL.revokeObjectURL(avatarPreviewUrl);
@@ -72,9 +66,7 @@ export const ProfileOnboardingView: React.FC = () => {
     };
   }, [avatarPreviewUrl]);
 
-  if (schedules.length === 0) {
-    return null;
-  }
+
 
   const handleTagToggle = (tagValue: string) => {
     setDraft((prev) => {

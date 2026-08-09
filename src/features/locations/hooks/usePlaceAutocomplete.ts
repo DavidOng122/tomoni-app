@@ -15,9 +15,21 @@ export const usePlaceAutocomplete = () => {
     
     setLoading(true);
     try {
-      const placesLib = await initGooglePlaces();
-      // Implementation of Autocomplete API will go here
-      // For example, using placesLib.AutocompleteSession
+      await initGooglePlaces();
+      const request = { input };
+      const response = await window.google.maps.places.AutocompleteSuggestion.fetchAutocompleteSuggestions(request);
+      
+      if (response && response.suggestions) {
+        // We map the new API suggestions to an object compatible with our component
+        // Our component expects predictions to have place_id and description
+        const mappedPredictions = response.suggestions.map(s => ({
+          place_id: s.placePrediction?.placeId || '',
+          description: s.placePrediction?.text?.text || '',
+        }));
+        setPredictions(mappedPredictions as any);
+      } else {
+        setPredictions([]);
+      }
     } catch (error) {
       console.error('Error fetching suggestions:', error);
     } finally {
@@ -27,14 +39,19 @@ export const usePlaceAutocomplete = () => {
 
   const getPlaceDetails = useCallback(async (placeId: string): Promise<SelectedPlace | null> => {
     try {
-      const placesLib = await initGooglePlaces();
-      // placeLib.Place instance fetching fields
-      return {
-        placeId,
-        placeName: 'TODO',
-        latitude: 0,
-        longitude: 0,
-      };
+      await initGooglePlaces();
+      const place = new window.google.maps.places.Place({ id: placeId });
+      await place.fetchFields({ fields: ['id', 'displayName', 'location'] });
+      
+      if (place && place.location) {
+        return {
+          placeId: place.id || placeId,
+          placeName: place.displayName ? (typeof place.displayName === 'string' ? place.displayName : (place.displayName as any).text || '') : '',
+          latitude: place.location.lat(),
+          longitude: place.location.lng(),
+        };
+      }
+      return null;
     } catch (error) {
       console.error('Error fetching place details:', error);
       return null;

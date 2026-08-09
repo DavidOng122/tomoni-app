@@ -158,6 +158,17 @@ export const FixedScheduleOnboardingView: React.FC = () => {
         >
           次へ
         </Button>
+        {schedules.length === 0 && (
+          <Button
+            type="button"
+            variant="ghost"
+            fullWidth
+            onClick={() => router.push('/onboarding/profile')}
+            style={{ marginTop: '12px' }}
+          >
+            スキップ
+          </Button>
+        )}
       </FixedActionArea>
     </form>
   );

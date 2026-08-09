@@ -16,23 +16,24 @@ export const WelcomeAuthView: React.FC = () => {
   const [isGoogleLoading, setIsGoogleLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
-  useEffect(() => {
-    const errorParam = searchParams.get('error');
-    if (errorParam) {
-      switch (errorParam) {
-        case 'missing_code':
-        case 'missing_token':
-          setErrorMessage('認証情報が不足しています。もう一度お試しください。');
-          break;
-        case 'exchange_failed':
-        case 'verification_failed':
-          setErrorMessage('認証に失敗しました。時間をおいて再度お試しください。');
-          break;
-        default:
-          setErrorMessage('エラーが発生しました。もう一度お試しください。');
-      }
+  let urlErrorText: string | null = null;
+  const errorParam = searchParams.get('error');
+  if (errorParam) {
+    switch (errorParam) {
+      case 'missing_code':
+      case 'missing_token':
+        urlErrorText = '認証情報が不足しています。もう一度お試しください。';
+        break;
+      case 'exchange_failed':
+      case 'verification_failed':
+        urlErrorText = '認証に失敗しました。時間をおいて再度お試しください。';
+        break;
+      default:
+        urlErrorText = 'エラーが発生しました。もう一度お試しください。';
     }
-  }, [searchParams]);
+  }
+
+  const displayErrorMessage = errorMessage || urlErrorText;
 
   const handleGoogleSignIn = async () => {
     if (isGoogleLoading) return;
@@ -74,9 +75,9 @@ export const WelcomeAuthView: React.FC = () => {
       </div>
       
       <div className={styles.actionSection}>
-        {errorMessage && (
+        {displayErrorMessage && (
           <div style={{ color: 'red', fontSize: '14px', marginBottom: '16px', textAlign: 'center' }}>
-            {errorMessage}
+            {displayErrorMessage}
           </div>
         )}
         <AuthProviderButton
