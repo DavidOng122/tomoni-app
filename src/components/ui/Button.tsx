@@ -10,6 +10,7 @@ export const Button: React.FC<ButtonProps> = ({
   children,
   variant = 'primary',
   fullWidth = false,
+  loading = false,
   style,
   ...props
 }) => {
@@ -34,13 +35,14 @@ export const Button: React.FC<ButtonProps> = ({
         fontSize: '16px',
         fontWeight: 600,
         cursor: 'pointer',
-        opacity: props.disabled ? 0.5 : 1,
+        opacity: (props.disabled || loading) ? 0.5 : 1,
         transition: 'opacity 0.2s ease',
         ...style,
       }}
+      disabled={props.disabled || loading}
       {...props}
     >
-      {children}
+      {loading ? '処理中...' : children}
     </button>
   );
 };

@@ -15,9 +15,9 @@ export const usePlaceAutocomplete = () => {
     
     setLoading(true);
     try {
-      await initGooglePlaces();
+      const placesLib = await initGooglePlaces();
       const request = { input };
-      const response = await window.google.maps.places.AutocompleteSuggestion.fetchAutocompleteSuggestions(request);
+      const response = await placesLib.AutocompleteSuggestion.fetchAutocompleteSuggestions(request);
       
       if (response && response.suggestions) {
         // We map the new API suggestions to an object compatible with our component
@@ -39,8 +39,8 @@ export const usePlaceAutocomplete = () => {
 
   const getPlaceDetails = useCallback(async (placeId: string): Promise<SelectedPlace | null> => {
     try {
-      await initGooglePlaces();
-      const place = new window.google.maps.places.Place({ id: placeId });
+      const placesLib = await initGooglePlaces();
+      const place = new placesLib.Place({ id: placeId });
       await place.fetchFields({ fields: ['id', 'displayName', 'location'] });
       
       if (place && place.location) {
