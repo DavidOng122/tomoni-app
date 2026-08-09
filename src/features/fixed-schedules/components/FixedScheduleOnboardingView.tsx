@@ -71,6 +71,7 @@ export const FixedScheduleOnboardingView: React.FC = () => {
 
   const isNextEnabled =
     draft.activityType !== null &&
+    (draft.activityType !== 'other' || (draft.customActivityName && draft.customActivityName.trim().length > 0)) &&
     draft.daysOfWeek.length > 0 &&
     draft.place !== null &&
     draft.startTime !== '';
@@ -89,7 +90,11 @@ export const FixedScheduleOnboardingView: React.FC = () => {
   };
 
   const handleActivityChange = (activityType: ActivityType) => {
-    setDraft((prev) => ({ ...prev, activityType }));
+    setDraft((prev) => ({
+      ...prev,
+      activityType,
+      customActivityName: activityType === 'other' ? prev.customActivityName : null
+    }));
   };
 
   const handleDayToggle = (day: DayOfWeek) => {
@@ -128,6 +133,8 @@ export const FixedScheduleOnboardingView: React.FC = () => {
       <ActivityTypeSelector
         value={draft.activityType}
         onChange={handleActivityChange}
+        customName={draft.customActivityName}
+        onCustomNameChange={(name) => setDraft(prev => ({ ...prev, customActivityName: name }))}
       />
 
       <WeekdaySelector

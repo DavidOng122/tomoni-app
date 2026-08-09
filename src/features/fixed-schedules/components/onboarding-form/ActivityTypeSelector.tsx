@@ -31,9 +31,11 @@ const ACTIVITY_TYPES: { key: ActivityType; label: string; icon: React.FC<React.S
 interface ActivityTypeSelectorProps {
   value: ActivityType | null;
   onChange: (type: ActivityType) => void;
+  customName: string | null;
+  onCustomNameChange: (name: string) => void;
 }
 
-export const ActivityTypeSelector: React.FC<ActivityTypeSelectorProps> = ({ value, onChange }) => {
+export const ActivityTypeSelector: React.FC<ActivityTypeSelectorProps> = ({ value, onChange, customName, onCustomNameChange }) => {
   return (
     <fieldset className={styles.fieldset}>
       <legend className={styles.legend}>活動タイプ</legend>
@@ -59,6 +61,18 @@ export const ActivityTypeSelector: React.FC<ActivityTypeSelectorProps> = ({ valu
           );
         })}
       </div>
+      {value === 'other' && (
+        <div className={styles.customNameContainer}>
+          <label className={styles.label}>活動名</label>
+          <input
+            type="text"
+            className={styles.textInput}
+            placeholder="例：ヨガ"
+            value={customName || ''}
+            onChange={(e) => onCustomNameChange(e.target.value)}
+          />
+        </div>
+      )}
     </fieldset>
   );
 };

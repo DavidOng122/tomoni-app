@@ -1,18 +1,21 @@
 export type Gender =
-  | "female"
   | "male"
+  | "female"
+  | "other"
   | "prefer_not_to_say";
 
 export type AgeRange =
-  | "18_24"
-  | "25_34"
-  | "35_44"
-  | "45_54"
-  | "55_plus";
+  | "18-24"
+  | "25-34"
+  | "35-44"
+  | "45-54"
+  | "55+";
 
 export type ProfileDraft = {
   nickname: string;
-  gender: Gender | null;
+  avatarUrl: string | null;
   ageRange: AgeRange | null;
-  avatarPreviewUrl: string | null;
+  gender: Gender | null;
+  tags: string[];
+  bio: string;
 };
