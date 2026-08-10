@@ -7,20 +7,20 @@ import { Database } from '@/types/database.types';
 type EventRow = Database['public']['Tables']['events']['Row'];
 
 interface PageProps {
-  params: {
+  params: Promise<{
     eventId: string;
-  };
+  }>;
 }
 
 export default async function EventDetailPage({ params }: PageProps) {
+  const { eventId } = await params;
+  
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
 
   if (!user) {
     redirect('/welcome');
   }
-
-  const { eventId } = params;
 
   // Simple UUID format validation
   const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;

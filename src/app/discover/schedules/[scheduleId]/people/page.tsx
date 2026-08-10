@@ -4,7 +4,9 @@ import { redirect } from 'next/navigation';
 import { getRecommendations } from '@/features/discover/server/getRecommendations';
 import { ScheduledPeopleView } from './ScheduledPeopleView';
 
-export default async function ScheduledPeoplePage({ params }: { params: { scheduleId: string } }) {
+export default async function ScheduledPeoplePage({ params }: { params: Promise<{ scheduleId: string }> }) {
+  const { scheduleId } = await params;
+
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
 
@@ -16,7 +18,7 @@ export default async function ScheduledPeoplePage({ params }: { params: { schedu
   const { data: plan, error } = await supabase
     .from('fixed_plans')
     .select('*')
-    .eq('fixed_plan_id', params.scheduleId)
+    .eq('fixed_plan_id', scheduleId)
     .eq('user_id', user.id)
     .eq('plan_status', 'active')
     .single();
@@ -26,7 +28,7 @@ export default async function ScheduledPeoplePage({ params }: { params: { schedu
   }
 
   // Fetch recommendations for this specific plan
-  const recommendations = await getRecommendations(params.scheduleId);
+  const recommendations = await getRecommendations(scheduleId);
 
   return <ScheduledPeopleView plan={plan} recommendations={recommendations} />;
 }
