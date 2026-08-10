@@ -578,6 +578,10 @@ export type Database = {
         Args: { p_profile: Json; p_schedules: Json }
         Returns: Json
       }
+      get_discover_recommendations: {
+        Args: { p_my_plan_id?: string }
+        Returns: Json
+      }
     }
     Enums: {
       [_ in never]: never
