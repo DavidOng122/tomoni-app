@@ -1,66 +1,182 @@
 .card {
   width: 100%;
-  padding: 16px 20px;
-  background: #FFFFFF;
-  border: 1px solid #C5C5C5;
-  border-radius: 16px;
+  overflow: hidden;
+  border: 1px solid #e0e0e0;
+  border-radius: 12px;
+  background: #ffffff;
+  box-shadow: inset 5px 7px 14px rgba(0, 0, 0, 0.025);
+}
+
+.cardHeader {
   display: flex;
-  flex-direction: column;
-  gap: 16px;
+  min-width: 0;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 16px;
 }
 
-.detailsArea {
+.activityIdentity {
   display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.rows {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-
-.activityName {
-  margin: 0;
-  font-size: 16px;
-  font-weight: 600;
-  line-height: 24px;
-  color: #101828;
-}
-
-.scheduleSummary {
-  margin: 0;
-  font-size: 14px;
-  font-weight: 400;
-  line-height: 20px;
-  color: #6A7282;
-}
-
-.actions {
-  display: flex;
+  min-width: 0;
   align-items: center;
   gap: 12px;
 }
 
-.actionButton {
-  background: none;
-  border: none;
-  padding: 0;
-  font-size: 14px;
-  font-weight: 400;
-  color: #6A7282;
-  cursor: pointer;
-  outline: none;
-  font-family: inherit;
+.activityIcon {
+  display: flex;
+  width: 44px;
+  height: 44px;
+  flex: 0 0 44px;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  border: 1.33px solid #e5e5e5;
+  border-radius: 50%;
+  background: #f2f2f2;
 }
 
-.actionButton:hover {
-  text-decoration: underline;
+.activityIcon img {
+  max-width: 26px;
+  max-height: 26px;
+  object-fit: contain;
+}
+
+.activityName {
+  min-width: 0;
+  overflow: hidden;
+  margin: 0;
+  color: #1e2939;
+  font-size: 20px;
+  font-weight: 650;
+  line-height: 28px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.actions {
+  display: flex;
+  flex: 0 0 auto;
+  align-items: center;
+  gap: 6px;
+}
+
+.actionButton {
+  display: inline-flex;
+  min-width: 44px;
+  min-height: 36px;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  padding: 0 2px;
+  border: 0;
+  border-radius: 7px;
+  background: transparent;
+  color: #666666;
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 16px;
+  cursor: pointer;
+  outline: none;
+}
+
+.editButton {
+  color: #f47b50;
+}
+
+.actionButton:focus-visible {
+  box-shadow: 0 0 0 3px rgba(255, 132, 91, 0.18);
 }
 
 .divider {
   width: 1px;
   height: 14px;
-  background: #E5E7EB;
+  background: #d1d5dc;
+}
+
+.infoRows {
+  display: flex;
+  flex-direction: column;
+  padding: 0 19px 3px;
+}
+
+.infoRow {
+  position: relative;
+  display: grid;
+  grid-template-columns: 19px minmax(0, 1fr) 16px;
+  min-height: 68px;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 0;
+}
+
+.infoRow + .infoRow {
+  border-top: 1px solid #eeeeee;
+}
+
+.rowIcon {
+  align-self: start;
+  margin-top: 2px;
+  object-fit: contain;
+}
+
+.rowText {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.rowLabel {
+  color: #666666;
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 16px;
+}
+
+.rowValue {
+  overflow-wrap: anywhere;
+  color: #1e2939;
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 20px;
+}
+
+.chevron {
+  justify-self: end;
+}
+
+@media (max-width: 370px) {
+  .cardHeader {
+    align-items: flex-start;
+    padding: 14px;
+  }
+
+  .activityIdentity {
+    gap: 8px;
+  }
+
+  .activityIcon {
+    width: 40px;
+    height: 40px;
+    flex-basis: 40px;
+  }
+
+  .activityName {
+    font-size: 18px;
+  }
+
+  .actions {
+    gap: 3px;
+  }
+
+  .actionButton {
+    min-width: 38px;
+  }
+
+  .infoRows {
+    padding-right: 16px;
+    padding-left: 16px;
+  }
 }

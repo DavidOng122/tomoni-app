@@ -1,4 +1,5 @@
 import React from 'react';
+import Image from 'next/image';
 import styles from '../FixedScheduleOnboardingView.module.css';
 import { DayOfWeek } from '../../types';
 import { DAYS_OF_WEEK_LIST } from '../../lib/constants';
@@ -11,7 +12,12 @@ interface WeekdaySelectorProps {
 export const WeekdaySelector: React.FC<WeekdaySelectorProps> = ({ selectedDays, onToggleDay }) => {
   return (
     <fieldset className={styles.fieldset}>
-      <legend className={styles.legend}>曜日</legend>
+      <legend className={styles.legend}>
+        <span className={styles.legendContent}>
+          <Image className={styles.weekdayLegendIcon} src="/images/onboarding-weekday.svg" width={16} height={16} alt="" aria-hidden="true" />
+          <span>曜日</span>
+        </span>
+      </legend>
       <div className={styles.weekdayGrid}>
         {DAYS_OF_WEEK_LIST.map(({ key, label }) => {
           const isSelected = selectedDays.includes(key);

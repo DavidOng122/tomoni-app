@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { usePlaceAutocomplete } from '@/features/locations/hooks/usePlaceAutocomplete';
 import { SelectedPlace } from '@/features/locations/types';
+import styles from './LocationAutocomplete.module.css';
 
 interface LocationAutocompleteProps {
   value: SelectedPlace | null;
@@ -60,7 +61,7 @@ export const LocationAutocomplete: React.FC<LocationAutocompleteProps> = ({ valu
   };
 
   return (
-    <div ref={wrapperRef} style={{ position: 'relative', width: '100%' }}>
+    <div ref={wrapperRef} className={styles.wrapper}>
       <input
         type="text"
         className={className}
@@ -72,34 +73,12 @@ export const LocationAutocomplete: React.FC<LocationAutocompleteProps> = ({ valu
         }}
       />
       {isOpen && predictions.length > 0 && (
-        <ul style={{
-          position: 'absolute',
-          top: '100%',
-          left: 0,
-          right: 0,
-          backgroundColor: '#fff',
-          border: '1px solid #eee',
-          borderRadius: '8px',
-          boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
-          marginTop: '4px',
-          padding: 0,
-          margin: '4px 0 0 0',
-          listStyle: 'none',
-          zIndex: 10,
-          maxHeight: '200px',
-          overflowY: 'auto'
-        }}>
+        <ul className={styles.suggestionList}>
           {predictions.map((p) => (
             <li
               key={p.place_id}
               onClick={() => handleSelect(p.place_id, p.description)}
-              style={{
-                padding: '12px 16px',
-                cursor: 'pointer',
-                borderBottom: '1px solid #f5f5f5',
-                fontSize: '14px',
-                color: '#333'
-              }}
+              className={styles.suggestionItem}
             >
               {p.description}
             </li>

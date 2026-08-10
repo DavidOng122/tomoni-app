@@ -41,6 +41,8 @@ const TAG_OPTIONS = [
   { value: 'calm_social', label: '落ち着いた交流' },
 ];
 
+const VISIBLE_TAG_OPTIONS = TAG_OPTIONS.slice(0, 7);
+
 export const ProfileOnboardingView: React.FC = () => {
   const router = useRouter();
   const { schedules, profileDraft: draft, setProfileDraft: setDraft } = useOnboardingSchedules();
@@ -50,6 +52,7 @@ export const ProfileOnboardingView: React.FC = () => {
   const [isUploading, setIsUploading] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
+  const [customTagInput, setCustomTagInput] = useState<string | null>(null);
 
   useEffect(() => {
     return () => {
@@ -72,6 +75,29 @@ export const ProfileOnboardingView: React.FC = () => {
       }
       return { ...prev, tags: [...prev.tags, tagValue] };
     });
+  };
+
+  const normalizedCustomTag = customTagInput?.trim() || '';
+  const matchingPredefinedTag = TAG_OPTIONS.find((tag) => tag.label === normalizedCustomTag);
+  const customTagValue = matchingPredefinedTag?.value || normalizedCustomTag;
+  const canAddCustomTag =
+    normalizedCustomTag.length > 0 &&
+    draft.tags.length < 5 &&
+    !draft.tags.includes(customTagValue);
+  const customTags = draft.tags.filter(
+    (tagValue) => !TAG_OPTIONS.some((tag) => tag.value === tagValue)
+  );
+
+  const handleAddCustomTag = () => {
+    if (!canAddCustomTag) return;
+
+    setDraft((prev: ProfileDraft) => {
+      if (prev.tags.length >= 5 || prev.tags.includes(customTagValue)) {
+        return prev;
+      }
+      return { ...prev, tags: [...prev.tags, customTagValue] };
+    });
+    setCustomTagInput(null);
   };
 
   const handleAvatarSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -180,9 +206,8 @@ export const ProfileOnboardingView: React.FC = () => {
 
   return (
     <form className={styles.container} onSubmit={handleSubmit}>
-      <div className={styles.stepIndicator}>
-        <span className={styles.stepCurrent}>3</span>
-        <span className={styles.stepTotal}>/ 3</span>
+      <div className={styles.stepRow} aria-label="ステップ 3/3">
+        <span className={styles.stepIndicator}>3/3</span>
       </div>
 
       <div className={styles.progressContainer}>
@@ -284,15 +309,16 @@ export const ProfileOnboardingView: React.FC = () => {
       </div>
 
       <fieldset className={styles.fieldset}>
-        <legend className={styles.legend}>
-          興味のあるタグ
+        <legend className={`${styles.legend} ${styles.tagLegend}`}>
+          <span>興味のあるタグ</span>
+          <span className={styles.tagCount}>{draft.tags.length}/5</span>
         </legend>
         <p className={styles.helperText}>
           気になるものを選んでください。<br />
           3つ以上選ぶのがおすすめです。
         </p>
         <div className={styles.tagsContainer}>
-          {TAG_OPTIONS.map((tag) => {
+          {VISIBLE_TAG_OPTIONS.map((tag) => {
             const isSelected = draft.tags.includes(tag.value);
             return (
               <button
@@ -306,7 +332,65 @@ export const ProfileOnboardingView: React.FC = () => {
               </button>
             );
           })}
+          {customTags.map((tag) => (
+            <button
+              key={tag}
+              type="button"
+              className={`${styles.tagButton} ${styles.customTagButton}`}
+              aria-pressed="true"
+              aria-label={`${tag}を削除`}
+              onClick={() => handleTagToggle(tag)}
+            >
+              {tag}
+            </button>
+          ))}
         </div>
+        {customTagInput === null ? (
+          <button
+            type="button"
+            className={styles.addTagButton}
+            disabled={draft.tags.length >= 5}
+            onClick={() => setCustomTagInput('')}
+          >
+            <span aria-hidden="true">＋</span>
+            <span>タグを追加</span>
+          </button>
+        ) : (
+          <div className={styles.customTagEditor}>
+            <input
+              type="text"
+              className={styles.customTagInput}
+              value={customTagInput}
+              maxLength={20}
+              placeholder="タグを入力"
+              aria-label="追加するタグ"
+              autoFocus
+              onChange={(e) => setCustomTagInput(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') {
+                  e.preventDefault();
+                  handleAddCustomTag();
+                }
+              }}
+            />
+            <button
+              type="button"
+              className={styles.confirmTagButton}
+              disabled={!canAddCustomTag}
+              onClick={handleAddCustomTag}
+            >
+              追加
+            </button>
+            <button
+              type="button"
+              className={styles.cancelTagButton}
+              aria-label="タグ追加をキャンセル"
+              onClick={() => setCustomTagInput(null)}
+            >
+              ×
+            </button>
+          </div>
+        )}
       </fieldset>
 
       <fieldset className={styles.fieldset}>
@@ -334,7 +418,7 @@ export const ProfileOnboardingView: React.FC = () => {
           type="submit"
           fullWidth
           disabled={!isValid || isSubmitting || isUploading}
-          style={isValid && !isSubmitting && !isUploading ? { backgroundColor: '#FF845B', color: '#FFFFFF' } : undefined}
+          className={styles.primaryAction}
         >
           {isSubmitting ? '登録中...' : '登録を完了する'}
         </Button>
@@ -350,7 +434,7 @@ export const ProfileOnboardingView: React.FC = () => {
               router.push('/onboarding/schedules');
             }
           }}
-          style={{ marginTop: '12px' }}
+          className={styles.secondaryAction}
         >
           戻る
         </Button>

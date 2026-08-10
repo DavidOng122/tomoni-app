@@ -47,6 +47,9 @@ export const RegisteredSchedulesView: React.FC = () => {
 
   return (
     <div className={styles.container}>
+      <div className={styles.stepRow} aria-label="ステップ 2/3">
+        <span className={styles.stepIndicator}>2/3</span>
+      </div>
       <div className={styles.progressContainer}>
         <div className={styles.progressBarBg}>
           <div className={styles.progressBarFill} />
@@ -67,7 +70,8 @@ export const RegisteredSchedulesView: React.FC = () => {
       </div>
 
       <button type="button" className={styles.addAnotherButton} onClick={handleAddAnother}>
-        ＋ 別の固定予定を追加する
+        <span aria-hidden="true">＋</span>
+        <span>別の固定予定を追加する</span>
       </button>
 
       <FixedActionArea transparentBorder={true}>
@@ -75,7 +79,7 @@ export const RegisteredSchedulesView: React.FC = () => {
           fullWidth
           disabled={schedules.length === 0}
           onClick={handleNext}
-          style={schedules.length > 0 ? { backgroundColor: '#FF8861', color: '#FFFFFF' } : undefined}
+          className={styles.primaryAction}
         >
           次へ
         </Button>

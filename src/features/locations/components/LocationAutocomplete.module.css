@@ -1,0 +1,43 @@
+.wrapper {
+  position: relative;
+  width: 100%;
+  min-width: 0;
+}
+
+.suggestionList {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  left: 0;
+  z-index: 20;
+  max-height: min(240px, 36dvh);
+  margin: 6px 0 0;
+  padding: 5px;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  border: 1px solid #e4e7ec;
+  border-radius: 12px;
+  background: #ffffff;
+  box-shadow: 0 12px 28px rgba(16, 24, 40, 0.14);
+  list-style: none;
+}
+
+.suggestionItem {
+  padding: 12px;
+  overflow-wrap: anywhere;
+  border-radius: 8px;
+  color: #344054;
+  font-size: 14px;
+  line-height: 1.5;
+  cursor: pointer;
+}
+
+.suggestionItem + .suggestionItem {
+  border-top: 1px solid #f2f4f7;
+}
+
+@media (hover: hover) {
+  .suggestionItem:hover {
+    background: #fff6f2;
+  }
+}

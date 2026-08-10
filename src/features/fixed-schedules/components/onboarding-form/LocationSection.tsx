@@ -1,4 +1,5 @@
 import React from 'react';
+import Image from 'next/image';
 import styles from '../FixedScheduleOnboardingView.module.css';
 import { SelectedPlace } from '@/features/locations/types';
 import { LocationAutocomplete } from '@/features/locations/components/LocationAutocomplete';
@@ -11,12 +12,14 @@ interface LocationSectionProps {
 export const LocationSection: React.FC<LocationSectionProps> = ({ place, onChange }) => {
   return (
     <fieldset className={styles.fieldset}>
-      <legend className={styles.legend}>活動する場所</legend>
+      <legend className={styles.legend}>
+        <span className={styles.legendContent}>
+          <Image src="/images/onboarding-location.svg" width={19} height={19} alt="" aria-hidden="true" />
+          <span>活動する場所</span>
+        </span>
+      </legend>
       <div className={styles.locationInputWrapper}>
-        <svg className={styles.locationIcon} width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-          <circle cx="11" cy="11" r="8"/>
-          <path d="M21 21l-4.35-4.35"/>
-        </svg>
+        <Image className={styles.locationIcon} src="/images/onboarding-search.svg" width={17} height={17} alt="" aria-hidden="true" />
         <LocationAutocomplete
           className={styles.locationInput}
           placeholder="公園・駅・施設名を入力"

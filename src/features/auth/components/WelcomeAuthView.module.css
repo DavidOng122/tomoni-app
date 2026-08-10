@@ -1,48 +1,129 @@
 .container {
   display: flex;
-  flex-direction: column;
   flex: 1;
-  background-color: #FFFFFF;
-  padding-left: 26px;
-  padding-right: 26px;
-  /* Top padding responsive to safe area and viewport height */
-  padding-top: calc(env(safe-area-inset-top) + clamp(88px, 13dvh, 116px));
-  /* Bottom padding pushed to bottom and respecting safe area */
-  padding-bottom: calc(env(safe-area-inset-bottom) + 20px);
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-  box-sizing: border-box;
+  flex-direction: column;
   width: 100%;
+  min-height: 100dvh;
+  overflow: hidden;
+  background: #ffffff;
+  color: #000000;
+  font-family: -apple-system, BlinkMacSystemFont, "Hiragino Sans", "Yu Gothic", sans-serif;
 }
 
-.brandSection {
+.hero {
+  position: relative;
+  flex: 0 0 auto;
+  width: 100%;
+  height: min(105vw, 452px);
+  overflow: hidden;
+  clip-path: ellipse(100.78% 87.8% at 54.01% 12.2%);
+}
+
+.heroImage {
+  position: absolute;
+  top: 0;
+  left: -4.3%;
+  width: 113.65%;
+  height: auto;
+  max-width: none;
+}
+
+.content {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  padding: 24px 26px calc(34px + env(safe-area-inset-bottom, 0px));
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  height: 43px;
+}
+
+.brand img {
+  flex: 0 0 auto;
+  width: 35px;
+  height: 35px;
+}
+
+.brand span {
+  font-family: Nunito, "Avenir Next Rounded", "Arial Rounded MT Bold", sans-serif;
+  font-size: 36px;
+  font-weight: 600;
+  line-height: 1;
+  letter-spacing: 1.44px;
+}
+
+.intro {
   display: flex;
   flex-direction: column;
   align-items: center;
+  gap: 8px;
+  margin-top: 17px;
   text-align: center;
 }
 
 .title {
   margin: 0;
-  font-size: 29px;
-  font-weight: 500;
-  line-height: 39.44px;
-  letter-spacing: 1.45px;
-  color: #000000;
+  font-size: 26px;
+  font-weight: 600;
+  line-height: 1.22;
+  letter-spacing: 4.68px;
+}
+
+.title span {
+  color: #ff7622;
 }
 
 .subtitle {
-  margin-top: 16px;
-  margin-bottom: 0;
+  width: 208px;
+  margin: 0;
+  color: #4b4b4b;
   font-size: 13px;
-  font-weight: 400;
-  line-height: 18.41px;
-  color: #222121;
+  font-weight: 500;
+  line-height: 1.6;
 }
 
 .actionSection {
-  margin-top: auto;
+  position: relative;
   display: flex;
   flex-direction: column;
   gap: 13px;
   width: 100%;
+  margin-top: 24px;
+}
+
+.error {
+  position: absolute;
+  right: 0;
+  bottom: calc(100% + 8px);
+  left: 0;
+  color: #d92d20;
+  font-size: 12px;
+  line-height: 1.4;
+  text-align: center;
+}
+
+@media (max-height: 820px) {
+  .hero {
+    height: min(92vw, 368px);
+  }
+
+  .content {
+    padding-top: 14px;
+    padding-bottom: calc(20px + env(safe-area-inset-bottom, 0px));
+  }
+
+  .intro {
+    margin-top: 10px;
+  }
+
+  .actionSection {
+    margin-top: 16px;
+  }
 }

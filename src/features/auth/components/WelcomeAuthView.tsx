@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
+import Image from 'next/image';
 import { useSearchParams } from 'next/navigation';
 import styles from './WelcomeAuthView.module.css';
 import { AuthProviderButton } from './AuthProviderButton';
@@ -39,9 +40,8 @@ export const WelcomeAuthView: React.FC = () => {
     if (isGoogleLoading) return;
     setIsGoogleLoading(true);
     setErrorMessage(null);
-    
+
     const supabase = createClient();
-    
     const { error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
       options: {
@@ -61,48 +61,67 @@ export const WelcomeAuthView: React.FC = () => {
 
   return (
     <div className={styles.container}>
-      <div className={styles.brandSection}>
-        <h1 className={styles.title}>
-          いつもの地域で、
-          <br />
-          新しいつながりを
-        </h1>
-        <p className={styles.subtitle}>
-          日常の予定や地域のイベントから、
-          <br />
-          近くの人と自然につながれます
-        </p>
+      <div className={styles.hero} aria-hidden="true">
+        <Image
+          className={styles.heroImage}
+          src="/images/welcome/community.png"
+          alt=""
+          width={941}
+          height={1672}
+          priority
+        />
       </div>
-      
-      <div className={styles.actionSection}>
-        {displayErrorMessage && (
-          <div style={{ color: 'red', fontSize: '14px', marginBottom: '16px', textAlign: 'center' }}>
-            {displayErrorMessage}
-          </div>
-        )}
-        <AuthProviderButton
-          provider="google"
-          icon={<GoogleIcon />}
-          onClick={handleGoogleSignIn}
-          loading={isGoogleLoading}
-        >
-          Googleで続ける
-        </AuthProviderButton>
-        <AuthProviderButton
-          provider="apple"
-          icon={<AppleIcon />}
-          disabled
-        >
-          Appleで続ける 準備中
-        </AuthProviderButton>
-        <AuthProviderButton
-          provider="email"
-          icon={<EmailIcon />}
-          onClick={() => setIsEmailMode(true)}
-        >
-          メールで続ける
-        </AuthProviderButton>
-      </div>
+
+      <main className={styles.content}>
+        <div className={styles.brand} aria-label="Yorimi">
+          <Image
+            src="/images/welcome/brand-mark.svg"
+            alt=""
+            width={35}
+            height={35}
+          />
+          <span>Yorimi</span>
+        </div>
+
+        <div className={styles.intro}>
+          <h1 className={styles.title}>
+            いつもの地域で、
+            <br />
+            新しい<span>つながり</span>を
+          </h1>
+          <p className={styles.subtitle}>
+            日常の予定や地域のイベントから、
+            <br />
+            近くの人と自然につながれます
+          </p>
+        </div>
+
+        <div className={styles.actionSection}>
+          {displayErrorMessage && (
+            <div className={styles.error} role="alert">
+              {displayErrorMessage}
+            </div>
+          )}
+          <AuthProviderButton
+            provider="google"
+            icon={<GoogleIcon />}
+            onClick={handleGoogleSignIn}
+            loading={isGoogleLoading}
+          >
+            Googleで続ける
+          </AuthProviderButton>
+          <AuthProviderButton provider="apple" icon={<AppleIcon />} disabled>
+            Appleで続ける 準備中
+          </AuthProviderButton>
+          <AuthProviderButton
+            provider="email"
+            icon={<EmailIcon />}
+            onClick={() => setIsEmailMode(true)}
+          >
+            メールで続ける
+          </AuthProviderButton>
+        </div>
+      </main>
     </div>
   );
 };

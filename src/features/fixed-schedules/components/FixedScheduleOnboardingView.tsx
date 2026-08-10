@@ -107,20 +107,23 @@ export const FixedScheduleOnboardingView: React.FC = () => {
     });
   };
 
-  const handleTimeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleTimeChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     let val = e.target.value.replace(/[^0-9:]/g, '');
     setDisplayTime(val);
   };
 
   return (
     <form className={styles.form} onSubmit={handleSubmit}>
+      <div className={styles.stepRow} aria-label="ステップ 1/3">
+        <span className={styles.stepIndicator}>1/3</span>
+      </div>
       <div className={styles.progressContainer}>
         <div className={styles.progressBarBg}>
           <div className={styles.progressBarFill} />
         </div>
       </div>
 
-      <header>
+      <header className={styles.header}>
         <h1 className={styles.title}>固定予定を登録しましょう</h1>
         <p className={styles.description}>活動・曜日・時間帯を選んでください</p>
       </header>
@@ -150,25 +153,27 @@ export const FixedScheduleOnboardingView: React.FC = () => {
       />
 
       <FixedActionArea transparentBorder={true}>
-        <Button
-          type="submit"
-          fullWidth
-          disabled={!isNextEnabled}
-          className={isNextEnabled ? styles.submitButtonEnabled : undefined}
-        >
-          次へ
-        </Button>
-        {schedules.length === 0 && (
+        <div className={styles.actionContent}>
           <Button
-            type="button"
-            variant="ghost"
+            type="submit"
             fullWidth
-            onClick={() => router.push('/onboarding/profile')}
-            style={{ marginTop: '12px' }}
+            disabled={!isNextEnabled}
+            className={styles.primaryAction}
           >
-            スキップ
+            次へ
           </Button>
-        )}
+          {schedules.length === 0 && (
+            <Button
+              type="button"
+              variant="ghost"
+              fullWidth
+              onClick={() => router.push('/onboarding/profile')}
+              className={styles.secondaryAction}
+            >
+              スキップ
+            </Button>
+          )}
+        </div>
       </FixedActionArea>
     </form>
   );
