@@ -1,23 +1,52 @@
 'use client';
 
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { MobileHeader } from '@/components/layout/MobileHeader';
 import { PageContainer } from '@/components/layout/PageContainer';
+import { LocationAutocomplete } from '@/features/locations/components/LocationAutocomplete';
+import { SelectedPlace } from '@/features/locations/types';
+
+const getNearestHour = () => {
+  const now = new Date();
+  now.setMinutes(0, 0, 0);
+  now.setHours(now.getHours() + 1);
+  return now;
+};
+
+const formatDatetimeLocal = (date: Date) => {
+  const pad = (n: number) => n.toString().padStart(2, '0');
+  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}`;
+};
 
 export const CreateEventView: React.FC = () => {
   const router = useRouter();
   
+  // 1. Initial State Setup
   const [posterPreview, setPosterPreview] = useState<string | null>(null);
   const [title, setTitle] = useState('');
-  const [startDateTime, setStartDateTime] = useState('2026年8月10日 19:00');
-  const [endDateTime, setEndDateTime] = useState('21:00');
-  const [location, setLocation] = useState('');
+  
+  const [startAt, setStartAt] = useState('');
+  const [endAt, setEndAt] = useState('');
+
+  const [selectedPlace, setSelectedPlace] = useState<SelectedPlace | null>(null);
+
   const [description, setDescription] = useState('');
   const [approvalRequired, setApprovalRequired] = useState(false);
   const [recruitingCount, setRecruitingCount] = useState<number | null>(null);
   
+  const [errors, setErrors] = useState<{ [key: string]: string }>({});
+
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    const initialStart = getNearestHour();
+    const initialEnd = new Date(initialStart.getTime() + 2 * 60 * 60 * 1000);
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setStartAt(formatDatetimeLocal(initialStart));
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setEndAt(formatDatetimeLocal(initialEnd));
+  }, []);
 
   const handleImageClick = () => {
     fileInputRef.current?.click();
@@ -30,13 +59,58 @@ export const CreateEventView: React.FC = () => {
     }
   };
 
+  const handleBack = () => {
+    if (window.history.length > 2) {
+      router.back();
+    } else {
+      router.push('/discover');
+    }
+  };
+
+  const handlePublish = () => {
+    const newErrors: { [key: string]: string } = {};
+
+    if (!title.trim()) newErrors.title = 'イベント名を入力してください';
+    if (!startAt) newErrors.startAt = '開始時間を設定してください';
+    if (!endAt) newErrors.endAt = '終了時間を設定してください';
+    if (startAt && endAt && endAt <= startAt) {
+      newErrors.endAt = '終了時間は開始時間より後に設定してください';
+    }
+    if (!selectedPlace || !selectedPlace.placeName) {
+      newErrors.location = '場所を選択してください';
+    }
+
+    if (Object.keys(newErrors).length > 0) {
+      setErrors(newErrors);
+      return;
+    }
+
+    setErrors({});
+    
+    // Validation passed, STOP here for UI-only phase.
+    console.log("Validation passed. Form State:", {
+      posterPreview,
+      title,
+      startAt,
+      endAt,
+      placeId: selectedPlace?.placeId || null,
+      placeName: selectedPlace?.placeName || '',
+      address: selectedPlace?.address || null,
+      latitude: selectedPlace?.latitude || null,
+      longitude: selectedPlace?.longitude || null,
+      description,
+      approvalRequired,
+      recruitingCount
+    });
+  };
+
   return (
     <>
       <MobileHeader 
         title="イベントを作成"
         leftElement={
           <button 
-            onClick={() => router.back()}
+            onClick={handleBack}
             style={{
               width: '37px', height: '37px', borderRadius: '50%',
               background: '#fff', border: '1px solid #E5E7EB',
@@ -44,12 +118,13 @@ export const CreateEventView: React.FC = () => {
               cursor: 'pointer'
             }}
           >
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m15 18-6-6 6-6"/></svg>
+            {/* Downward chevron icon */}
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m6 9 6 6 6-6"/></svg>
           </button>
         }
         rightElement={
           <button 
-            onClick={() => router.push('/discover')}
+            onClick={handlePublish}
             style={{
               width: '37px', height: '37px', borderRadius: '50%',
               background: '#fff', border: '1px solid #E5E7EB',
@@ -57,7 +132,8 @@ export const CreateEventView: React.FC = () => {
               cursor: 'pointer'
             }}
           >
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+            {/* Checkmark icon */}
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
           </button>
         }
       />
@@ -119,7 +195,7 @@ export const CreateEventView: React.FC = () => {
                 width: '100%',
                 padding: '16px 19px',
                 borderRadius: '14px',
-                border: 'none',
+                border: errors.title ? '1px solid red' : 'none',
                 background: '#fff',
                 fontSize: '18px',
                 fontWeight: 590,
@@ -128,6 +204,7 @@ export const CreateEventView: React.FC = () => {
                 boxShadow: '0 2px 8px rgba(0,0,0,0.04)'
               }}
             />
+            {errors.title && <div style={{ color: 'red', fontSize: '12px', marginTop: '4px', paddingLeft: '8px' }}>{errors.title}</div>}
           </div>
 
           {/* Date / Time Card */}
@@ -138,14 +215,20 @@ export const CreateEventView: React.FC = () => {
             display: 'flex',
             flexDirection: 'column',
             gap: '16px',
-            boxShadow: '0 2px 8px rgba(0,0,0,0.04)'
+            boxShadow: '0 2px 8px rgba(0,0,0,0.04)',
+            border: (errors.startAt || errors.endAt) ? '1px solid red' : 'none'
           }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                 <div style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#959595' }}></div>
                 <span style={{ fontSize: '15px', fontWeight: 510, color: 'black' }}>開始</span>
               </div>
-              <span style={{ fontSize: '15px', fontWeight: 510, color: 'black' }}>{startDateTime}</span>
+              <input 
+                type="datetime-local" 
+                value={startAt}
+                onChange={(e) => setStartAt(e.target.value)}
+                style={{ fontSize: '15px', fontWeight: 510, color: 'black', border: 'none', background: 'transparent', outline: 'none' }}
+              />
             </div>
             
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -153,28 +236,55 @@ export const CreateEventView: React.FC = () => {
                 <div style={{ width: '6px', height: '6px', borderRadius: '50%', border: '1px solid #959595' }}></div>
                 <span style={{ fontSize: '15px', fontWeight: 510, color: 'black' }}>終了</span>
               </div>
-              <span style={{ fontSize: '15px', fontWeight: 510, color: 'black' }}>{endDateTime}</span>
+              <input 
+                type="datetime-local" 
+                value={endAt}
+                onChange={(e) => setEndAt(e.target.value)}
+                style={{ fontSize: '15px', fontWeight: 510, color: 'black', border: 'none', background: 'transparent', outline: 'none' }}
+              />
             </div>
+            {(errors.startAt || errors.endAt) && (
+              <div style={{ color: 'red', fontSize: '12px', marginTop: '4px' }}>
+                {errors.startAt || errors.endAt}
+              </div>
+            )}
           </div>
 
           {/* Location */}
-          <div 
-            style={{
-              background: '#fff',
-              borderRadius: '14px',
-              padding: '16px 19px',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '12px',
-              boxShadow: '0 2px 8px rgba(0,0,0,0.04)',
-              cursor: 'pointer'
-            }}
-            onClick={() => {/* Keep interactive but do not persist mock location */}}
-          >
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#959595" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>
-            <span style={{ fontSize: '15px', fontWeight: 510, color: '#959595' }}>
-              場所を選択
-            </span>
+          <div>
+            <div 
+              style={{
+                background: '#fff',
+                borderRadius: '14px',
+                padding: '4px 19px',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '12px',
+                boxShadow: '0 2px 8px rgba(0,0,0,0.04)',
+                border: errors.location ? '1px solid red' : 'none'
+              }}
+            >
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#959595" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>
+              <LocationAutocomplete 
+                value={selectedPlace} 
+                onChange={(place) => setSelectedPlace(place)} 
+                placeholder="場所を選択"
+                className="location-input"
+              />
+              <style>{`
+                .location-input {
+                  width: 100%;
+                  padding: 12px 0;
+                  border: none;
+                  background: transparent;
+                  font-size: 15px;
+                  font-weight: 510;
+                  outline: none;
+                  color: ${selectedPlace ? 'black' : '#959595'};
+                }
+              `}</style>
+            </div>
+            {errors.location && <div style={{ color: 'red', fontSize: '12px', marginTop: '4px', paddingLeft: '8px' }}>{errors.location}</div>}
           </div>
 
           {/* Description */}
