@@ -1,4 +1,4 @@
-﻿export type Json =
+export type Json =
   | string
   | number
   | boolean
@@ -574,6 +574,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      cancel_event_participation: {
+        Args: { p_event_id: string }
+        Returns: undefined
+      }
       complete_onboarding: {
         Args: { p_profile: Json; p_schedules: Json }
         Returns: Json
@@ -582,6 +586,7 @@ export type Database = {
         Args: { p_my_plan_id?: string }
         Returns: Json
       }
+      join_event: { Args: { p_event_id: string }; Returns: undefined }
     }
     Enums: {
       [_ in never]: never

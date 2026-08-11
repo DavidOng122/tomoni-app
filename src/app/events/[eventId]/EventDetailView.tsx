@@ -7,13 +7,16 @@ import { MobileHeader } from '@/components/layout/MobileHeader';
 import { Database } from '@/types/database.types';
 import { formatEventDateTime } from '@/utils/dateFormatter';
 
+import { EventParticipationButton } from '@/components/events/EventParticipationButton';
+
 type EventRow = Database['public']['Tables']['events']['Row'];
 
 interface EventDetailViewProps {
   event: EventRow;
+  participationStatus: string | null;
 }
 
-export const EventDetailView: React.FC<EventDetailViewProps> = ({ event }) => {
+export const EventDetailView: React.FC<EventDetailViewProps> = ({ event, participationStatus }) => {
   const router = useRouter();
 
   let ctaUrl: string | null = null;
@@ -137,19 +140,32 @@ export const EventDetailView: React.FC<EventDetailViewProps> = ({ event }) => {
         </div>
       </div>
 
-      {/* External CTA fixed at bottom */}
-      {(ctaText || ctaDisabled) && (
-        <div style={{
-          position: 'fixed',
-          bottom: 0,
-          left: 0,
-          right: 0,
-          padding: '16px var(--page-padding-x) calc(16px + var(--safe-area-bottom))',
-          background: 'rgba(255,255,255,0.9)',
-          backdropFilter: 'blur(8px)',
-          borderTop: '1px solid var(--color-divider)',
-          zIndex: 'var(--z-index-nav)'
-        }}>
+      {/* External CTA and Participation fixed at bottom */}
+      <div style={{
+        position: 'fixed',
+        bottom: 0,
+        left: 0,
+        right: 0,
+        padding: '16px var(--page-padding-x) calc(16px + var(--safe-area-bottom))',
+        background: 'rgba(255,255,255,0.9)',
+        backdropFilter: 'blur(8px)',
+        borderTop: '1px solid var(--color-divider)',
+        zIndex: 'var(--z-index-nav)',
+        display: 'flex',
+        flexDirection: 'column',
+        gap: '12px'
+      }}>
+        
+        {/* Tomoni Participation Button */}
+        <EventParticipationButton 
+          eventId={event.event_id}
+          currentStatus={participationStatus}
+          approvalRequired={event.approval_required}
+          eventStatus={event.event_status}
+        />
+
+        {/* External Registration Button */}
+        {(ctaText || ctaDisabled) && (
           <button
             onClick={() => {
               if (ctaUrl && !ctaDisabled) {
@@ -180,8 +196,8 @@ export const EventDetailView: React.FC<EventDetailViewProps> = ({ event }) => {
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
             )}
           </button>
-        </div>
-      )}
+        )}
+      </div>
     </PageContainer>
   );
 };

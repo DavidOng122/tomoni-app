@@ -3,6 +3,7 @@ import { createClient } from '@/infrastructure/auth/server';
 import { notFound, redirect } from 'next/navigation';
 import { EventDetailView } from './EventDetailView';
 import { Database } from '@/types/database.types';
+import { EventParticipationRepository } from '@/features/events/lib/eventParticipationRepository';
 
 type EventRow = Database['public']['Tables']['events']['Row'];
 
@@ -43,5 +44,14 @@ export default async function EventDetailPage({ params }: PageProps) {
   // The policy `events_select_scheduled` restricts reading to `event_status = 'scheduled'`.
   // So cancelled/ended events naturally return nothing and fall into notFound() above.
 
-  return <EventDetailView event={data as EventRow} />;
+  // Fetch current user participation status
+  const participation = await EventParticipationRepository.getOwnParticipation(eventId);
+  const participationStatus = participation?.participation_status || null;
+
+  return (
+    <EventDetailView 
+      event={data as EventRow} 
+      participationStatus={participationStatus} 
+    />
+  );
 }
