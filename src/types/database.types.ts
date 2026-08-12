@@ -586,6 +586,15 @@ export type Database = {
         Args: { p_my_plan_id?: string }
         Returns: Json
       }
+      get_event_participant_preview: {
+        Args: { p_event_id: string }
+        Returns: {
+          avatar_url: string
+          nickname: string
+          participant_count: number
+          user_id: string
+        }[]
+      }
       join_event: { Args: { p_event_id: string }; Returns: undefined }
     }
     Enums: {

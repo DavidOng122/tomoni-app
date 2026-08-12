@@ -13,7 +13,7 @@ export async function toggleEventParticipationAction(eventId: string, currentSta
   }
 
   if (result.success) {
-    revalidatePath(`/(app)/events/${eventId}`, 'page');
+    revalidatePath(`/events/${eventId}`);
   }
 
   return result;

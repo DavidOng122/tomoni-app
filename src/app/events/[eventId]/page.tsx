@@ -4,6 +4,7 @@ import { notFound, redirect } from 'next/navigation';
 import { EventDetailView } from './EventDetailView';
 import { Database } from '@/types/database.types';
 import { EventParticipationRepository } from '@/features/events/lib/eventParticipationRepository';
+import { getEventParticipantPreview } from '@/features/events/lib/getEventParticipantPreview';
 
 type EventRow = Database['public']['Tables']['events']['Row'];
 
@@ -40,6 +41,18 @@ export default async function EventDetailPage({ params }: PageProps) {
     notFound();
   }
 
+  let creatorProfile = null;
+  if (data.created_by_user_id && data.event_type === 'user_created') {
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('nickname, avatar_url')
+      .eq('user_id', data.created_by_user_id)
+      .single();
+    if (profile) {
+      creatorProfile = profile;
+    }
+  }
+
   // Under RLS, if they can read it, we will render the detail.
   // The policy `events_select_scheduled` restricts reading to `event_status = 'scheduled'`.
   // So cancelled/ended events naturally return nothing and fall into notFound() above.
@@ -48,10 +61,14 @@ export default async function EventDetailPage({ params }: PageProps) {
   const participation = await EventParticipationRepository.getOwnParticipation(eventId);
   const participationStatus = participation?.participation_status || null;
 
+  const participantPreview = await getEventParticipantPreview(eventId);
+
   return (
     <EventDetailView 
       event={data as EventRow} 
       participationStatus={participationStatus} 
+      creatorProfile={creatorProfile}
+      participantPreview={participantPreview}
     />
   );
 }

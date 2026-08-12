@@ -24,11 +24,25 @@ export function EventParticipationButton({
     setIsPending(false);
   };
 
+  const commonButtonStyle: React.CSSProperties = {
+    width: '100%',
+    height: '44px',
+    borderRadius: '14px',
+    fontWeight: 590,
+    fontSize: '13px',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    border: 'none',
+    cursor: 'pointer',
+    transition: 'opacity 0.2s',
+  };
+
   if (eventStatus !== 'scheduled') {
     return (
       <button 
         disabled
-        className="w-full py-3 rounded-full font-bold text-sm bg-gray-200 text-gray-500 cursor-not-allowed"
+        style={{ ...commonButtonStyle, backgroundColor: '#e5e7eb', color: '#6b7280', cursor: 'not-allowed' }}
       >
         受付終了
       </button>
@@ -39,7 +53,7 @@ export function EventParticipationButton({
     return (
       <button 
         disabled
-        className="w-full py-3 rounded-full font-bold text-sm bg-gray-200 text-gray-500 cursor-not-allowed"
+        style={{ ...commonButtonStyle, backgroundColor: '#e5e7eb', color: '#6b7280', cursor: 'not-allowed' }}
       >
         参加をお断りされました
       </button>
@@ -50,7 +64,7 @@ export function EventParticipationButton({
     return (
       <button 
         disabled
-        className="w-full py-3 rounded-full font-bold text-sm bg-gray-200 text-gray-500 cursor-not-allowed"
+        style={{ ...commonButtonStyle, backgroundColor: '#e5e7eb', color: '#6b7280', cursor: 'not-allowed' }}
       >
         参加済み
       </button>
@@ -67,19 +81,20 @@ export function EventParticipationButton({
     if (approvalRequired) {
       buttonText = currentStatus === 'cancelled' ? '再度リクエストを送る' : '参加をリクエスト';
     } else {
-      buttonText = currentStatus === 'cancelled' ? '再度参加予定にする' : '参加予定にする';
+      // For approvalRequired = false
+      buttonText = (currentStatus === 'cancelled' || !currentStatus) ? (currentStatus === 'cancelled' ? '再度参加する' : '一緒に参加する') : '一緒に参加する';
     }
   }
 
-  const buttonStyle = isCancel
-    ? "w-full py-3 rounded-full font-bold text-sm bg-white text-gray-700 border border-gray-300 hover:bg-gray-50 active:bg-gray-100 transition-colors"
-    : "w-full py-3 rounded-full font-bold text-sm bg-tomoni-blue text-white shadow-md hover:bg-blue-600 active:bg-blue-700 transition-colors";
+  const activeStyle: React.CSSProperties = isCancel
+    ? { ...commonButtonStyle, backgroundColor: 'white', color: '#374151', border: '1px solid #d1d5db' }
+    : { ...commonButtonStyle, backgroundColor: 'black', color: 'white' };
 
   return (
     <button 
       onClick={handleClick}
       disabled={isPending}
-      className={`${buttonStyle} ${isPending ? 'opacity-50 cursor-not-allowed' : ''}`}
+      style={{ ...activeStyle, opacity: isPending ? 0.5 : 1, cursor: isPending ? 'not-allowed' : 'pointer' }}
     >
       {isPending ? '処理中...' : buttonText}
     </button>
