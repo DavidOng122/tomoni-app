@@ -18,7 +18,7 @@ type EventRow = Database['public']['Tables']['events']['Row'];
 
 interface EventDetailViewProps {
   event: EventRow;
-  participationStatus: string | null;
+  participation: Database['public']['Tables']['event_participations']['Row'] | null;
   creatorProfile?: { nickname: string; avatar_url: string } | null;
   participantPreview: EventParticipantPreviewData | null;
   pendingRequestCount?: number;
@@ -27,7 +27,7 @@ interface EventDetailViewProps {
 
 export const EventDetailView: React.FC<EventDetailViewProps> = ({ 
   event, 
-  participationStatus, 
+  participation, 
   creatorProfile,
   participantPreview,
   pendingRequestCount = 0,
@@ -120,7 +120,32 @@ export const EventDetailView: React.FC<EventDetailViewProps> = ({
           )}
 
           {/* Participant Preview */}
-          <EventParticipantPreview participantPreview={participantPreview} />
+          {participantPreview && (
+            <div style={{ padding: '0 var(--page-padding-x) 24px var(--page-padding-x)' }}>
+              <EventParticipantPreview participantPreview={participantPreview} />
+              {participation?.participation_status === 'going' && participation.participation_date && participation.arrival_time && (
+                <div style={{ marginTop: '12px' }}>
+                  <Link 
+                    href={`/events/${event.event_id}/people`}
+                    style={{
+                      display: 'block',
+                      width: '100%',
+                      padding: '12px',
+                      borderRadius: '8px',
+                      backgroundColor: '#f3f4f6',
+                      color: '#374151',
+                      fontSize: '14px',
+                      fontWeight: 600,
+                      textAlign: 'center',
+                      textDecoration: 'none'
+                    }}
+                  >
+                    同じ時間に参加する人を見る
+                  </Link>
+                </div>
+              )}
+            </div>
+          )}
 
           {/* Location Section */}
           <EventLocationSection 
@@ -154,7 +179,7 @@ export const EventDetailView: React.FC<EventDetailViewProps> = ({
           {/* Tomoni Participation Button */}
           <EventParticipationButton 
             eventId={event.event_id}
-            currentStatus={participationStatus}
+            currentStatus={participation?.participation_status || null}
             approvalRequired={event.approval_required}
             eventStatus={event.event_status}
           />

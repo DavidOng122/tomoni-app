@@ -1,4 +1,4 @@
-﻿export type Json =
+export type Json =
   | string
   | number
   | boolean
@@ -625,6 +625,15 @@ export type Database = {
           avatar_url: string
           nickname: string
           participant_count: number
+          user_id: string
+        }[]
+      }
+      get_same_event_people: {
+        Args: { p_event_id: string }
+        Returns: {
+          avatar_url: string
+          compatibility_label: string
+          nickname: string
           user_id: string
         }[]
       }

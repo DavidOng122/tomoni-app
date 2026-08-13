@@ -77,7 +77,7 @@ export default async function EventDetailPage({ params }: PageProps) {
   return (
     <EventDetailView 
       event={data as EventRow} 
-      participationStatus={participationStatus} 
+      participation={participation} 
       creatorProfile={creatorProfile}
       participantPreview={participantPreview}
       pendingRequestCount={pendingRequestCount}
