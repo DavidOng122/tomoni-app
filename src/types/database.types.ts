@@ -185,6 +185,7 @@ export type Database = {
           participation_date: string | null
           participation_id: string
           participation_status: string
+          planned_duration_minutes: number | null
           updated_at: string
           user_id: string
         }
@@ -195,6 +196,7 @@ export type Database = {
           participation_date?: string | null
           participation_id?: string
           participation_status: string
+          planned_duration_minutes?: number | null
           updated_at?: string
           user_id: string
         }
@@ -205,6 +207,7 @@ export type Database = {
           participation_date?: string | null
           participation_id?: string
           participation_status?: string
+          planned_duration_minutes?: number | null
           updated_at?: string
           user_id?: string
         }
@@ -626,6 +629,14 @@ export type Database = {
         }[]
       }
       join_event: { Args: { p_event_id: string }; Returns: undefined }
+      join_event_with_plan: {
+        Args: {
+          p_arrival_time: string
+          p_event_id: string
+          p_planned_duration_minutes?: number
+        }
+        Returns: undefined
+      }
       reject_event_participant: {
         Args: { p_participation_id: string }
         Returns: string

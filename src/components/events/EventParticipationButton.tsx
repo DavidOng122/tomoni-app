@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { toggleEventParticipationAction } from '@/app/actions/eventParticipations';
+import Link from 'next/link';
 
 interface EventParticipationButtonProps {
   eventId: string;
@@ -88,7 +89,18 @@ export function EventParticipationButton({
 
   const activeStyle: React.CSSProperties = isCancel
     ? { ...commonButtonStyle, backgroundColor: 'white', color: '#374151', border: '1px solid #d1d5db' }
-    : { ...commonButtonStyle, backgroundColor: 'black', color: 'white' };
+    : { ...commonButtonStyle, backgroundColor: 'black', color: 'white', textDecoration: 'none' };
+
+  if (!isCancel) {
+    return (
+      <Link 
+        href={`/events/${eventId}/join`}
+        style={activeStyle}
+      >
+        {buttonText}
+      </Link>
+    );
+  }
 
   return (
     <button 
