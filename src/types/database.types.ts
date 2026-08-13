@@ -577,9 +577,17 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      accept_event_invitation: {
+        Args: { p_invitation_id: string }
+        Returns: string
+      }
       approve_event_participant: {
         Args: { p_participation_id: string }
         Returns: string
+      }
+      cancel_event_invitation: {
+        Args: { p_invitation_id: string }
+        Returns: boolean
       }
       cancel_event_participation: {
         Args: { p_event_id: string }
@@ -588,6 +596,10 @@ export type Database = {
       complete_onboarding: {
         Args: { p_profile: Json; p_schedules: Json }
         Returns: Json
+      }
+      create_event_invitation: {
+        Args: { p_event_id: string; p_receiver_user_id: string }
+        Returns: string
       }
       create_user_event: {
         Args: {
@@ -604,6 +616,10 @@ export type Database = {
           p_title: string
         }
         Returns: string
+      }
+      decline_event_invitation: {
+        Args: { p_invitation_id: string }
+        Returns: boolean
       }
       get_discover_recommendations: {
         Args: { p_my_plan_id?: string }
@@ -626,6 +642,19 @@ export type Database = {
           nickname: string
           participant_count: number
           user_id: string
+        }[]
+      }
+      get_received_event_invitations: {
+        Args: never
+        Returns: {
+          created_at: string
+          event_id: string
+          event_title: string
+          expires_at: string
+          invitation_id: string
+          sender_avatar_url: string
+          sender_nickname: string
+          sender_user_id: string
         }[]
       }
       get_same_event_people: {

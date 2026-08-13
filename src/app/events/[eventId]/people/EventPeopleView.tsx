@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import { PageContainer } from '@/components/layout/PageContainer';
 import { Database } from '@/types/database.types';
+import { createEventInvitationAction } from '@/app/actions/createEventInvitationAction';
 
 type EventRow = Database['public']['Tables']['events']['Row'];
 
@@ -20,8 +21,28 @@ interface EventPeopleViewProps {
   candidates: Candidate[];
 }
 
-export const EventPeopleView: React.FC<EventPeopleViewProps> = ({ event, candidates }) => {
+export const EventPeopleView: React.FC<EventPeopleViewProps> = ({ event, candidates: initialCandidates }) => {
   const router = useRouter();
+  const [optimisticallyRemovedIds, setOptimisticallyRemovedIds] = React.useState<Set<string>>(new Set());
+  const [invitingId, setInvitingId] = React.useState<string | null>(null);
+
+  const handleInvite = async (receiverId: string) => {
+    if (invitingId) return;
+    setInvitingId(receiverId);
+
+    const result = await createEventInvitationAction(event.event_id, receiverId);
+
+    if (result.success) {
+      // Optimistic removal; revalidatePath will handle the server side
+      setOptimisticallyRemovedIds(prev => new Set(prev).add(receiverId));
+    } else {
+      alert(result.error || 'エラーが発生しました');
+    }
+    
+    setInvitingId(null);
+  };
+
+  const displayCandidates = initialCandidates.filter(c => !optimisticallyRemovedIds.has(c.user_id));
 
   return (
     <PageContainer bottomInset="none">
@@ -53,13 +74,13 @@ export const EventPeopleView: React.FC<EventPeopleViewProps> = ({ event, candida
       </div>
 
       <div style={{ padding: '24px' }}>
-        {candidates.length === 0 ? (
+        {displayCandidates.length === 0 ? (
           <div style={{ textAlign: 'center', marginTop: '64px', color: '#6b7280' }}>
             <p style={{ fontSize: '16px', fontWeight: 500 }}>今のところ、近い時間に参加する人はいません</p>
           </div>
         ) : (
           <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-            {candidates.map((candidate) => (
+            {displayCandidates.map((candidate) => (
               <div 
                 key={candidate.user_id}
                 style={{
@@ -127,6 +148,24 @@ export const EventPeopleView: React.FC<EventPeopleViewProps> = ({ event, candida
                     {candidate.compatibility_label}
                   </div>
                 </div>
+
+                <button
+                  onClick={() => handleInvite(candidate.user_id)}
+                  disabled={invitingId === candidate.user_id}
+                  style={{
+                    backgroundColor: invitingId === candidate.user_id ? '#d1d5db' : '#000000',
+                    color: '#ffffff',
+                    border: 'none',
+                    borderRadius: '8px',
+                    padding: '8px 16px',
+                    fontSize: '14px',
+                    fontWeight: 600,
+                    cursor: invitingId === candidate.user_id ? 'not-allowed' : 'pointer',
+                    flexShrink: 0
+                  }}
+                >
+                  {invitingId === candidate.user_id ? '招待中...' : '招待する'}
+                </button>
               </div>
             ))}
           </div>
