@@ -3,6 +3,7 @@
 import React from 'react';
 import { PageContainer } from '@/components/layout/PageContainer';
 import { Database } from '@/types/database.types';
+import Link from 'next/link';
 
 import { EventTopNav } from '@/features/events/components/EventTopNav';
 import { EventHero } from '@/features/events/components/EventHero';
@@ -20,13 +21,17 @@ interface EventDetailViewProps {
   participationStatus: string | null;
   creatorProfile?: { nickname: string; avatar_url: string } | null;
   participantPreview: EventParticipantPreviewData | null;
+  pendingRequestCount?: number;
+  isCreator?: boolean;
 }
 
 export const EventDetailView: React.FC<EventDetailViewProps> = ({ 
   event, 
   participationStatus, 
   creatorProfile,
-  participantPreview
+  participantPreview,
+  pendingRequestCount = 0,
+  isCreator = false
 }) => {
   let ctaUrl: string | null = null;
   let ctaText: string | null = null;
@@ -94,6 +99,25 @@ export const EventDetailView: React.FC<EventDetailViewProps> = ({
             startAt={event.start_at}
             endAt={event.end_at}
           />
+
+          {/* Organizer Requests Entry */}
+          {isCreator && event.event_type === 'user_created' && event.approval_required && (
+            <Link 
+              href={`/events/${event.event_id}/requests`}
+              style={{
+                display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                padding: '16px', background: '#f9fafb', borderRadius: '12px',
+                marginBottom: '24px', textDecoration: 'none', color: 'black',
+                fontWeight: 500, fontSize: '15px'
+              }}
+            >
+              <span>参加リクエスト</span>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#6b7280' }}>
+                <span>{pendingRequestCount}件</span>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+              </div>
+            </Link>
+          )}
 
           {/* Participant Preview */}
           <EventParticipantPreview participantPreview={participantPreview} />

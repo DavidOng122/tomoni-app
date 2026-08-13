@@ -63,12 +63,25 @@ export default async function EventDetailPage({ params }: PageProps) {
 
   const participantPreview = await getEventParticipantPreview(eventId);
 
+  // Check if current user is the creator and event requires approval
+  let pendingRequestCount = 0;
+  if (data.created_by_user_id === user.id && data.event_type === 'user_created' && data.approval_required) {
+    const { data: requests } = await supabase.rpc('get_event_join_requests', {
+      p_event_id: eventId
+    });
+    if (requests) {
+      pendingRequestCount = requests.length;
+    }
+  }
+
   return (
     <EventDetailView 
       event={data as EventRow} 
       participationStatus={participationStatus} 
       creatorProfile={creatorProfile}
       participantPreview={participantPreview}
+      pendingRequestCount={pendingRequestCount}
+      isCreator={data.created_by_user_id === user.id}
     />
   );
 }

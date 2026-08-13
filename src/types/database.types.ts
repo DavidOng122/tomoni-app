@@ -1,4 +1,4 @@
-export type Json =
+﻿export type Json =
   | string
   | number
   | boolean
@@ -574,6 +574,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      approve_event_participant: {
+        Args: { p_participation_id: string }
+        Returns: string
+      }
       cancel_event_participation: {
         Args: { p_event_id: string }
         Returns: undefined
@@ -602,6 +606,16 @@ export type Database = {
         Args: { p_my_plan_id?: string }
         Returns: Json
       }
+      get_event_join_requests: {
+        Args: { p_event_id: string }
+        Returns: {
+          avatar_url: string
+          nickname: string
+          participation_id: string
+          requested_at: string
+          user_id: string
+        }[]
+      }
       get_event_participant_preview: {
         Args: { p_event_id: string }
         Returns: {
@@ -612,6 +626,10 @@ export type Database = {
         }[]
       }
       join_event: { Args: { p_event_id: string }; Returns: undefined }
+      reject_event_participant: {
+        Args: { p_participation_id: string }
+        Returns: string
+      }
       set_user_event_poster: {
         Args: { p_event_id: string; p_poster_url: string }
         Returns: undefined
