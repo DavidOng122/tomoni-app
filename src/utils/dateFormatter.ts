@@ -1,20 +1,35 @@
 export const formatEventDateTime = (startAt: string, endAt: string | null) => {
-  const start = new Date(startAt);
-  const month = start.getMonth() + 1;
-  const date = start.getDate();
-  const dayNames = ['日', '月', '火', '水', '木', '金', '土'];
-  const day = dayNames[start.getDay()];
-  
-  const startHours = start.getHours();
-  const startMinutes = start.getMinutes().toString().padStart(2, '0');
-  let timeStr = `${startHours}:${startMinutes}`;
+  const extractParts = (dateStr: string) => {
+    const d = new Date(dateStr);
+    const parts = new Intl.DateTimeFormat('ja-JP', {
+      timeZone: 'Asia/Tokyo',
+      month: 'numeric',
+      day: 'numeric',
+      weekday: 'short',
+      hour: 'numeric',
+      minute: '2-digit',
+      hour12: false
+    }).formatToParts(d);
+    
+    let month = '', day = '', weekday = '', hour = '', minute = '';
+    for (const part of parts) {
+      if (part.type === 'month') month = part.value;
+      if (part.type === 'day') day = part.value;
+      if (part.type === 'weekday') weekday = part.value;
+      if (part.type === 'hour') hour = part.value;
+      if (part.type === 'minute') minute = part.value;
+    }
+    
+    return { month, day, weekday, hour: hour === '24' ? '0' : hour, minute };
+  };
+
+  const start = extractParts(startAt);
+  let timeStr = `${start.hour}:${start.minute}`;
   
   if (endAt) {
-    const end = new Date(endAt);
-    const endHours = end.getHours();
-    const endMinutes = end.getMinutes().toString().padStart(2, '0');
-    timeStr += `〜${endHours}:${endMinutes}`;
+    const end = extractParts(endAt);
+    timeStr += `〜${end.hour}:${end.minute}`;
   }
   
-  return `${month}月${date}日（${day}）${timeStr}`;
+  return `${start.month}月${start.day}日（${start.weekday}）${timeStr}`;
 };

@@ -582,6 +582,22 @@ export type Database = {
         Args: { p_profile: Json; p_schedules: Json }
         Returns: Json
       }
+      create_user_event: {
+        Args: {
+          p_address?: string
+          p_approval_required?: boolean
+          p_capacity?: number
+          p_description?: string
+          p_end_at: string
+          p_latitude?: number
+          p_longitude?: number
+          p_place_id?: string
+          p_place_name?: string
+          p_start_at: string
+          p_title: string
+        }
+        Returns: string
+      }
       get_discover_recommendations: {
         Args: { p_my_plan_id?: string }
         Returns: Json
@@ -596,6 +612,10 @@ export type Database = {
         }[]
       }
       join_event: { Args: { p_event_id: string }; Returns: undefined }
+      set_user_event_poster: {
+        Args: { p_event_id: string; p_poster_url: string }
+        Returns: undefined
+      }
     }
     Enums: {
       [_ in never]: never
