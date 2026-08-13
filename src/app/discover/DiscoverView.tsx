@@ -7,6 +7,7 @@ import { useRouter } from 'next/navigation';
 import { DiscoverRecommendation, MatchReasonCode } from '@/features/discover/types';
 import { Database } from '@/types/database.types';
 import { formatEventDateTime } from '@/utils/dateFormatter';
+import styles from './DiscoverView.module.css';
 
 type EventRow = Database['public']['Tables']['events']['Row'];
 
@@ -26,42 +27,55 @@ const matchReasonLabels: Record<MatchReasonCode, string> = {
 const getTagStyle = (tagCode: string) => {
   switch (tagCode) {
     case 'same_activity':
-      return { background: '#FFF3CD', color: '#8B6914' };
+      return { background: '#fff3cd', color: '#8b6914' };
     case 'same_time':
-      return { background: '#F8D7DA', color: '#721C24' };
+      return { background: '#f8d7da', color: '#721c24' };
     case 'nearby':
-      return { background: '#D4EDDA', color: '#155724' };
+      return { background: '#d4edda', color: '#2b7a3e' };
     case 'shared_day':
-      return { background: '#D1ECF1', color: '#0C6370' };
+      return { background: '#d1ecf1', color: '#0c6370' };
     default:
       return { background: '#f0f4f8', color: '#334155' };
   }
 };
 
+const ClockIcon = () => (
+  <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+    <circle cx="12" cy="12" r="9" />
+    <path d="M12 7v5l3.2 2" />
+  </svg>
+);
+
+const PinIcon = () => (
+  <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M20 10c0 5.5-8 11-8 11S4 15.5 4 10a8 8 0 1 1 16 0Z" />
+    <circle cx="12" cy="10" r="2.5" />
+  </svg>
+);
 
 export const DiscoverView: React.FC<DiscoverViewProps> = ({ recommendations, hasPlans, events }) => {
   const router = useRouter();
 
   const navItems = [
-    { 
-      label: 'みつける', 
-      icon: <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>, 
+    {
+      label: 'みつける',
+      icon: <span className={`${styles.navIcon} ${styles.navDiscoverIcon}`} aria-hidden="true" />,
       isActive: true,
       activeColor: '#FF8861',
       activeIconBgColor: '#E8E8E8',
-      onClick: () => {} 
+      onClick: () => {}
     },
-    { 
-      label: 'つながり', 
-      icon: <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>, 
-      isActive: false, 
-      onClick: () => router.push('/connections') 
+    {
+      label: 'つながり',
+      icon: <span className={`${styles.navIcon} ${styles.navConnectionsIcon}`} aria-hidden="true" />,
+      isActive: false,
+      onClick: () => router.push('/connections')
     },
-    { 
-      label: 'マイページ', 
-      icon: <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>, 
-      isActive: false, 
-      onClick: () => router.push('/mypage') 
+    {
+      label: 'マイページ',
+      icon: <span className={`${styles.navIcon} ${styles.navProfileIcon}`} aria-hidden="true" />,
+      isActive: false,
+      onClick: () => router.push('/mypage')
     },
   ];
 
@@ -71,280 +85,164 @@ export const DiscoverView: React.FC<DiscoverViewProps> = ({ recommendations, has
     verified: true,
     eventTitle: '公園で朝の散歩会',
     dateTime: '8月17日（月）8:00〜10:00',
-    location: '世田谷公園',
-    avatarUrl: 'https://i.pravatar.cc/150?u=miki'
+    location: '行船公園',
+    avatarUrl: '/images/discover/miki.png'
   };
 
-
   return (
-    <>
-      <PageContainer bottomInset="nav">
-        {/* Top-right Action Group */}
-        <div style={{ display: 'flex', justifyContent: 'flex-end', padding: '16px 0 0 0', gap: '16px' }}>
-          <button 
+    <div className={styles.screen}>
+      <PageContainer bottomInset="nav" className={styles.page}>
+        <div className={styles.topActions}>
+          <button
+            className={styles.iconButton}
             onClick={() => router.push('/events/create')}
-            style={{
-              background: 'none', border: 'none', padding: 0, cursor: 'pointer',
-              display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#333'
-            }}
             aria-label="Create Public Event"
           >
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14"/><path d="M12 5v14"/></svg>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"><path d="M5 12h14"/><path d="M12 5v14"/></svg>
           </button>
-          <button 
-            style={{
-              background: 'none', border: 'none', padding: 0, cursor: 'pointer',
-              display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#333'
-            }}
-            aria-label="Notifications"
-          >
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg>
+          <button className={styles.iconButton} aria-label="Notifications">
+            <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg>
           </button>
         </div>
 
-        <div style={{ padding: '24px 0', display: 'flex', flexDirection: 'column', gap: '40px' }}>
-          
-          {/* 1. Current Connection Card (Mock) */}
-          <section>
-            <div style={{
-              background: '#fff',
-              borderRadius: '16px',
-              padding: '16px',
-              boxShadow: '0 4px 12px rgba(0,0,0,0.05)',
-              border: '1px solid var(--color-divider)'
-            }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '12px' }}>
-                <div style={{ position: 'relative', width: '48px', height: '48px', borderRadius: '50%', overflow: 'hidden' }}>
-                  <img src={mockCurrentConnection.avatarUrl} alt="Avatar" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                </div>
-                <div>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                    <h2 style={{ fontSize: '18px', fontWeight: 600, margin: 0 }}>{mockCurrentConnection.name}</h2>
-                    {mockCurrentConnection.verified && (
-                      <svg width="16" height="16" viewBox="0 0 24 24" fill="#007aff" xmlns="http://www.w3.org/2000/svg">
-                        <circle cx="12" cy="12" r="10" />
-                        <path d="M8 12.5L10.5 15L16 9" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                      </svg>
-                    )}
-                  </div>
-                  <span style={{ fontSize: '11px', color: '#666' }}>確認済み</span>
-                </div>
+        <main className={styles.content}>
+          <section aria-label="現在の活動">
+            <div className={styles.currentCard}>
+              <div className={styles.currentAvatarGroup}>
+                <img className={styles.currentAvatar} src={mockCurrentConnection.avatarUrl} alt="Avatar" width="50" height="50" />
+                {mockCurrentConnection.verified && <span className={styles.verified}>確認済み</span>}
               </div>
-              <h3 style={{ fontSize: '16px', fontWeight: 600, margin: '0 0 8px 0' }}>
-                {mockCurrentConnection.eventTitle}
-              </h3>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', fontSize: '13px', color: '#444' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-                  {mockCurrentConnection.dateTime}
+              <div className={styles.currentDetails}>
+                <div className={styles.currentTitleLine}>
+                  <h2>{mockCurrentConnection.name}</h2>
+                  <span className={styles.titleDivider} aria-hidden="true" />
+                  <h3>{mockCurrentConnection.eventTitle}</h3>
                 </div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
-                  {mockCurrentConnection.location}
-                </div>
+                <div className={styles.metaLine}><ClockIcon /><span>{mockCurrentConnection.dateTime}</span></div>
+                <div className={styles.metaLine}><PinIcon /><span>{mockCurrentConnection.location}</span></div>
               </div>
             </div>
           </section>
 
-          {/* 2. Schedule Connection Section (Real Integration) */}
-          <section>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: '16px' }}>
-              <h2 style={{ fontSize: '16px', fontWeight: 600, margin: 0 }}>予定からつながる</h2>
+          <section className={styles.section}>
+            <div className={styles.sectionHeading}>
+              <h2>予定からつながる</h2>
+              {hasPlans && recommendations.length > 0 && <span className={styles.seeAll}>すべて見る <span aria-hidden="true">›</span></span>}
             </div>
 
             {!hasPlans ? (
-              <div style={{ 
-                padding: '24px', 
-                background: '#f9f9f9', 
-                borderRadius: '12px', 
-                textAlign: 'center',
-                border: '1px solid var(--color-divider)' 
-              }}>
-                <p style={{ fontSize: '14px', color: '#666', marginBottom: '16px', lineHeight: 1.5 }}>
-                  固定予定を追加すると、<br/>近くで同じ活動をしている人を<br/>見つけられます
-                </p>
-                <button 
-                  onClick={() => router.push('/mypage')}
-                  style={{
-                    background: '#FF8861',
-                    color: '#fff',
-                    border: 'none',
-                    padding: '8px 16px',
-                    borderRadius: '8px',
-                    fontWeight: 600,
-                    cursor: 'pointer'
-                  }}
-                >
-                  固定予定を追加
-                </button>
+              <div className={styles.emptyState}>
+                <p>固定予定を追加すると、<br/>近くで同じ活動をしている人を<br/>見つけられます</p>
+                <button onClick={() => router.push('/mypage')}>固定予定を追加</button>
               </div>
             ) : recommendations.length === 0 ? (
-              <div style={{ 
-                padding: '24px', 
-                background: '#f9f9f9', 
-                borderRadius: '12px', 
-                textAlign: 'center',
-                border: '1px solid var(--color-divider)' 
-              }}>
-                <p style={{ fontSize: '14px', color: '#666', margin: 0 }}>
-                  現在おすすめできるユーザーがいません。<br/>もう少しお待ちください。
-                </p>
+              <div className={styles.emptyState}>
+                <p>現在おすすめできるユーザーがいません。<br/>もう少しお待ちください。</p>
               </div>
             ) : (
-              <div style={{ display: 'flex', gap: '12px', overflowX: 'auto', paddingBottom: '8px', margin: '0 calc(-1 * var(--page-padding-x))', padding: '0 var(--page-padding-x) 8px var(--page-padding-x)' }}>
-                {recommendations.map((rec) => (
-                  <div key={rec.candidateId} 
-                    onClick={() => router.push(`/discover/schedules/${rec.match.myPlanId}/people`)}
-                    className="hoverable"
-                    style={{ 
-                      flex: '0 0 160px', 
-                      background: '#fff', 
-                      borderRadius: '12px', 
-                      padding: '12px', 
-                      boxShadow: '0 2px 8px rgba(0,0,0,0.04)',
-                      border: '1px solid var(--color-divider)',
-                      cursor: 'pointer'
-                    }}
-                  >
-                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', marginBottom: '12px' }}>
-                      <div style={{ width: '64px', height: '64px', borderRadius: '50%', overflow: 'hidden', marginBottom: '8px', background: '#eaeaea' }}>
-                        {rec.profile.avatarUrl ? (
-                          <img src={rec.profile.avatarUrl} alt={rec.profile.nickname} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                        ) : null}
+              <div className={styles.recommendationPanel}>
+                <div className={styles.recommendationIntro}>
+                  <span className={styles.walkIcon} aria-hidden="true" />
+                  <div>
+                    <strong>一緒に予定を楽しめそうな人</strong>
+                    <span>登録した固定予定をもとに表示しています</span>
+                  </div>
+                </div>
+                <div className={styles.recommendationList}>
+                  {recommendations.map((rec) => (
+                    <div
+                      key={rec.candidateId}
+                      onClick={() => router.push(`/discover/schedules/${rec.match.myPlanId}/people`)}
+                      className={styles.recommendationCard}
+                    >
+                      <div className={styles.personLine}>
+                        <div className={styles.avatarPlaceholder}>
+                          {rec.profile.avatarUrl ? <img src={rec.profile.avatarUrl} alt={rec.profile.nickname} width="33" height="33" /> : null}
+                        </div>
+                        <span>{rec.profile.nickname}さん</span>
                       </div>
-                      <span style={{ fontSize: '13px', fontWeight: 600 }}>{rec.profile.nickname}</span>
-                    </div>
-                    
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                      {rec.match.reasons.slice(0, 2).map((reasonCode) => {
-                        const style = getTagStyle(reasonCode);
-                        return (
-                          <span key={reasonCode} style={{ 
-                            fontSize: '9px', 
-                            background: style.background, 
-                            color: style.color, 
-                            padding: '4px 8px', 
-                            borderRadius: '4px',
-                            textAlign: 'center',
-                            fontWeight: 500
-                          }}>
+                      <div className={styles.tagList}>
+                        {rec.match.reasons.slice(0, 2).map((reasonCode) => (
+                          <span key={reasonCode} style={getTagStyle(reasonCode)}>
                             {matchReasonLabels[reasonCode] || reasonCode}
                           </span>
-                        );
-                      })}
+                        ))}
+                      </div>
                     </div>
-                  </div>
-                ))}
+                  ))}
+                </div>
               </div>
             )}
           </section>
 
-          {/* 3. Local Events Section (Mock) */}
-          <section>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '16px' }}>
+          <section className={styles.section}>
+            <div className={styles.locationHeading}>
               <div>
-                <span style={{ fontSize: '11px', color: '#666', display: 'block', marginBottom: '2px' }}>世田谷区</span>
-                <h2 style={{ fontSize: '16px', fontWeight: 600, margin: 0 }}>地域イベント</h2>
+                <h2>江戸川区</h2>
+                <span>地域イベント</span>
               </div>
-              <button style={{ background: 'none', border: 'none', color: 'var(--color-primary)', fontSize: '13px', padding: 0, cursor: 'pointer', fontWeight: 500, marginTop: '4px' }}>
-                すべて見る
-              </button>
+              <button>すべて見る <span aria-hidden="true">›</span></button>
             </div>
 
-            <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '16px' }}>
-              <span style={{ fontSize: '13px', fontWeight: 600, color: '#333' }}>今日</span>
-              <span style={{ fontSize: '13px', color: '#999' }}>土曜日</span>
-            </div>
+            <div className={styles.dayHeading}><strong>今日</strong><span>/ 土曜日</span></div>
 
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+            <div className={styles.eventList}>
               {events.length === 0 ? (
-                <div style={{ 
-                  padding: '24px', 
-                  background: '#f9f9f9', 
-                  borderRadius: '12px', 
-                  textAlign: 'center',
-                  border: '1px solid var(--color-divider)' 
-                }}>
-                  <p style={{ fontSize: '14px', color: '#666', margin: 0 }}>
-                    現在予定されているイベントはありません。
-                  </p>
+                <div className={styles.emptyState}>
+                  <p>現在予定されているイベントはありません。</p>
                 </div>
               ) : (
                 events.map((event) => (
-                  <div key={event.event_id} 
+                  <div
+                    key={event.event_id}
                     onClick={() => router.push(`/events/${event.event_id}`)}
-                    className="hoverable"
-                    style={{ 
-                    background: '#fff', 
-                    borderRadius: '16px', 
-                    overflow: 'hidden',
-                    boxShadow: '0 4px 12px rgba(0,0,0,0.05)',
-                    border: '1px solid var(--color-divider)',
-                    cursor: 'pointer'
-                  }}>
-                    <div style={{ width: '100%', height: '140px', position: 'relative', background: '#eaeaea' }}>
+                    className={styles.eventRow}
+                  >
+                    <div className={styles.poster}>
                       {event.poster_url ? (
-                        <img src={event.poster_url} alt={event.title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                        <img src={event.poster_url} alt={event.title} width="88" height="90" />
                       ) : (
-                        <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#999' }}>
-                          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
-                        </div>
+                        <svg aria-hidden="true" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="m21 15-5-5L5 21"/></svg>
+                          )}
+                      {event.event_id.startsWith('figma-') && (
+                        <img
+                          className={styles.organizerAvatar}
+                          src={event.event_id === 'figma-walking-event' ? '/images/discover/miki.png' : '/images/discover/workshop-host.png'}
+                          alt=""
+                          width="35"
+                          height="35"
+                        />
                       )}
                     </div>
-                    <div style={{ padding: '16px' }}>
-                      <h3 style={{ fontSize: '16px', fontWeight: 600, margin: '0 0 12px 0' }}>{event.title}</h3>
-                      
-                      <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', fontSize: '13px', color: '#444' }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-                          {formatEventDateTime(event.start_at, event.end_at)}
+                    <div className={styles.eventDetails}>
+                      <h3>{event.title}</h3>
+                      <div className={styles.metaLine}><ClockIcon /><span>{formatEventDateTime(event.start_at, event.end_at)}</span></div>
+                      <div className={styles.metaLine}><PinIcon /><span>{event.place_name}</span></div>
+                      {event.event_id.startsWith('figma-') && (
+                        <div className={styles.participantStack} aria-label="参加予定 10人">
+                          <img src="/images/discover/miki.png" alt="" width="20" height="20" />
+                          <img src="/images/discover/ken.png" alt="" width="20" height="20" />
+                          <img src="/images/discover/megan.png" alt="" width="20" height="20" />
+                          <span>+7</span>
                         </div>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
-                          {event.place_name}
-                        </div>
-                      </div>
+                      )}
                     </div>
                   </div>
                 ))
               )}
             </div>
           </section>
-        </div>
+        </main>
       </PageContainer>
 
-      {/* 4. Map Floating Button */}
-      <div style={{
-        position: 'fixed',
-        bottom: 'calc(var(--nav-height) + var(--safe-area-bottom) + 24px)',
-        left: '50%',
-        transform: 'translateX(-50%)',
-        zIndex: 'var(--z-index-action)'
-      }}>
-        <button 
-          onClick={() => {}} 
-          className="hoverable"
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: '8px',
-            background: '#FF8861',
-            color: '#fff',
-            border: 'none',
-            borderRadius: '24px',
-            padding: '12px 24px',
-            fontSize: '15px',
-            fontWeight: 600,
-            boxShadow: '0 4px 12px rgba(255, 136, 97, 0.4)',
-            cursor: 'pointer'
-          }}
-        >
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="3 6 9 3 15 6 21 3 21 18 15 21 9 18 3 21"/><line x1="9" y1="3" x2="9" y2="18"/><line x1="15" y1="6" x2="15" y2="21"/></svg>
+      <div className={styles.mapAction}>
+        <button onClick={() => {}}>
+          <svg aria-hidden="true" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m3 6 6-3 6 3 6-3v15l-6 3-6-3-6 3V6Z"/><path d="M9 3v15M15 6v15"/></svg>
           地図
         </button>
       </div>
 
       <BottomNavigation items={navItems} />
-    </>
+    </div>
   );
 };

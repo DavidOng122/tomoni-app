@@ -1,0 +1,533 @@
+.screen {
+  --page-padding-x: 0px;
+  min-height: 100dvh;
+  color: #111;
+}
+
+.page {
+  width: 100%;
+  max-width: 430px;
+  margin: 0 auto;
+  background: #fff;
+}
+
+.header {
+  padding: 66px 34px 11px;
+}
+
+.header h1 {
+  margin: 0;
+  font-size: 28px;
+  font-weight: 750;
+  line-height: 1;
+  letter-spacing: 0.02em;
+}
+
+.tabs {
+  position: relative;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  height: 46px;
+  border-bottom: 1px solid #9c9c9c;
+}
+
+.tabs button {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 6px 12px 0;
+  color: #666;
+  border: 0;
+  background: transparent;
+  font: inherit;
+  font-size: 16px;
+  font-weight: 510;
+  letter-spacing: 0.03em;
+  cursor: pointer;
+}
+
+.tabs button::after {
+  position: absolute;
+  right: 0;
+  bottom: -1px;
+  left: 0;
+  height: 2px;
+  background: transparent;
+  content: '';
+}
+
+.tabs .activeTab {
+  color: #111;
+}
+
+.tabs .activeTab::after {
+  background: #ff7658;
+}
+
+.tabNotice {
+  position: absolute;
+  top: 12px;
+  left: calc(50% + 43px);
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: #ff7658;
+}
+
+.content {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  padding: 29px 21px 28px;
+}
+
+.section {
+  display: flex;
+  flex-direction: column;
+  gap: 13px;
+}
+
+.sectionTitle {
+  display: flex;
+  align-items: flex-end;
+  gap: 22px;
+}
+
+.sectionIcon {
+  display: block;
+  width: 36px;
+  height: 36px;
+  flex: 0 0 36px;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: contain;
+}
+
+.sentIcon {
+  background-image: url('/images/connections/sent.svg');
+}
+
+.greetingIcon {
+  width: 35px;
+  height: 35px;
+  flex-basis: 35px;
+  background-image: url('/images/connections/greeting.svg');
+}
+
+.receivedIcon {
+  display: grid;
+  place-items: center;
+  border: 1px solid #dedede;
+  border-radius: 50%;
+}
+
+.receivedIcon svg {
+  width: 18px;
+  height: 18px;
+}
+
+.sectionTitle > div {
+  min-width: 0;
+}
+
+.sectionTitle h2,
+.sectionTitle p,
+.conversationHeading h2 {
+  margin: 0;
+}
+
+.sectionTitle h2 {
+  font-size: 16px;
+  font-weight: 650;
+  line-height: 16px;
+  letter-spacing: 0.03em;
+}
+
+.sectionTitle p {
+  margin-top: 2px;
+  color: #7b7373;
+  font-size: 11px;
+  font-weight: 510;
+  line-height: 16px;
+  letter-spacing: 0.03em;
+}
+
+.invitationList {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.sentCard,
+.receivedCard {
+  min-width: 0;
+  min-height: 88px;
+  border: 1px solid #e0e0e0;
+  border-radius: 12px;
+  background: #fff;
+}
+
+.sentCard {
+  display: grid;
+  grid-template-columns: 55px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 15px;
+  padding: 14px;
+}
+
+.invitationAvatar {
+  display: block;
+  width: 55px;
+  height: 55px;
+  flex: 0 0 55px;
+  overflow: hidden;
+  border-radius: 50%;
+  background: #f3f4f6;
+  object-fit: cover;
+}
+
+.sentDetails,
+.receivedCopy {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+}
+
+.sentDetails {
+  gap: 2px;
+}
+
+.sentDetails strong,
+.receivedCopy strong {
+  overflow: hidden;
+  font-size: 15px;
+  font-weight: 650;
+  line-height: 16px;
+  letter-spacing: 0.03em;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.activityLine {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: 7px;
+  margin-top: 1px;
+  overflow: hidden;
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 16px;
+  letter-spacing: 0.03em;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.walkingIcon {
+  display: block;
+  width: 15px;
+  height: 15px;
+  flex: 0 0 15px;
+  background: url('/images/connections/walking.svg') center / contain no-repeat;
+}
+
+.invitationDate {
+  overflow: hidden;
+  color: #6f6d6d;
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 16px;
+  letter-spacing: 0.03em;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.status {
+  align-self: start;
+  margin-top: 1px;
+  padding: 5px 14px;
+  color: #111;
+  border-radius: 25px;
+  background: #f2f2f2;
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 16px;
+  letter-spacing: 0.03em;
+  white-space: nowrap;
+}
+
+.receivedCard {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 14px;
+}
+
+.invitationPerson {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: 15px;
+}
+
+.avatarFallback {
+  display: grid;
+  width: 100%;
+  height: 100%;
+  place-items: center;
+  color: #9ca3af;
+}
+
+.avatarFallback svg {
+  width: 24px;
+  height: 24px;
+}
+
+.receivedCopy {
+  gap: 5px;
+}
+
+.receivedCopy span {
+  display: -webkit-box;
+  overflow: hidden;
+  color: #6f6d6d;
+  font-size: 12px;
+  line-height: 1.35;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+
+.invitationActions {
+  display: flex;
+  gap: 8px;
+  padding-left: 70px;
+}
+
+.invitationActions button {
+  min-width: 74px;
+  min-height: 32px;
+  padding: 6px 12px;
+  color: #fff;
+  border: 0;
+  border-radius: 10px;
+  background: #111;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.invitationActions button + button {
+  color: #374151;
+  background: #f2f2f2;
+}
+
+.conversationSection {
+  gap: 19px;
+  margin-top: 1px;
+}
+
+.conversationHeading {
+  display: flex;
+  align-items: center;
+  gap: 23px;
+}
+
+.conversationHeading h2 {
+  font-size: 20px;
+  font-weight: 650;
+  line-height: 1.4;
+}
+
+.conversationList {
+  display: flex;
+  flex-direction: column;
+}
+
+.conversationRow {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: 21px;
+  min-height: 81px;
+  padding: 15px 5px;
+  border-bottom: 1px solid #e0e0e0;
+  cursor: pointer;
+}
+
+.conversationRow:last-child {
+  border-bottom: 0;
+}
+
+.conversationAvatar {
+  display: block;
+  width: 42px;
+  height: 42px;
+  flex: 0 0 42px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.conversationBody {
+  min-width: 0;
+  flex: 1;
+}
+
+.conversationTopline,
+.messageLine {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.conversationTopline strong {
+  min-width: 0;
+  overflow: hidden;
+  font-size: 17px;
+  font-weight: 450;
+  line-height: 22px;
+  letter-spacing: -0.02em;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.conversationTopline time {
+  margin-left: 8px;
+  color: #6a6a6a;
+  font-size: 10px;
+  font-weight: 510;
+  line-height: 16px;
+  letter-spacing: 0.03em;
+}
+
+.messageLine {
+  gap: 8px;
+}
+
+.messageLine > span {
+  min-width: 0;
+  overflow: hidden;
+  color: #676767;
+  font-size: 13px;
+  font-weight: 510;
+  line-height: 18px;
+  letter-spacing: 0.02em;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.messageLine b {
+  display: grid;
+  min-width: 20px;
+  height: 20px;
+  padding: 0 6px;
+  flex: 0 0 auto;
+  place-items: center;
+  color: #f6f7fc;
+  border-radius: 21px;
+  background: #ff7622;
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 20px;
+}
+
+.navIcon {
+  display: block;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: contain;
+}
+
+.navDiscoverIcon {
+  width: 20px;
+  height: 20px;
+  background-image: url('/images/connections/nav-discover.png');
+}
+
+.navConnectionsIcon {
+  width: 20px;
+  height: 18px;
+  background-image: url('/images/connections/nav-connections.svg');
+}
+
+.navProfileIcon {
+  width: 18px;
+  height: 18px;
+  background-image: url('/images/connections/nav-profile.svg');
+}
+
+.screen > nav {
+  height: calc(76px + var(--safe-area-bottom)) !important;
+  box-shadow: none !important;
+}
+
+.screen > nav button {
+  padding: 7px 0 5px !important;
+  color: #111 !important;
+  opacity: 1 !important;
+}
+
+.screen > nav button > div {
+  margin-bottom: 3px !important;
+  padding: 3px 14px !important;
+  border-radius: 23px !important;
+}
+
+.screen > nav button > span {
+  font-size: 12px !important;
+  font-weight: 550 !important;
+  letter-spacing: 0.03em;
+}
+
+@media (max-width: 390px) {
+  .header {
+    padding-inline: 28px;
+  }
+
+  .content {
+    padding-inline: 18px;
+  }
+
+  .sentCard {
+    grid-template-columns: 52px minmax(0, 1fr) auto;
+    gap: 12px;
+    padding-inline: 12px;
+  }
+
+  .invitationAvatar {
+    width: 52px;
+    height: 52px;
+  }
+
+  .conversationRow {
+    gap: 17px;
+  }
+}
+
+@media (max-width: 350px) {
+  .content {
+    padding-inline: 14px;
+  }
+
+  .status {
+    padding-inline: 10px;
+  }
+
+  .sectionTitle,
+  .conversationHeading {
+    gap: 16px;
+  }
+}
+
+@media (hover: hover) {
+  .tabs button:hover,
+  .conversationRow:hover {
+    background: #fafafa;
+  }
+
+  .sentCard:hover,
+  .receivedCard:hover {
+    border-color: #cfcfcf;
+  }
+}

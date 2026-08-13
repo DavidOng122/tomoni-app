@@ -1,303 +1,176 @@
 'use client';
 
 import React from 'react';
-import { PageContainer } from '@/components/layout/PageContainer';
-import { BottomNavigation } from '@/components/layout/BottomNavigation';
 import { useRouter } from 'next/navigation';
+import { BottomNavigation } from '@/components/layout/BottomNavigation';
+import { PageContainer } from '@/components/layout/PageContainer';
 import { ACTIVITY_LABELS } from '@/features/fixed-schedules/lib/constants';
 import { formatWeekdays } from '@/features/fixed-schedules/lib/formatters';
 import { getGenderLabel, getTagLabel } from './lib/mappers';
+import {
+  FIGMA_MYPAGE_FIXED_PLAN_COUNT,
+  FIGMA_MYPAGE_FIXED_PLANS,
+  FIGMA_MYPAGE_PROFILE,
+} from './figmaFixtures';
+import styles from './MyPageView.module.css';
 
 interface MyPageViewProps {
   profile: any;
   fixedPlans: any[];
 }
 
+const connectionAvatars = [
+  '/images/mypage/connection-miki.png',
+  '/images/mypage/connection-julia.png',
+  '/images/mypage/connection-megan.png',
+];
+
+const USE_FIGMA_MYPAGE_DATA = true;
+
 export const MyPageView: React.FC<MyPageViewProps> = ({ profile, fixedPlans }) => {
   const router = useRouter();
-
+  const displayedProfile = USE_FIGMA_MYPAGE_DATA ? FIGMA_MYPAGE_PROFILE : profile;
+  const displayedFixedPlans = USE_FIGMA_MYPAGE_DATA ? FIGMA_MYPAGE_FIXED_PLANS : fixedPlans;
+  const displayedFixedPlanCount = USE_FIGMA_MYPAGE_DATA
+    ? FIGMA_MYPAGE_FIXED_PLAN_COUNT
+    : fixedPlans.length;
   const navItems = [
-    { 
-      label: 'みつける', 
-      icon: <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>, 
-      isActive: false, 
-      onClick: () => router.push('/discover') 
+    {
+      label: 'みつける',
+      icon: <span aria-hidden="true" className={`${styles.navIcon} ${styles.discoverIcon}`} />,
+      isActive: false,
+      onClick: () => router.push('/discover'),
     },
-    { 
-      label: 'つながり', 
-      icon: <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>, 
-      isActive: false, 
-      onClick: () => router.push('/connections') 
+    {
+      label: 'つながり',
+      icon: <span aria-hidden="true" className={`${styles.navIcon} ${styles.connectionsIcon}`} />,
+      isActive: false,
+      onClick: () => router.push('/connections'),
     },
-    { 
-      label: 'マイページ', 
-      icon: <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>, 
+    {
+      label: 'マイページ',
+      icon: <span aria-hidden="true" className={`${styles.navIcon} ${styles.myPageIcon}`} />,
       isActive: true,
-      activeColor: '#FF8861',
-      activeIconBgColor: '#E8E8E8',
-      onClick: () => {} 
+      activeColor: '#ff6b47',
+      activeIconBgColor: '#eeeeee',
+      onClick: () => {},
     },
-  ];
-
-  const avatars = [
-    'https://i.pravatar.cc/150?u=1',
-    'https://i.pravatar.cc/150?u=2',
-    'https://i.pravatar.cc/150?u=3',
   ];
 
   return (
-    <div style={{ backgroundColor: '#FCFCFC', minHeight: '100dvh' }}>
-      <PageContainer bottomInset="nav">
-        <div style={{ padding: '16px 0 40px', display: 'flex', flexDirection: 'column' }}>
-          
-          {/* Header */}
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative', marginBottom: '32px' }}>
-            <h1 style={{ fontSize: '16px', fontWeight: 600, margin: 0 }}>マイページ</h1>
-            <button 
-              onClick={() => {}}
-              className="hoverable"
-              style={{
-                position: 'absolute',
-                right: '4px',
-                width: '37px',
-                height: '37px',
-                borderRadius: '38px',
-                background: '#FFFFFF',
-                border: '1px solid #E5E7EB',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                cursor: 'pointer'
-              }}
-            >
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#444" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+    <div className={styles.screen}>
+      <PageContainer bottomInset="nav" className={styles.page}>
+        <main className={styles.content}>
+          <header className={styles.header}>
+            <h1>マイページ</h1>
+            <button type="button" className={styles.settingsButton} aria-label="設定">
+              <img src="/images/mypage/settings.svg" alt="" aria-hidden="true" />
             </button>
-          </div>
+          </header>
 
-          {/* Profile Area */}
-          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', marginBottom: '24px' }}>
-            <div style={{ position: 'relative', marginBottom: '12px' }}>
-              <div style={{ width: '111px', height: '111px', borderRadius: '50%', overflow: 'hidden', background: '#e0e0e0' }}>
-                <img src={profile.avatar_url || 'https://i.pravatar.cc/150'} alt={profile.nickname} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-              </div>
-              <button style={{
-                position: 'absolute',
-                bottom: 0,
-                right: 0,
-                width: '36px',
-                height: '36px',
-                borderRadius: '50%',
-                background: '#FFFFFF',
-                border: '1px solid #EAEAEA',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                boxShadow: '0 2px 4px rgba(0,0,0,0.05)',
-                cursor: 'pointer'
-              }}>
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#444" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+          <section className={styles.profileArea} aria-label="プロフィール">
+            <div className={styles.avatarWrap}>
+              <img
+                className={styles.profileAvatar}
+                src={displayedProfile.avatar_url || '/images/mypage/profile-miki.png'}
+                alt={displayedProfile.nickname}
+              />
+              <button type="button" className={styles.avatarEditButton} aria-label="プロフィール画像を編集">
+                <img src="/images/mypage/avatar-edit.svg" alt="" aria-hidden="true" />
               </button>
             </div>
-            
-            <h2 style={{ fontSize: '20px', fontWeight: 600, margin: '0 0 4px 0', color: '#111' }}>{profile.nickname}</h2>
-            <div style={{ fontSize: '12px', fontWeight: 400, color: '#3F3F3F' }}>
-              {profile.age_range}歳 {profile.gender && profile.gender !== 'prefer_not_to_say' ? `❘ ${getGenderLabel(profile.gender)}` : ''} ❘ 世田谷区
-            </div>
-            
-            {profile.tags && profile.tags.length > 0 && (
-              <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center', gap: '6px', marginTop: '12px', padding: '0 16px' }}>
-                {profile.tags.map((tag: string) => (
-                  <span key={tag} style={{
-                    fontSize: '11px',
-                    background: '#f0f4f8',
-                    color: '#334155',
-                    padding: '4px 10px',
-                    borderRadius: '16px',
-                    fontWeight: 500
-                  }}>
-                    {getTagLabel(tag)}
-                  </span>
+            <h2>{displayedProfile.nickname}</h2>
+            <p className={styles.profileMeta}>
+              {displayedProfile.age_range}歳
+              {displayedProfile.gender && displayedProfile.gender !== 'prefer_not_to_say'
+                ? `　❘　${getGenderLabel(displayedProfile.gender)}`
+                : ''}
+              {'　❘　世田谷区'}
+            </p>
+
+            {displayedProfile.tags?.length > 0 && (
+              <div className={styles.tags}>
+                {displayedProfile.tags.map((tag: string) => (
+                  <span key={tag}>{getTagLabel(tag)}</span>
                 ))}
               </div>
             )}
-            
-            {profile.bio && (
-              <p style={{
-                fontSize: '14px',
-                color: '#444',
-                lineHeight: 1.5,
-                marginTop: '16px',
-                padding: '0 24px',
-                textAlign: 'center',
-                whiteSpace: 'pre-wrap'
-              }}>
-                {profile.bio}
-              </p>
-            )}
-          </div>
 
-          {/* Statistics Card */}
-          <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '32px' }}>
-            <div style={{ 
-              width: '100%',
-              maxWidth: '357px',
-              background: '#FFFFFF',
-              border: '1px solid #BEBDBD',
-              borderRadius: '18px',
-              padding: '16px 20px',
-              display: 'flex',
-              justifyContent: 'space-between',
-              alignItems: 'center'
-            }}>
-              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', flex: 1 }}>
-                <span style={{ fontSize: '20px', fontWeight: 600, color: '#111', lineHeight: 1.2 }}>{fixedPlans.length}</span>
-                <span style={{ fontSize: '12px', color: '#555', marginTop: '4px' }}>固定予定</span>
-              </div>
-              <div style={{ width: '1px', height: '32px', background: '#EAEAEA' }} />
-              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', flex: 1 }}>
-                <span style={{ fontSize: '20px', fontWeight: 600, color: '#111', lineHeight: 1.2 }}>3</span>
-                <span style={{ fontSize: '14px', color: '#555', marginTop: '4px' }}>参加済み</span>
-              </div>
-              <div style={{ width: '1px', height: '32px', background: '#EAEAEA' }} />
-              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', flex: 1 }}>
-                <span style={{ fontSize: '20px', fontWeight: 600, color: '#111', lineHeight: 1.2 }}>4</span>
-                <span style={{ fontSize: '14px', color: '#555', marginTop: '4px' }}>つながり</span>
-              </div>
+            {displayedProfile.bio && <p className={styles.bio}>{displayedProfile.bio}</p>}
+          </section>
+
+          <section className={styles.stats} aria-label="活動実績">
+            <div>
+              <strong>{displayedFixedPlanCount}</strong>
+              <span>固定予定</span>
             </div>
-          </div>
+            <i aria-hidden="true" />
+            <div>
+              <strong>3</strong>
+              <span>参加済み</span>
+            </div>
+            <i aria-hidden="true" />
+            <div>
+              <strong>4</strong>
+              <span>つながり</span>
+            </div>
+          </section>
 
-          {/* 固定予定 Section */}
-          <section style={{ marginBottom: '32px', padding: '0 8px' }}>
-            <h3 style={{ fontSize: '20px', fontWeight: 600, margin: '0 0 16px 0', color: '#111' }}>固定予定</h3>
-            
-            {fixedPlans.length === 0 ? (
-              <div style={{ 
-                background: '#FFFFFF',
-                border: '1px solid #EAEAEA',
-                borderRadius: '16px',
-                boxShadow: 'inset 0px 4px 11.6px rgba(0,0,0,0.08)',
-                padding: '20px 24px',
-                height: '123px',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                marginBottom: '16px'
-              }}>
-                <span style={{ fontSize: '14px', color: '#666', fontWeight: 500 }}>固定予定がありません</span>
-              </div>
-            ) : (
-              fixedPlans.map((plan) => (
-                <div key={plan.fixed_plan_id} style={{ 
-                  background: '#FFFFFF',
-                  border: '1px solid #EAEAEA',
-                  borderRadius: '16px',
-                  boxShadow: 'inset 0px 4px 11.6px rgba(0,0,0,0.08)',
-                  padding: '20px 24px',
-                  height: '123px',
-                  display: 'flex',
-                  flexDirection: 'column',
-                  justifyContent: 'center',
-                  marginBottom: '16px'
-                }}>
-                  <div style={{ fontSize: '18px', fontWeight: 400, color: '#101828', marginBottom: '12px' }}>
-                    {plan.activity_type === 'other' ? plan.custom_activity_name : (ACTIVITY_LABELS[plan.activity_type as keyof typeof ACTIVITY_LABELS] || plan.activity_type)}
-                  </div>
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '14px', fontWeight: 500, color: '#2E2E2E' }}>
-                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#FF8861" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-                      {formatWeekdays(plan.days_of_week)} {plan.start_time.substring(0, 5)}〜
-                    </div>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '14px', fontWeight: 500, color: '#222222' }}>
-                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#FF8861" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
-                      {plan.place_name}
-                    </div>
-                  </div>
-                </div>
-              ))
-            )}
-
-            <button 
-              className="hoverable"
-              style={{
-                background: 'none',
-                border: 'none',
-                padding: '8px 0',
-                cursor: 'pointer',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '8px',
-                color: '#111'
-              }}
-            >
-              <span style={{ fontSize: '16px', fontWeight: 400 }}>+</span>
-              <span style={{ fontSize: '14px', fontWeight: 500 }}>別の固定予定を追加する</span>
+          <section className={styles.fixedPlansSection}>
+            <h3>固定予定</h3>
+            <div className={styles.planList}>
+              {displayedFixedPlans.length === 0 ? (
+                <div className={`${styles.planCard} ${styles.emptyPlan}`}>固定予定がありません</div>
+              ) : (
+                displayedFixedPlans.map((plan) => (
+                  <article key={plan.fixed_plan_id} className={styles.planCard}>
+                    <h4>
+                      {plan.activity_type === 'other'
+                        ? plan.custom_activity_name
+                        : ACTIVITY_LABELS[plan.activity_type as keyof typeof ACTIVITY_LABELS] ||
+                          plan.activity_type}
+                    </h4>
+                    <p>
+                      <img src="/images/mypage/calendar.svg" alt="" aria-hidden="true" />
+                      <span>
+                        {formatWeekdays(plan.days_of_week)}{' '}
+                        {plan.start_time.substring(0, 5).replace(/^0/, '')}〜
+                        {plan.end_time?.substring(0, 5)}
+                      </span>
+                    </p>
+                    <p>
+                      <img src="/images/mypage/location.svg" alt="" aria-hidden="true" />
+                      <span>{plan.place_name}</span>
+                    </p>
+                  </article>
+                ))
+              )}
+            </div>
+            <button type="button" className={styles.addPlanButton}>
+              <span aria-hidden="true">＋</span>
+              別の固定予定を追加する
             </button>
           </section>
 
-          {/* つながり Section */}
-          <section style={{ padding: '0 8px' }}>
-            <h3 style={{ fontSize: '20px', fontWeight: 600, margin: '0 0 16px 0', color: '#111' }}>つながり</h3>
-            
-            <div 
-              className="hoverable"
-              style={{ 
-                background: '#FFFFFF',
-                border: '1px solid #E4E4E4',
-                borderRadius: '17px',
-                boxShadow: 'inset 2px 4px 10.6px rgba(0,0,0,0.10)',
-                height: '80px',
-                padding: '0 16px',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'space-between',
-                cursor: 'pointer'
-              }}
-            >
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                <span style={{ fontSize: '15px', fontWeight: 600, color: '#4F4E4E' }}>世田谷区</span>
-                <span style={{ fontSize: '15px', fontWeight: 600, color: '#4F4E4E' }}>つながった人</span>
+          <section className={styles.connectionsSection}>
+            <h3>つながり</h3>
+            <div className={styles.connectionCard}>
+              <div className={styles.connectionCopy}>
+                <span>世田谷区</span>
+                <span>つながった人</span>
               </div>
-              
-              <div style={{ display: 'flex', alignItems: 'center' }}>
-                <div style={{ display: 'flex', marginRight: '12px' }}>
-                  {avatars.map((avatar, index) => (
-                    <div key={index} style={{ 
-                      width: '28px', 
-                      height: '28px', 
-                      borderRadius: '50%', 
-                      overflow: 'hidden', 
-                      border: '2px solid #FFFFFF',
-                      marginLeft: index > 0 ? '-8px' : 0,
-                      zIndex: avatars.length - index
-                    }}>
-                      <img src={avatar} alt="Avatar" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                    </div>
+              <div className={styles.connectionPeople}>
+                <div className={styles.avatarStack}>
+                  {connectionAvatars.map((avatar, index) => (
+                    <img key={avatar} src={avatar} alt="" aria-hidden="true" style={{ zIndex: 4 - index }} />
                   ))}
-                  <div style={{ 
-                    width: '28px', 
-                    height: '28px', 
-                    borderRadius: '50%', 
-                    background: '#757575',
-                    color: '#EBEBEB',
-                    fontSize: '13px',
-                    fontWeight: 500,
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    border: '2px solid #FFFFFF',
-                    marginLeft: '-8px',
-                    zIndex: 0
-                  }}>
-                    +7
-                  </div>
+                  <span>+7</span>
                 </div>
-                
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#999" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+                <img className={styles.chevron} src="/images/mypage/chevron.svg" alt="" aria-hidden="true" />
               </div>
             </div>
           </section>
-
-        </div>
+        </main>
       </PageContainer>
       <BottomNavigation items={navItems} />
     </div>

@@ -5,8 +5,12 @@ import { DiscoverView } from './DiscoverView';
 import { getRecommendations } from '@/features/discover/server/getRecommendations';
 import { DiscoverRecommendation } from '@/features/discover/types';
 import { Database } from '@/types/database.types';
+import { figmaDiscoverEvents, figmaDiscoverRecommendations } from './figmaFixtures';
 
 type EventRow = Database['public']['Tables']['events']['Row'];
+
+// Temporary UI fixture switch. Set to false to restore the existing Supabase-backed display.
+const USE_FIGMA_DISCOVER_DATA = true;
 
 export default async function DiscoverPage() {
   const supabase = await createClient();
@@ -46,5 +50,11 @@ export default async function DiscoverPage() {
 
   const events = eventsData || [];
 
-  return <DiscoverView recommendations={recommendations} hasPlans={hasPlans} events={events} />;
+  return (
+    <DiscoverView
+      recommendations={USE_FIGMA_DISCOVER_DATA ? figmaDiscoverRecommendations : recommendations}
+      hasPlans={USE_FIGMA_DISCOVER_DATA ? true : hasPlans}
+      events={USE_FIGMA_DISCOVER_DATA ? figmaDiscoverEvents : events}
+    />
+  );
 }
