@@ -1,4 +1,5 @@
 import React from 'react';
+import styles from '../CreateEventView.module.css';
 
 interface EventTitleFieldProps {
   title: string;
@@ -8,26 +9,15 @@ interface EventTitleFieldProps {
 
 export const EventTitleField: React.FC<EventTitleFieldProps> = ({ title, onChange, error }) => {
   return (
-    <div>
+    <div className={styles.field}>
       <input 
         type="text" 
         placeholder="イベント名" 
         value={title}
         onChange={(e) => onChange(e.target.value)}
-        style={{
-          width: '100%',
-          padding: '16px 19px',
-          borderRadius: '14px',
-          border: error ? '1px solid red' : 'none',
-          background: '#fff',
-          fontSize: '18px',
-          fontWeight: 590,
-          outline: 'none',
-          color: 'black',
-          boxShadow: '0 2px 8px rgba(0,0,0,0.04)'
-        }}
+        className={`${styles.textInput} ${error ? styles.hasError : ''}`}
       />
-      {error && <div style={{ color: 'red', fontSize: '12px', marginTop: '4px', paddingLeft: '8px' }}>{error}</div>}
+      {error && <div className={styles.fieldError}>{error}</div>}
     </div>
   );
 };

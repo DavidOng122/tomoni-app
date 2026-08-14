@@ -197,9 +197,16 @@
 
 .recommendationIntro {
   display: flex;
+  width: 100%;
   align-items: center;
   gap: 13px;
   margin-bottom: 13px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
 }
 
 .walkIcon {
@@ -211,7 +218,7 @@
   border: 1px solid #111;
   border-radius: 50%;
   background: #fff;
-  background-image: url('/images/discover/walking.svg');
+  background-image: url('/images/discover/scheduled-people/walking.svg');
   background-position: center;
   background-repeat: no-repeat;
   background-size: 17px 17px;
@@ -228,7 +235,7 @@
   overflow: hidden;
   font-size: 13px;
   font-weight: 600;
-  letter-spacing: 0.05em;
+  letter-spacing: 0.11em;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
@@ -584,6 +591,7 @@
     color: #ff6f42;
   }
 
+  .recommendationIntro:hover,
   .recommendationCard:hover,
   .eventRow:hover {
     opacity: 0.82;
@@ -592,6 +600,7 @@
 
 @media (prefers-reduced-motion: no-preference) {
   .iconButton,
+  .recommendationIntro,
   .recommendationCard,
   .eventRow,
   .mapAction button {

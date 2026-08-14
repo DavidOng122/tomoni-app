@@ -1,4 +1,5 @@
 import React from 'react';
+import styles from '../CreateEventView.module.css';
 
 interface EventParticipationSettingsProps {
   approvalRequired: boolean;
@@ -15,69 +16,39 @@ export const EventParticipationSettings: React.FC<EventParticipationSettingsProp
 }) => {
   return (
     <div>
-      <div style={{ fontSize: '12px', fontWeight: 510, color: '#666', marginBottom: '8px', marginLeft: '8px' }}>
+      <span className={styles.settingsLabel}>
         参加設定
-      </div>
-      <div style={{
-        background: '#fff',
-        borderRadius: '17px',
-        padding: '14px 15px 14px 21px',
-        display: 'flex',
-        flexDirection: 'column',
-        gap: '20px',
-        boxShadow: '0 2px 8px rgba(0,0,0,0.04)'
-      }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#666" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
-            <span style={{ fontSize: '15px', fontWeight: 510 }}>承認制</span>
+      </span>
+      <div className={styles.settingsCard}>
+        <div className={styles.settingRow}>
+          <div className={styles.settingCopy}>
+            <img src="/images/events/create/approval.svg" alt="" aria-hidden="true" />
+            <span>承認制</span>
           </div>
-          
-          <div 
+          <button
+            type="button"
             onClick={() => onChangeApproval(!approvalRequired)}
-            style={{
-              width: '48px',
-              height: '28px',
-              borderRadius: '100px',
-              background: approvalRequired ? '#484C49' : '#E5E7EB',
-              position: 'relative',
-              cursor: 'pointer',
-              transition: 'background 0.2s'
-            }}
+            className={styles.switch}
+            data-selected={approvalRequired}
+            role="switch"
+            aria-checked={approvalRequired}
+            aria-label="承認制"
           >
-            <div style={{
-              width: '24px',
-              height: '24px',
-              borderRadius: '50%',
-              background: '#fff',
-              position: 'absolute',
-              top: '2px',
-              left: approvalRequired ? '22px' : '2px',
-              transition: 'left 0.2s',
-              boxShadow: '0 1px 3px rgba(0,0,0,0.1)'
-            }}></div>
-          </div>
+            <span className={styles.switchKnob} />
+          </button>
         </div>
 
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#666" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
-            <span style={{ fontSize: '15px', fontWeight: 510 }}>あと何人募集しますか？</span>
+        <div className={styles.settingDivider} aria-hidden="true" />
+        <div className={styles.settingRow}>
+          <div className={styles.settingCopy}>
+            <img src="/images/events/create/people.svg" alt="" aria-hidden="true" />
+            <span>あと何人募集しますか？</span>
           </div>
-          
           <select 
             value={recruitingCount || ''} 
             onChange={(e) => onChangeRecruitingCount(Number(e.target.value))}
-            style={{
-              border: 'none',
-              background: 'transparent',
-              fontSize: '15px',
-              fontWeight: 510,
-              outline: 'none',
-              textAlign: 'right',
-              cursor: 'pointer',
-              color: recruitingCount ? 'black' : '#959595'
-            }}
+            className={styles.countSelect}
+            data-selected={Boolean(recruitingCount)}
           >
             <option value="" disabled>選択</option>
             {[...Array(20)].map((_, i) => (

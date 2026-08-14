@@ -3,6 +3,10 @@ import { createClient } from '@/infrastructure/auth/server';
 import { redirect } from 'next/navigation';
 import { getRecommendations } from '@/features/discover/server/getRecommendations';
 import { ScheduledPeopleView } from './ScheduledPeopleView';
+import {
+  figmaScheduledPeopleRecommendations,
+  figmaWalkingPlan,
+} from '@/app/discover/figmaFixtures';
 
 export default async function ScheduledPeoplePage({ params }: { params: Promise<{ scheduleId: string }> }) {
   const { scheduleId } = await params;
@@ -12,6 +16,15 @@ export default async function ScheduledPeoplePage({ params }: { params: Promise<
 
   if (!user) {
     redirect('/welcome');
+  }
+
+  if (scheduleId === 'figma-walking-plan') {
+    return (
+      <ScheduledPeopleView
+        plan={figmaWalkingPlan}
+        recommendations={figmaScheduledPeopleRecommendations}
+      />
+    );
   }
 
   // Verify plan exists and belongs to user

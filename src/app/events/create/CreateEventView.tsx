@@ -2,8 +2,6 @@
 
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { MobileHeader } from '@/components/layout/MobileHeader';
-import { PageContainer } from '@/components/layout/PageContainer';
 import { SelectedPlace } from '@/features/locations/types';
 import { createEventAction } from '@/app/actions/createEvent';
 
@@ -13,6 +11,7 @@ import { EventDateTimeCard } from './components/EventDateTimeCard';
 import { EventLocationField } from './components/EventLocationField';
 import { EventDescriptionField } from './components/EventDescriptionField';
 import { EventParticipationSettings } from './components/EventParticipationSettings';
+import styles from './CreateEventView.module.css';
 
 const getNearestHour = () => {
   const now = new Date();
@@ -130,48 +129,31 @@ export const CreateEventView: React.FC = () => {
   };
 
   return (
-    <>
-      <MobileHeader 
-        title="イベントを作成"
-        leftElement={
-          <button 
-            onClick={handleBack}
-            style={{
-              width: '37px', height: '37px', borderRadius: '50%',
-              background: '#fff', border: '1px solid #E5E7EB',
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              cursor: 'pointer'
-            }}
-          >
-            {/* Downward chevron icon */}
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m6 9 6 6 6-6"/></svg>
+    <div className={styles.screen}>
+      <div className={styles.sheet}>
+        <header className={styles.header}>
+          <button type="button" onClick={handleBack} className={styles.headerButton} aria-label="閉じる">
+            <img src="/images/events/create/collapse.svg" alt="" aria-hidden="true" />
           </button>
-        }
-        rightElement={
-          <button 
+          <h1>イベントを作成</h1>
+          <button
+            type="button"
             onClick={handlePublish}
             disabled={isSubmitting}
-            style={{
-              width: '37px', height: '37px', borderRadius: '50%',
-              background: '#fff', border: '1px solid #E5E7EB',
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              cursor: isSubmitting ? 'not-allowed' : 'pointer',
-              opacity: isSubmitting ? 0.5 : 1
-            }}
+            className={styles.headerButton}
+            aria-label="イベントを作成する"
           >
             {isSubmitting ? (
-              <div style={{ width: '16px', height: '16px', border: '2px solid #ccc', borderTopColor: '#666', borderRadius: '50%', animation: 'spin 1s linear infinite' }} />
+              <span className={styles.spinner} aria-hidden="true" />
             ) : (
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
+              <img src="/images/events/create/confirm.svg" alt="" aria-hidden="true" />
             )}
           </button>
-        }
-      />
-      <PageContainer bottomInset="none">
-        <div style={{ padding: '24px 0', display: 'flex', flexDirection: 'column', gap: '24px' }}>
-          
+        </header>
+
+        <main className={styles.form}>
           {errors.submit && (
-            <div style={{ padding: '12px', background: '#fee2e2', color: '#b91c1c', borderRadius: '8px', fontSize: '14px' }}>
+            <div className={styles.submitError} role="alert">
               {errors.submit}
             </div>
           )}
@@ -212,9 +194,8 @@ export const CreateEventView: React.FC = () => {
             onChangeApproval={setApprovalRequired} 
             onChangeRecruitingCount={setRecruitingCount} 
           />
-          
-        </div>
-      </PageContainer>
-    </>
+        </main>
+      </div>
+    </div>
   );
 };

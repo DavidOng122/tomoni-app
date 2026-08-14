@@ -5,6 +5,14 @@ import { EventDetailView } from './EventDetailView';
 import { Database } from '@/types/database.types';
 import { EventParticipationRepository } from '@/features/events/lib/eventParticipationRepository';
 import { getEventParticipantPreview } from '@/features/events/lib/getEventParticipantPreview';
+import {
+  figmaDisasterCreator,
+  figmaDisasterEvent,
+  figmaDisasterParticipants,
+  figmaWalkingCreator,
+  figmaWalkingEvent,
+  figmaWalkingParticipants,
+} from './figmaFixtures';
 
 type EventRow = Database['public']['Tables']['events']['Row'];
 
@@ -22,6 +30,28 @@ export default async function EventDetailPage({ params }: PageProps) {
 
   if (!user) {
     redirect('/welcome');
+  }
+
+  if (eventId === 'figma-walking-event') {
+    return (
+      <EventDetailView
+        event={figmaWalkingEvent as EventRow}
+        participation={null}
+        creatorProfile={figmaWalkingCreator}
+        participantPreview={figmaWalkingParticipants}
+      />
+    );
+  }
+
+  if (eventId === 'figma-disaster-workshop') {
+    return (
+      <EventDetailView
+        event={figmaDisasterEvent as EventRow}
+        participation={null}
+        creatorProfile={figmaDisasterCreator}
+        participantPreview={figmaDisasterParticipants}
+      />
+    );
   }
 
   // Simple UUID format validation

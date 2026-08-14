@@ -1,15 +1,16 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useMemo, useState, useSyncExternalStore } from 'react';
 import { PageContainer } from '@/components/layout/PageContainer';
 import { BottomNavigation } from '@/components/layout/BottomNavigation';
 import { useRouter } from 'next/navigation';
 import styles from './ConnectionsView.module.css';
-
-const sentInvitations = [
-  { id: 1, name: 'Miki', category: '朝の散歩', date: '8月17日（月）８:00ごろ', status: '返事待ち', avatar: '/images/connections/miki.png' },
-  { id: 2, name: 'Julia', category: '朝の散歩', date: '8月17日（月）８:00ごろ', status: '返事待ち', avatar: '/images/connections/julia.png' }
-];
+import {
+  getFigmaSentInvitationServerSnapshot,
+  getFigmaSentInvitationSnapshot,
+  parseFigmaSentInvitations,
+  subscribeToFigmaSentInvitations,
+} from '@/lib/figmaSentInvitationSession';
 
 export interface ActiveConversation {
   conversation_id: string;
@@ -37,6 +38,15 @@ interface ConnectionsViewProps {
 export default function ConnectionsView({ eventInvitations, activeConversations }: ConnectionsViewProps) {
   const router = useRouter();
   const [activeTab, setActiveTab] = useState<'あいさつ' | '同行予定'>('あいさつ');
+  const sentInvitationSnapshot = useSyncExternalStore(
+    subscribeToFigmaSentInvitations,
+    getFigmaSentInvitationSnapshot,
+    getFigmaSentInvitationServerSnapshot,
+  );
+  const sentInvitations = useMemo(
+    () => parseFigmaSentInvitations(sentInvitationSnapshot),
+    [sentInvitationSnapshot],
+  );
 
   const navItems = [
     {
@@ -152,7 +162,7 @@ export default function ConnectionsView({ eventInvitations, activeConversations 
               </section>
             )}
 
-            <section className={styles.section}>
+            {sentInvitations.length > 0 && <section className={styles.section}>
               <div className={styles.sectionTitle}>
                 <span className={`${styles.sectionIcon} ${styles.sentIcon}`} aria-hidden="true" />
                 <div>
@@ -163,7 +173,25 @@ export default function ConnectionsView({ eventInvitations, activeConversations 
 
               <div className={styles.invitationList}>
                 {sentInvitations.map(invite => (
-                  <article key={invite.id} className={styles.sentCard}>
+                  <article
+                    key={invite.id}
+                    className={styles.sentCard}
+                    role="link"
+                    tabIndex={0}
+                    onClick={() =>
+                      router.push(
+                        `/discover/schedules/figma-walking-plan/people?invite=${invite.id}&from=connections`,
+                      )
+                    }
+                    onKeyDown={(event) => {
+                      if (event.key === 'Enter' || event.key === ' ') {
+                        event.preventDefault();
+                        router.push(
+                          `/discover/schedules/figma-walking-plan/people?invite=${invite.id}&from=connections`,
+                        );
+                      }
+                    }}
+                  >
                     <img className={styles.invitationAvatar} src={invite.avatar} alt={invite.name} width="55" height="55" />
                     <div className={styles.sentDetails}>
                       <strong>{invite.name}</strong>
@@ -177,7 +205,7 @@ export default function ConnectionsView({ eventInvitations, activeConversations 
                   </article>
                 ))}
               </div>
-            </section>
+            </section>}
 
             <section className={`${styles.section} ${styles.conversationSection}`}>
               <div className={styles.conversationHeading}>

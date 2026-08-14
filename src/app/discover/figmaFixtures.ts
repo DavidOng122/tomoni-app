@@ -51,6 +51,42 @@ export const figmaDiscoverRecommendations: DiscoverRecommendation[] = [
   }
 ];
 
+export const figmaScheduledPeopleRecommendations: DiscoverRecommendation[] = [
+  {
+    candidateId: 'figma-miki',
+    profile: { nickname: 'Miki', avatarUrl: '/images/discover/scheduled-people/miki.png', ageRange: '25-34', gender: 'female', tags: [] },
+    match: { myPlanId: 'figma-walking-plan', candidatePlanId: 'figma-miki-plan', activityType: 'walking', matchedDays: ['tue'], myStartTime: '09:00', candidateStartTime: '09:00', timeDifferenceMinutes: 0, distanceKm: 0.7, reasons: ['shared_day', 'same_activity'] },
+  },
+  {
+    ...figmaDiscoverRecommendations[0],
+    profile: { ...figmaDiscoverRecommendations[0].profile, avatarUrl: '/images/discover/scheduled-people/julia.png' },
+    match: { ...figmaDiscoverRecommendations[0].match, candidateStartTime: '09:00', reasons: ['nearby', 'same_time'] },
+  },
+  {
+    ...figmaDiscoverRecommendations[1],
+    profile: { ...figmaDiscoverRecommendations[1].profile, avatarUrl: '/images/discover/scheduled-people/megan.png' },
+    match: { ...figmaDiscoverRecommendations[1].match, candidateStartTime: '09:00', reasons: ['shared_day', 'nearby'] },
+  },
+  {
+    ...figmaDiscoverRecommendations[2],
+    profile: { ...figmaDiscoverRecommendations[2].profile, avatarUrl: '/images/discover/scheduled-people/sora.png' },
+    match: { ...figmaDiscoverRecommendations[2].match, candidateStartTime: '09:00', reasons: ['same_activity', 'same_time'] },
+  },
+  {
+    candidateId: 'figma-ken',
+    profile: { nickname: 'Ken', avatarUrl: '/images/discover/scheduled-people/ken.png', ageRange: '25-34', gender: 'male', tags: [] },
+    match: { myPlanId: 'figma-walking-plan', candidatePlanId: 'figma-ken-plan', activityType: 'walking', matchedDays: ['tue'], myStartTime: '09:00', candidateStartTime: '09:00', timeDifferenceMinutes: 0, distanceKm: 1.2, reasons: ['nearby', 'same_activity'] },
+  },
+];
+
+export const figmaWalkingPlan = {
+  fixed_plan_id: 'figma-walking-plan',
+  activity_type: 'walking',
+  days_of_week: ['tue'],
+  start_time: '09:00:00',
+  place_name: '世田谷公園',
+};
+
 const baseEvent = {
   address: null,
   approval_required: false,

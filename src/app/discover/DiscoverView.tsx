@@ -141,13 +141,22 @@ export const DiscoverView: React.FC<DiscoverViewProps> = ({ recommendations, has
               </div>
             ) : (
               <div className={styles.recommendationPanel}>
-                <div className={styles.recommendationIntro}>
+                <button
+                  type="button"
+                  className={styles.recommendationIntro}
+                  onClick={() => {
+                    const scheduleId = recommendations[0]?.match.myPlanId;
+                    if (scheduleId) {
+                      router.push(`/discover/schedules/${scheduleId}/people`);
+                    }
+                  }}
+                >
                   <span className={styles.walkIcon} aria-hidden="true" />
                   <div>
-                    <strong>一緒に予定を楽しめそうな人</strong>
-                    <span>登録した固定予定をもとに表示しています</span>
+                    <strong>一緒に朝の散歩に行けそうな人</strong>
+                    <span>固定予定：毎週火曜　9:00ごろ</span>
                   </div>
-                </div>
+                </button>
                 <div className={styles.recommendationList}>
                   {recommendations.map((rec) => (
                     <div
@@ -196,7 +205,15 @@ export const DiscoverView: React.FC<DiscoverViewProps> = ({ recommendations, has
                   <div
                     key={event.event_id}
                     onClick={() => router.push(`/events/${event.event_id}`)}
+                    onKeyDown={(keyboardEvent) => {
+                      if (keyboardEvent.key === 'Enter' || keyboardEvent.key === ' ') {
+                        keyboardEvent.preventDefault();
+                        router.push(`/events/${event.event_id}`);
+                      }
+                    }}
                     className={styles.eventRow}
+                    role="link"
+                    tabIndex={0}
                   >
                     <div className={styles.poster}>
                       {event.poster_url ? (

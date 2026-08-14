@@ -1,18 +1,14 @@
 'use client';
 
 import React from 'react';
-import { PageContainer } from '@/components/layout/PageContainer';
-import { Database } from '@/types/database.types';
 import Link from 'next/link';
-
-import { EventTopNav } from '@/features/events/components/EventTopNav';
-import { EventHero } from '@/features/events/components/EventHero';
-import { EventOrganizerRow } from '@/features/events/components/EventOrganizerRow';
-import { EventParticipantPreview } from '@/features/events/components/EventParticipantPreview';
-import { EventLocationSection } from '@/features/events/components/EventLocationSection';
-import { EventDescriptionSection } from '@/features/events/components/EventDescriptionSection';
+import { PageContainer } from '@/components/layout/PageContainer';
 import { EventParticipationButton } from '@/components/events/EventParticipationButton';
+import { EventTopNav } from '@/features/events/components/EventTopNav';
 import { EventParticipantPreviewData } from '@/features/events/lib/getEventParticipantPreview';
+import { Database } from '@/types/database.types';
+import { formatEventDateTime } from '@/utils/dateFormatter';
+import styles from './EventDetailView.module.css';
 
 type EventRow = Database['public']['Tables']['events']['Row'];
 
@@ -25,13 +21,13 @@ interface EventDetailViewProps {
   isCreator?: boolean;
 }
 
-export const EventDetailView: React.FC<EventDetailViewProps> = ({ 
-  event, 
-  participation, 
+export const EventDetailView: React.FC<EventDetailViewProps> = ({
+  event,
+  participation,
   creatorProfile,
   participantPreview,
   pendingRequestCount = 0,
-  isCreator = false
+  isCreator = false,
 }) => {
   let ctaUrl: string | null = null;
   let ctaText: string | null = null;
@@ -50,7 +46,11 @@ export const EventDetailView: React.FC<EventDetailViewProps> = ({
       ctaUrl = event.official_url;
       ctaText = '公式サイトを見る';
     }
-  } else if (event.registration_status === 'closed' || event.registration_status === 'full' || deadlinePassed) {
+  } else if (
+    event.registration_status === 'closed' ||
+    event.registration_status === 'full' ||
+    deadlinePassed
+  ) {
     ctaDisabled = true;
     ctaText = '受付終了';
   } else if (event.registration_status === 'not_started') {
@@ -64,163 +64,147 @@ export const EventDetailView: React.FC<EventDetailViewProps> = ({
       ctaUrl = event.official_url;
       ctaText = '公式サイトを見る';
     }
-  } else {
-    // Fallback for any other state
-    if (event.official_url) {
-      ctaUrl = event.official_url;
-      ctaText = '公式サイトを見る';
-    }
+  } else if (event.official_url) {
+    ctaUrl = event.official_url;
+    ctaText = '公式サイトを見る';
   }
 
+  const organizerName = creatorProfile?.nickname || event.source_name || '';
+  const organizerAvatar = creatorProfile?.avatar_url || null;
+  const participantCount = participantPreview?.participantCount || 0;
+  const participants = participantPreview?.users || [];
+  const remainingCount = Math.max(0, participantCount - participants.length);
+
   return (
-    <PageContainer bottomInset="none">
-      {/* We use a custom header that acts like the MobileHeader but matches the design exactly */}
-      <EventTopNav />
-      
-      <div style={{ paddingBottom: '120px', maxWidth: '430px', margin: '0 auto', width: '100%' }}>
-        {/* Poster Hero */}
-        <EventHero 
-          posterUrl={event.poster_url} 
-          title={event.title} 
-        />
+    <div className={styles.screen}>
+      <PageContainer bottomInset="none" className={styles.page}>
+        <div className={styles.detailStage}>
+          <EventTopNav className={styles.topNav} />
 
-        <div>
-          {/* Title */}
-          <h1 
-            style={{ fontSize: '24px', fontWeight: 590, color: 'black', marginBottom: '16px', wordBreak: 'break-word', lineHeight: '33.98px', margin: '0 0 16px 0' }}
-          >
-            {event.title}
-          </h1>
-
-          {/* Organizer / Date Time Row */}
-          <EventOrganizerRow 
-            creatorProfile={creatorProfile}
-            sourceName={event.source_name}
-            startAt={event.start_at}
-            endAt={event.end_at}
-          />
-
-          {/* Organizer Requests Entry */}
-          {isCreator && event.event_type === 'user_created' && event.approval_required && (
-            <Link 
-              href={`/events/${event.event_id}/requests`}
-              style={{
-                display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-                padding: '16px', background: '#f9fafb', borderRadius: '12px',
-                marginBottom: '24px', textDecoration: 'none', color: 'black',
-                fontWeight: 500, fontSize: '15px'
-              }}
-            >
-              <span>参加リクエスト</span>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#6b7280' }}>
-                <span>{pendingRequestCount}件</span>
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
-              </div>
-            </Link>
-          )}
-
-          {/* Participant Preview */}
-          {participantPreview && (
-            <div style={{ padding: '0 var(--page-padding-x) 24px var(--page-padding-x)' }}>
-              <EventParticipantPreview participantPreview={participantPreview} />
-              {participation?.participation_status === 'going' && participation.participation_date && participation.arrival_time && (
-                <div style={{ marginTop: '12px' }}>
-                  <Link 
-                    href={`/events/${event.event_id}/people`}
-                    style={{
-                      display: 'block',
-                      width: '100%',
-                      padding: '12px',
-                      borderRadius: '8px',
-                      backgroundColor: '#f3f4f6',
-                      color: '#374151',
-                      fontSize: '14px',
-                      fontWeight: 600,
-                      textAlign: 'center',
-                      textDecoration: 'none'
-                    }}
-                  >
-                    同じ時間に参加する人を見る
-                  </Link>
-                </div>
+          <main className={styles.content}>
+            <div className={styles.hero}>
+              {event.poster_url ? (
+                <img src={event.poster_url} alt={event.title} />
+              ) : (
+                <div className={styles.heroPlaceholder}>No Poster Available</div>
               )}
             </div>
-          )}
 
-          {/* Location Section */}
-          <EventLocationSection 
-            placeName={event.place_name}
-            address={event.address}
-          />
+            <div className={styles.titleBlock}>
+              <div
+                className={`${styles.titleRow} ${
+                  event.registration_required ? styles.titleRowRegistration : ''
+                }`}
+              >
+                <h1>{event.title}</h1>
+                {event.registration_required && (
+                  <img
+                    className={styles.externalMark}
+                    src="/images/events/detail/external-link.svg"
+                    alt=""
+                    aria-hidden="true"
+                  />
+                )}
+              </div>
+              {event.registration_required && <span className={styles.registrationBadge}>要申込</span>}
+            </div>
 
-          {/* Event Introduction */}
-          <EventDescriptionSection 
-            description={event.description}
-          />
+            <div className={styles.organizerRow}>
+              <div className={styles.organizer}>
+                <span className={styles.organizerAvatar}>
+                  {organizerAvatar ? <img src={organizerAvatar} alt={organizerName} /> : null}
+                </span>
+                <strong>{organizerName}</strong>
+              </div>
+              <time>{formatEventDateTime(event.start_at, event.end_at)}</time>
+            </div>
+
+            {isCreator && event.event_type === 'user_created' && event.approval_required && (
+              <Link className={styles.requestEntry} href={`/events/${event.event_id}/requests`}>
+                <span>参加リクエスト</span>
+                <span>{pendingRequestCount}件 ›</span>
+              </Link>
+            )}
+
+            {participantPreview && participantCount > 0 && (
+              <section className={styles.participantCard} aria-label={`参加予定 ${participantCount}人`}>
+                <strong>参加予定： {participantCount}人</strong>
+                <div className={styles.participantLine}>
+                  <div className={styles.avatarStack}>
+                    {participants.map((participant, index) => (
+                      <span key={participant.userId || index}>
+                        {participant.avatarUrl ? (
+                          <img src={participant.avatarUrl} alt="" aria-hidden="true" />
+                        ) : null}
+                      </span>
+                    ))}
+                    {remainingCount > 0 && <b>+{remainingCount}</b>}
+                  </div>
+                  <p>
+                    {participants.map((participant) => `${participant.nickname}さん`).join('、')}
+                    {remainingCount > 0 ? `、ほか${remainingCount}名` : ''}
+                  </p>
+                  <img className={styles.chevron} src="/images/events/detail/chevron.svg" alt="" aria-hidden="true" />
+                </div>
+              </section>
+            )}
+
+            {participation?.participation_status === 'going' &&
+              participation.participation_date &&
+              participation.arrival_time && (
+                <Link className={styles.peopleLink} href={`/events/${event.event_id}/people`}>
+                  同じ時間に参加する人を見る
+                </Link>
+              )}
+
+            {event.place_name && (
+              <section className={styles.locationSection}>
+                <h2>場所</h2>
+                <div>
+                  <img src="/images/events/detail/location.svg" alt="" aria-hidden="true" />
+                  <span>
+                    {event.place_name}
+                    {event.address && <small>{event.address}</small>}
+                  </span>
+                </div>
+              </section>
+            )}
+
+            {event.description && (
+              <section className={styles.descriptionSection}>
+                <h2>イベント紹介</h2>
+                <p>{event.description}</p>
+              </section>
+            )}
+          </main>
         </div>
-      </div>
+      </PageContainer>
 
-      {/* External CTA and Participation fixed at bottom */}
-      <div 
-        style={{
-          position: 'fixed',
-          bottom: 0,
-          left: '50%',
-          transform: 'translateX(-50%)',
-          width: 'min(100%, var(--max-app-width))',
-          zIndex: 50,
-          backgroundColor: 'rgba(255, 255, 255, 0.95)',
-          backdropFilter: 'blur(12px)',
-          borderTop: '1px solid #f3f4f6',
-          padding: '16px var(--page-padding-x) calc(16px + var(--safe-area-bottom))'
-        }}
-      >
-        <div style={{ maxWidth: '430px', margin: '0 auto', display: 'flex', flexDirection: 'column', gap: '12px' }}>
-          {/* Tomoni Participation Button */}
-          <EventParticipationButton 
+      <div className={styles.actionBar}>
+        <div>
+          <EventParticipationButton
             eventId={event.event_id}
             currentStatus={participation?.participation_status || null}
             approvalRequired={event.approval_required}
             eventStatus={event.event_status}
           />
 
-          {/* External Registration Button */}
           {(ctaText || ctaDisabled) && (
             <button
+              type="button"
               onClick={() => {
                 if (ctaUrl && !ctaDisabled) {
                   window.open(ctaUrl, '_blank', 'noopener,noreferrer');
                 }
               }}
               disabled={ctaDisabled}
-              style={{
-                width: '100%',
-                padding: '16px 0',
-                borderRadius: '12px',
-                fontSize: '15px',
-                fontWeight: 600,
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                gap: '8px',
-                border: ctaDisabled ? 'none' : '1px solid black',
-                backgroundColor: ctaDisabled ? '#f0f0f0' : 'white',
-                color: ctaDisabled ? '#999' : 'black',
-                cursor: ctaDisabled ? 'not-allowed' : 'pointer'
-              }}
+              className={styles.externalButton}
             >
               {ctaText}
-              {!ctaDisabled && ctaUrl && (
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/>
-                  <polyline points="15 3 21 3 21 9"/>
-                  <line x1="10" y1="14" x2="21" y2="3"/>
-                </svg>
-              )}
             </button>
           )}
         </div>
       </div>
-    </PageContainer>
+    </div>
   );
 };
