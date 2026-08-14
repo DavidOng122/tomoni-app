@@ -1,0 +1,283 @@
+.screen {
+  min-height: 100dvh;
+  background: #f8f8f8;
+  color: #000;
+}
+
+.page {
+  --page-padding-x: 14px;
+}
+
+.stage {
+  width: 100%;
+  max-width: 402px;
+  min-height: 100dvh;
+  margin: 0 auto;
+  padding: 55px 0 20px;
+}
+
+.backButton {
+  display: flex;
+  width: 37px;
+  height: 37px;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid #e0e0e0;
+  border-radius: 50%;
+  padding: 0;
+  background: #fff;
+  cursor: pointer;
+}
+
+.backButton img {
+  width: 7px;
+  height: 12px;
+}
+
+.eventCard {
+  min-height: 150px;
+  border: 0.667px solid #e9e9eb;
+  border-radius: 16px;
+  margin: 27px 16px 0;
+  padding: 19px 16px 16px;
+  background: #fff;
+  box-shadow: inset 5px 2px 12.7px rgb(0 0 0 / 11%);
+}
+
+.eventLabel {
+  display: inline-flex;
+  min-height: 21px;
+  align-items: center;
+  border-radius: 999px;
+  padding: 2px 11px 3px;
+  background: #ff8861;
+  color: #fff;
+  font-size: 12px;
+  line-height: 16px;
+}
+
+.eventCard h1 {
+  margin: 12px 0 2px;
+  font-size: 18px;
+  font-weight: 700;
+  line-height: 28px;
+}
+
+.metaRow {
+  display: flex;
+  min-height: 20px;
+  align-items: center;
+  color: #2c2c2c;
+  font-size: 14px;
+  line-height: 20px;
+  gap: 8px;
+}
+
+.metaRow + .metaRow {
+  margin-top: 4px;
+}
+
+.metaRow img {
+  width: 14px;
+  height: 14px;
+  flex: 0 0 14px;
+}
+
+.metaRow .locationIcon {
+  width: 11px;
+  height: 14px;
+  margin: 0 1.5px;
+}
+
+.formSection {
+  margin: 24px 16px 0;
+}
+
+.intro h2 {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 600;
+  line-height: 24px;
+}
+
+.intro p {
+  margin: -1px 0 0;
+  color: #6a6a6a;
+  font-size: 12px;
+  line-height: 20px;
+}
+
+.fieldGroup {
+  margin-top: 24px;
+}
+
+.fieldGroup > label,
+.durationFieldset legend {
+  display: block;
+  padding: 0;
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 20px;
+}
+
+.timeRow {
+  display: flex;
+  min-height: 44px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+}
+
+.timeRow > span {
+  font-size: 17px;
+  font-weight: 500;
+  line-height: 22px;
+}
+
+.timeRow input {
+  width: 182px;
+  min-width: 0;
+  height: 36px;
+  border: 0;
+  border-radius: 7px;
+  padding: 3px 10px;
+  background: rgb(118 118 128 / 12%);
+  color: #000;
+  font: 500 17px/28px inherit;
+  text-align: center;
+}
+
+.timeRow input:focus-visible {
+  outline: 2px solid #ff8861;
+  outline-offset: 2px;
+}
+
+.durationFieldset {
+  border: 0;
+  margin: 31px 0 0;
+  padding: 0;
+}
+
+.durationOptions {
+  display: flex;
+  flex-wrap: wrap;
+  margin-top: 12px;
+  gap: 8px 14px;
+}
+
+.durationOptions button {
+  min-height: 42px;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  padding: 10px 16px;
+  background: #fff;
+  color: #000;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 20px;
+  cursor: pointer;
+}
+
+.durationOptions button.durationSelected {
+  border-color: #ff7622;
+  background: #ff7622;
+  color: #fff;
+}
+
+.summary {
+  display: flex;
+  min-height: 54px;
+  align-items: center;
+  justify-content: space-between;
+  border-top: 1px solid #d3d7e0;
+  margin-top: 24px;
+  padding-top: 16px;
+  font-size: 14px;
+  line-height: 20px;
+  gap: 16px;
+}
+
+.summary span,
+.summary strong {
+  font-weight: 600;
+}
+
+.summary strong {
+  text-align: right;
+}
+
+.submitCard {
+  border: 1px solid #f3f3f3;
+  border-radius: 27px;
+  margin-top: 41px;
+  padding: 12px 16px 32px;
+  background: #fff;
+  box-shadow: inset 4px 4px 8.9px rgb(0 0 0 / 6%);
+}
+
+.submitCard p {
+  margin: 0 0 12px;
+  color: #6a6a6a;
+  font-size: 12px;
+  line-height: 16px;
+  text-align: center;
+}
+
+.submitCard button {
+  width: 100%;
+  min-height: 52px;
+  border: 0;
+  border-radius: 18px;
+  background: #000;
+  color: #fff;
+  font-size: 16px;
+  font-weight: 600;
+  line-height: 24px;
+  cursor: pointer;
+}
+
+.submitCard button:disabled {
+  background: #a9a9a9;
+  cursor: not-allowed;
+}
+
+@media (max-width: 390px) {
+  .stage {
+    padding-top: 42px;
+  }
+
+  .eventCard,
+  .formSection {
+    margin-right: 10px;
+    margin-left: 10px;
+  }
+
+  .eventCard {
+    margin-top: 22px;
+  }
+
+  .timeRow input {
+    width: 174px;
+  }
+
+  .submitCard {
+    margin-top: 32px;
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .stage {
+    animation: joinEnter 360ms cubic-bezier(0.16, 1, 0.3, 1) both;
+  }
+}
+
+@keyframes joinEnter {
+  from {
+    opacity: 0;
+    transform: translateY(18px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
