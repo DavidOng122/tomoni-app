@@ -11,12 +11,12 @@ const sentInvitations = [
   { id: 2, name: 'Julia', category: '朝の散歩', date: '8月17日（月）８:00ごろ', status: '返事待ち', avatar: '/images/connections/julia.png' }
 ];
 
-const conversations = [
-  { id: 1, name: 'Karen Castillo', time: '9:40', message: '当日、よろしくお願いします！', unread: 2, avatar: '/images/connections/karen.png' },
-  { id: 2, name: 'John Smith', time: '10:15', message: '会議の準備を進めています。', unread: 3, avatar: '/images/connections/john.png' },
-  { id: 3, name: 'Emily Chen', time: '11:00', message: '資料を更新しました。', unread: 1, avatar: '/images/connections/emily.png' },
-  { id: 4, name: 'Michael Brown', time: '12:30', message: '今後の打ち合わせについて確認します。', unread: 4, avatar: '/images/connections/michael.png' },
-];
+export interface ActiveConversation {
+  conversation_id: string;
+  other_nickname: string;
+  other_avatar_url: string | null;
+  event_title: string;
+}
 
 export interface EventInvitation {
   invitation_id: string;
@@ -31,9 +31,10 @@ export interface EventInvitation {
 
 interface ConnectionsViewProps {
   eventInvitations: EventInvitation[];
+  activeConversations: ActiveConversation[];
 }
 
-export default function ConnectionsView({ eventInvitations }: ConnectionsViewProps) {
+export default function ConnectionsView({ eventInvitations, activeConversations }: ConnectionsViewProps) {
   const router = useRouter();
   const [activeTab, setActiveTab] = useState<'あいさつ' | '同行予定'>('あいさつ');
 
@@ -126,7 +127,11 @@ export default function ConnectionsView({ eventInvitations }: ConnectionsViewPro
                           onClick={async () => {
                             const { acceptEventInvitationAction } = await import('@/app/actions/acceptEventInvitationAction');
                             const res = await acceptEventInvitationAction(invite.invitation_id);
-                            if (!res.success) alert(res.error || 'エラーが発生しました');
+                            if (!res.success) {
+                              alert(res.error || 'エラーが発生しました');
+                            } else if (res.conversationId) {
+                              router.push(`/chat/${res.conversationId}`);
+                            }
                           }}
                         >
                           承認
@@ -181,17 +186,23 @@ export default function ConnectionsView({ eventInvitations }: ConnectionsViewPro
               </div>
 
               <div className={styles.conversationList}>
-                {conversations.map((conv) => (
-                  <div key={conv.id} className={styles.conversationRow}>
-                    <img className={styles.conversationAvatar} src={conv.avatar} alt={conv.name} width="42" height="42" />
+                {activeConversations.map((conv) => (
+                  <div key={conv.conversation_id} className={styles.conversationRow} onClick={() => router.push(`/chat/${conv.conversation_id}`)} style={{ cursor: 'pointer' }}>
+                    {conv.other_avatar_url ? (
+                      <img className={styles.conversationAvatar} src={conv.other_avatar_url} alt={conv.other_nickname} width="42" height="42" />
+                    ) : (
+                      <span className={styles.avatarFallback} aria-hidden="true" style={{ width: '42px', height: '42px', borderRadius: '50%', backgroundColor: '#f0f0f0', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                        <svg viewBox="0 0 24 24" fill="none" stroke="#ccc" strokeWidth="1.8" style={{ width: '24px', height: '24px' }}>
+                          <circle cx="12" cy="7" r="4"/><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                        </svg>
+                      </span>
+                    )}
                     <div className={styles.conversationBody}>
                       <div className={styles.conversationTopline}>
-                        <strong>{conv.name}</strong>
-                        <time>{conv.time}</time>
+                        <strong>{conv.other_nickname}</strong>
                       </div>
                       <div className={styles.messageLine}>
-                        <span>{conv.message}</span>
-                        {conv.unread > 0 && <b>{conv.unread}</b>}
+                        <span style={{ fontSize: '13px', color: '#666' }}>{conv.event_title}</span>
                       </div>
                     </div>
                   </div>
