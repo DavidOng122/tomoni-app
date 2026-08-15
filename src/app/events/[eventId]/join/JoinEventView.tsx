@@ -78,7 +78,7 @@ export const JoinEventView: React.FC<JoinEventViewProps> = ({ event, existingPar
     return '未定';
   };
 
-  const eventLabel = event.event_id === 'figma-walking-event' ? '朝の散歩' : '地域活動';
+  const eventLabel = 'イベント';
 
   return (
     <div className={styles.screen}>

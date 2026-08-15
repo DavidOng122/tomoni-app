@@ -5,12 +5,7 @@ import { PageContainer } from '@/components/layout/PageContainer';
 import { BottomNavigation } from '@/components/layout/BottomNavigation';
 import { useRouter } from 'next/navigation';
 import styles from './ConnectionsView.module.css';
-import {
-  getFigmaSentInvitationServerSnapshot,
-  getFigmaSentInvitationSnapshot,
-  parseFigmaSentInvitations,
-  subscribeToFigmaSentInvitations,
-} from '@/lib/figmaSentInvitationSession';
+
 
 export interface ActiveConversation {
   conversation_id: string;
@@ -38,15 +33,7 @@ interface ConnectionsViewProps {
 export default function ConnectionsView({ eventInvitations, activeConversations }: ConnectionsViewProps) {
   const router = useRouter();
   const [activeTab, setActiveTab] = useState<'あいさつ' | '同行予定'>('あいさつ');
-  const sentInvitationSnapshot = useSyncExternalStore(
-    subscribeToFigmaSentInvitations,
-    getFigmaSentInvitationSnapshot,
-    getFigmaSentInvitationServerSnapshot,
-  );
-  const sentInvitations = useMemo(
-    () => parseFigmaSentInvitations(sentInvitationSnapshot),
-    [sentInvitationSnapshot],
-  );
+
 
   const navItems = [
     {
@@ -162,50 +149,7 @@ export default function ConnectionsView({ eventInvitations, activeConversations 
               </section>
             )}
 
-            {sentInvitations.length > 0 && <section className={styles.section}>
-              <div className={styles.sectionTitle}>
-                <span className={`${styles.sectionIcon} ${styles.sentIcon}`} aria-hidden="true" />
-                <div>
-                  <h2>送ったお誘い</h2>
-                  <p>あなたから送った同行のお誘い</p>
-                </div>
-              </div>
 
-              <div className={styles.invitationList}>
-                {sentInvitations.map(invite => (
-                  <article
-                    key={invite.id}
-                    className={styles.sentCard}
-                    role="link"
-                    tabIndex={0}
-                    onClick={() =>
-                      router.push(
-                        `/discover/schedules/figma-walking-plan/people?invite=${invite.id}&from=connections`,
-                      )
-                    }
-                    onKeyDown={(event) => {
-                      if (event.key === 'Enter' || event.key === ' ') {
-                        event.preventDefault();
-                        router.push(
-                          `/discover/schedules/figma-walking-plan/people?invite=${invite.id}&from=connections`,
-                        );
-                      }
-                    }}
-                  >
-                    <img className={styles.invitationAvatar} src={invite.avatar} alt={invite.name} width="55" height="55" />
-                    <div className={styles.sentDetails}>
-                      <strong>{invite.name}</strong>
-                      <span className={styles.activityLine}>
-                        <span className={styles.walkingIcon} aria-hidden="true" />
-                        {invite.category}
-                      </span>
-                      <span className={styles.invitationDate}>{invite.date}</span>
-                    </div>
-                    <span className={styles.status}>{invite.status}</span>
-                  </article>
-                ))}
-              </div>
-            </section>}
 
             <section className={`${styles.section} ${styles.conversationSection}`}>
               <div className={styles.conversationHeading}>

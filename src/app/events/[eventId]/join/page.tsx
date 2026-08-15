@@ -4,7 +4,7 @@ import { notFound, redirect } from 'next/navigation';
 import { JoinEventView } from './JoinEventView';
 import { EventParticipationRepository } from '@/features/events/lib/eventParticipationRepository';
 import { Database } from '@/types/database.types';
-import { figmaDisasterEvent, figmaWalkingEvent } from '../figmaFixtures';
+
 
 type EventRow = Database['public']['Tables']['events']['Row'];
 
@@ -23,13 +23,7 @@ export default async function JoinEventPage({ params }: PageProps) {
     redirect('/welcome');
   }
 
-  if (eventId === 'figma-walking-event') {
-    return <JoinEventView event={figmaWalkingEvent as EventRow} existingParticipation={null} />;
-  }
 
-  if (eventId === 'figma-disaster-workshop') {
-    return <JoinEventView event={figmaDisasterEvent as EventRow} existingParticipation={null} />;
-  }
 
   // Fetch event details
   const { data: event, error: eventError } = await supabase

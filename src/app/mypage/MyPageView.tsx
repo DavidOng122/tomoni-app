@@ -7,11 +7,7 @@ import { PageContainer } from '@/components/layout/PageContainer';
 import { ACTIVITY_LABELS } from '@/features/fixed-schedules/lib/constants';
 import { formatWeekdays } from '@/features/fixed-schedules/lib/formatters';
 import { getGenderLabel, getTagLabel } from './lib/mappers';
-import {
-  FIGMA_MYPAGE_FIXED_PLAN_COUNT,
-  FIGMA_MYPAGE_FIXED_PLANS,
-  FIGMA_MYPAGE_PROFILE,
-} from './figmaFixtures';
+
 import styles from './MyPageView.module.css';
 
 interface MyPageViewProps {
@@ -25,15 +21,11 @@ const connectionAvatars = [
   '/images/mypage/connection-megan.png',
 ];
 
-const USE_FIGMA_MYPAGE_DATA = true;
-
 export const MyPageView: React.FC<MyPageViewProps> = ({ profile, fixedPlans }) => {
   const router = useRouter();
-  const displayedProfile = USE_FIGMA_MYPAGE_DATA ? FIGMA_MYPAGE_PROFILE : profile;
-  const displayedFixedPlans = USE_FIGMA_MYPAGE_DATA ? FIGMA_MYPAGE_FIXED_PLANS : fixedPlans;
-  const displayedFixedPlanCount = USE_FIGMA_MYPAGE_DATA
-    ? FIGMA_MYPAGE_FIXED_PLAN_COUNT
-    : fixedPlans.length;
+  const displayedProfile = profile;
+  const displayedFixedPlans = fixedPlans;
+  const displayedFixedPlanCount = fixedPlans.length;
   const navItems = [
     {
       label: 'みつける',

@@ -79,16 +79,6 @@ export const DiscoverView: React.FC<DiscoverViewProps> = ({ recommendations, has
     },
   ];
 
-  // Keep Phase 2C Event & connection mock untouched as requested
-  const mockCurrentConnection = {
-    name: 'Miki',
-    verified: true,
-    eventTitle: '公園で朝の散歩会',
-    dateTime: '8月17日（月）8:00〜10:00',
-    location: '行船公園',
-    avatarUrl: '/images/discover/miki.png'
-  };
-
   return (
     <div className={styles.screen}>
       <PageContainer bottomInset="nav" className={styles.page}>
@@ -106,24 +96,6 @@ export const DiscoverView: React.FC<DiscoverViewProps> = ({ recommendations, has
         </div>
 
         <main className={styles.content}>
-          <section aria-label="現在の活動">
-            <div className={styles.currentCard}>
-              <div className={styles.currentAvatarGroup}>
-                <img className={styles.currentAvatar} src={mockCurrentConnection.avatarUrl} alt="Avatar" width="50" height="50" />
-                {mockCurrentConnection.verified && <span className={styles.verified}>確認済み</span>}
-              </div>
-              <div className={styles.currentDetails}>
-                <div className={styles.currentTitleLine}>
-                  <h2>{mockCurrentConnection.name}</h2>
-                  <span className={styles.titleDivider} aria-hidden="true" />
-                  <h3>{mockCurrentConnection.eventTitle}</h3>
-                </div>
-                <div className={styles.metaLine}><ClockIcon /><span>{mockCurrentConnection.dateTime}</span></div>
-                <div className={styles.metaLine}><PinIcon /><span>{mockCurrentConnection.location}</span></div>
-              </div>
-            </div>
-          </section>
-
           <section className={styles.section}>
             <div className={styles.sectionHeading}>
               <h2>予定からつながる</h2>
@@ -221,28 +193,13 @@ export const DiscoverView: React.FC<DiscoverViewProps> = ({ recommendations, has
                       ) : (
                         <svg aria-hidden="true" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="m21 15-5-5L5 21"/></svg>
                           )}
-                      {event.event_id.startsWith('figma-') && (
-                        <img
-                          className={styles.organizerAvatar}
-                          src={event.event_id === 'figma-walking-event' ? '/images/discover/miki.png' : '/images/discover/workshop-host.png'}
-                          alt=""
-                          width="35"
-                          height="35"
-                        />
-                      )}
+
                     </div>
                     <div className={styles.eventDetails}>
                       <h3>{event.title}</h3>
                       <div className={styles.metaLine}><ClockIcon /><span>{formatEventDateTime(event.start_at, event.end_at)}</span></div>
                       <div className={styles.metaLine}><PinIcon /><span>{event.place_name}</span></div>
-                      {event.event_id.startsWith('figma-') && (
-                        <div className={styles.participantStack} aria-label="参加予定 10人">
-                          <img src="/images/discover/miki.png" alt="" width="20" height="20" />
-                          <img src="/images/discover/ken.png" alt="" width="20" height="20" />
-                          <img src="/images/discover/megan.png" alt="" width="20" height="20" />
-                          <span>+7</span>
-                        </div>
-                      )}
+
                     </div>
                   </div>
                 ))
