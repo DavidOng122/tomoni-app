@@ -39,12 +39,20 @@ export default async function ChatPage(props: { params: Promise<{ conversationId
     throw new Error(`Conversation not found in database for ID: ${conversationId}`);
   }
 
-  if (conversationData.conversation_status === 'closed') {
-    notFound();
-  }
-
   const isGroupChat = !!(conversationData.event_id && !conversationData.related_invitation_id && !conversationData.fixed_plan_id);
   const isFixedPlan = !!(conversationData.fixed_plan_id && conversationData.related_invitation_id);
+
+  if (conversationData.conversation_status === 'closed') {
+    if (!isFixedPlan) {
+      notFound();
+    } else {
+      const inv = Array.isArray(conversationData.invitations) ? conversationData.invitations[0] : conversationData.invitations;
+      if (!inv || (inv.invitation_status !== 'declined' && inv.invitation_status !== 'cancelled')) {
+        notFound();
+      }
+      // Valid terminal state
+    }
+  }
 
 
   // Requirement 2: Active membership check
@@ -128,6 +136,8 @@ export default async function ChatPage(props: { params: Promise<{ conversationId
     days_of_week: string;
     start_time: string;
     place_name: string;
+    discoveryUrl: string;
+    isConversationClosed: boolean;
   } | null = null;
 
   if (isFixedPlan) {
@@ -135,6 +145,12 @@ export default async function ChatPage(props: { params: Promise<{ conversationId
     const plan = Array.isArray(conversationData.fixed_plans) ? conversationData.fixed_plans[0] : conversationData.fixed_plans;
     if (inv && plan) {
       const isSender = inv.sender_user_id === user.id;
+      // Sender → their own fixed plan's people page
+      // Receiver → /discover (schema does not store which receiver plan was matched)
+      const discoveryUrl = isSender
+        ? `/discover/schedules/${plan.fixed_plan_id}/people`
+        : '/discover';
+
       fixedPlanContext = {
         invitationId: conversationData.related_invitation_id as string,
         invitationStatus: inv.invitation_status,
@@ -146,6 +162,8 @@ export default async function ChatPage(props: { params: Promise<{ conversationId
         days_of_week: (plan.days_of_week as string[]).map((d) => DAY_LABELS[d] || d).join('・'),
         start_time: plan.start_time.substring(0, 5),
         place_name: (plan as Record<string, unknown>).place_name as string || '',
+        discoveryUrl,
+        isConversationClosed: conversationData.conversation_status === 'closed',
       };
     }
   }

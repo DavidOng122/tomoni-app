@@ -26,6 +26,8 @@ export interface FixedPlanContext {
   days_of_week: string;
   start_time: string;
   place_name: string;
+  discoveryUrl: string;
+  isConversationClosed: boolean;
 }
 
 interface ChatClientProps {
@@ -92,6 +94,20 @@ function FixedPlanChatHeader({
   isActionLoading: boolean;
 }) {
   const isPending = ctx.invitationStatus === 'pending';
+  const isClosed = ctx.isConversationClosed;
+
+  let badgeText = '同行予定';
+  let badgeBg = '#E8F5E9';
+  let badgeColor = '#2E7D32';
+  if (isPending) {
+    badgeText = '返事待ち';
+    badgeBg = '#FFF0F3';
+    badgeColor = '#FF0000';
+  } else if (isClosed) {
+    badgeText = 'キャンセル済';
+    badgeBg = '#F5F5F5';
+    badgeColor = '#757575';
+  }
 
   return (
     <div style={{
@@ -116,36 +132,19 @@ function FixedPlanChatHeader({
       }}>
         <UserAvatar url={ctx.otherAvatarUrl} name={ctx.otherNickname} size={50} />
 
-        {/* Status badge */}
-        {isPending ? (
-          <span style={{
-            display: 'inline-block',
-            backgroundColor: '#FFF0F3',
-            color: '#FF0000',
-            fontSize: '11px',
-            fontWeight: 590,
-            lineHeight: '16px',
-            letterSpacing: '0.5px',
-            padding: '2px 10px',
-            borderRadius: '999px',
-          }}>
-            返事待ち
-          </span>
-        ) : (
-          <span style={{
-            display: 'inline-block',
-            backgroundColor: '#E8F5E9',
-            color: '#2E7D32',
-            fontSize: '11px',
-            fontWeight: 590,
-            lineHeight: '16px',
-            letterSpacing: '0.5px',
-            padding: '2px 10px',
-            borderRadius: '999px',
-          }}>
-            同行予定
-          </span>
-        )}
+        <span style={{
+          display: 'inline-block',
+          backgroundColor: badgeBg,
+          color: badgeColor,
+          fontSize: '11px',
+          fontWeight: 590,
+          lineHeight: '16px',
+          letterSpacing: '0.5px',
+          padding: '2px 10px',
+          borderRadius: '999px',
+        }}>
+          {badgeText}
+        </span>
 
         {/* Other user name */}
         <span style={{
@@ -181,6 +180,128 @@ function FixedPlanChatHeader({
           </button>
         </div>
       )}
+    </div>
+  );
+}
+
+// ─── Terminal State Card (declined / cancelled) ────────────────────────────
+function TerminalCard({ ctx, onDiscovery, onClose }: { ctx: FixedPlanContext; onDiscovery: () => void; onClose: () => void; }) {
+  const isDeclined = ctx.invitationStatus === 'declined';
+
+  let primaryText = '';
+  let secondaryText = '同行予定はキャンセルされました';
+
+  if (isDeclined) {
+    primaryText = ctx.isSender
+      ? `${ctx.otherNickname}さんが今回は見送ることにしました`
+      : 'このお誘いを見送りました';
+  } else {
+    // cancelled
+    primaryText = ctx.isSender
+      ? '招待を取り消しました'
+      : `${ctx.otherNickname}さんが招待を取り消しました`;
+  }
+
+  return (
+    <div style={{
+      margin: '24px auto',
+      width: '301px',
+      maxWidth: 'calc(100% - 32px)',
+      backgroundColor: '#fff',
+      border: '1px solid #E9E9EB',
+      borderRadius: '26px',
+      boxShadow: 'inset 0 1px 3px rgba(0,0,0,0.06)',
+      padding: '20px 16px 16px',
+    }}>
+      {/* Status icon */}
+      <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '12px' }}>
+        <div style={{
+          width: '40px',
+          height: '40px',
+          borderRadius: '50%',
+          backgroundColor: '#F5F5F5',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+        }}>
+          <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="#757575" strokeWidth="2" strokeLinecap="round">
+            <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
+            <line x1="16" y1="2" x2="16" y2="6" />
+            <line x1="8" y1="2" x2="8" y2="6" />
+            <line x1="3" y1="10" x2="21" y2="10" />
+            <line x1="10" y1="15" x2="14" y2="15" />
+          </svg>
+        </div>
+      </div>
+
+      {/* Status text */}
+      <p style={{ color: '#1E2939', fontSize: '15px', fontWeight: 590, lineHeight: '20px', textAlign: 'center', margin: '0 0 4px' }}>
+        {primaryText}
+      </p>
+      <p style={{ color: '#4F4F4F', fontSize: '13px', fontWeight: 510, lineHeight: '18px', textAlign: 'center', margin: '0 0 16px' }}>
+        {secondaryText}
+      </p>
+
+      {/* Divider */}
+      <div style={{ height: '1px', backgroundColor: '#F0F0F0', margin: '0 0 12px' }} />
+
+      {/* Schedule context */}
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', marginBottom: '16px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="#757575" strokeWidth="2" strokeLinecap="round">
+            <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
+            <line x1="16" y1="2" x2="16" y2="6" />
+            <line x1="8" y1="2" x2="8" y2="6" />
+            <line x1="3" y1="10" x2="21" y2="10" />
+          </svg>
+          <span style={{ color: '#4F4F4F', fontSize: '12px' }}>{ctx.days_of_week} {ctx.start_time}ごろ</span>
+        </div>
+        {ctx.place_name && (
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="#757575" strokeWidth="2" strokeLinecap="round">
+              <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
+              <circle cx="12" cy="10" r="3" />
+            </svg>
+            <span style={{ color: '#4F4F4F', fontSize: '12px' }}>{ctx.place_name}</span>
+          </div>
+        )}
+      </div>
+
+      {/* Actions */}
+      <div style={{ display: 'flex', gap: '8px' }}>
+        <button
+          onClick={onDiscovery}
+          style={{
+            flex: 1,
+            backgroundColor: '#fff',
+            border: '1px solid #FF7622',
+            borderRadius: '11px',
+            color: '#FF7622',
+            fontSize: '13px',
+            fontWeight: 500,
+            padding: '10px 0',
+            cursor: 'pointer',
+          }}
+        >
+          他の人をみる
+        </button>
+        <button
+          onClick={onClose}
+          style={{
+            flex: 1,
+            backgroundColor: '#fff',
+            border: '1px solid #CCCCCC',
+            borderRadius: '11px',
+            color: '#000',
+            fontSize: '13px',
+            fontWeight: 500,
+            padding: '10px 0',
+            cursor: 'pointer',
+          }}
+        >
+          トークを閉じる
+        </button>
+      </div>
     </div>
   );
 }
@@ -463,6 +584,27 @@ export default function ChatClient({
         setIsActionLoading(false);
       }
     };
+
+    // ── Terminal state (declined / cancelled) ────────────────────────────
+    if (ctx.isConversationClosed) {
+      return (
+        <div style={{ height: '100dvh', display: 'flex', flexDirection: 'column' }}>
+          <FixedPlanChatHeader
+            ctx={ctx}
+            onBack={() => router.push('/connections?tab=plans')}
+            onCancel={() => {}}
+            isActionLoading={false}
+          />
+          <div style={{ flex: 1, overflowY: 'auto', backgroundColor: '#F8F8F8', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+            <TerminalCard
+              ctx={ctx}
+              onDiscovery={() => router.push(ctx.discoveryUrl)}
+              onClose={() => router.push('/connections?tab=plans')}
+            />
+          </div>
+        </div>
+      );
+    }
 
     const messageList = (
       <div style={{ display: 'flex', flexDirection: 'column', paddingBottom: '16px' }}>
