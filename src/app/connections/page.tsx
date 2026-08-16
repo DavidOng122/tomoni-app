@@ -43,9 +43,6 @@ export default async function ConnectionsPage({ searchParams }: { searchParams: 
     console.error('Error fetching conversations:', convError);
   }
 
-  const debugConv = (conversationsData || []).find(c => c.conversation_id === '85272ad8-39d7-473c-8207-df46b54ef6c0');
-  require('fs').writeFileSync('C:/Users/ojx21/Desktop/tomoni/tomoni-app/debug-page.json', JSON.stringify({ debugConv, error: convError }, null, 2));
-
   // Collect unique user_ids to fetch profiles
   const userIdsToFetch = new Set<string>();
   conversationsData?.forEach(conv => {
@@ -212,11 +209,83 @@ export default async function ConnectionsPage({ searchParams }: { searchParams: 
     };
   });
 
+  // Fetch closed Fixed Schedule conversations (declined/cancelled) where current user is a member
+  const { data: closedConvsData, error: closedConvError } = await supabase
+    .from('conversations')
+    .select(`
+      conversation_id,
+      fixed_plan_id,
+      related_invitation_id,
+      fixed_plans ( activity_type, days_of_week, start_time ),
+      invitations ( invitation_id, invitation_status, sender_user_id, receiver_user_id ),
+      conversation_members ( user_id, left_at )
+    `)
+    .eq('conversation_status', 'closed')
+    .not('fixed_plan_id', 'is', null)
+    .not('related_invitation_id', 'is', null)
+    .is('event_id', null);
+
+  if (closedConvError) {
+    console.error('Error fetching closed fixed plan conversations:', closedConvError);
+  }
+
+  // Filter: current user must be a member + invitation must be declined or cancelled
+  const closedFixedConvs = (closedConvsData || []).filter(conv => {
+    const myMember = conv.conversation_members?.find((m: any) => m.user_id === user.id);
+    if (!myMember) return false;
+    const inv = Array.isArray(conv.invitations) ? conv.invitations[0] : conv.invitations;
+    return inv?.invitation_status === 'declined' || inv?.invitation_status === 'cancelled';
+  });
+
+  // Collect other-user IDs from closed conversations
+  const closedProfileIds = new Set<string>();
+  closedFixedConvs.forEach(conv => {
+    const inv = Array.isArray(conv.invitations) ? conv.invitations[0] : conv.invitations;
+    if (inv) {
+      const otherId = inv.sender_user_id === user.id ? inv.receiver_user_id : inv.sender_user_id;
+      closedProfileIds.add(otherId);
+    }
+  });
+
+  const closedProfilesMap = new Map<string, { nickname: string; avatar_url: string | null }>();
+  if (closedProfileIds.size > 0) {
+    const { data: closedProfilesData } = await supabase
+      .from('profiles')
+      .select('user_id, nickname, avatar_url')
+      .in('user_id', Array.from(closedProfileIds));
+    closedProfilesData?.forEach(p => closedProfilesMap.set(p.user_id, p));
+  }
+
+  const activityLabelsMap: Record<string, string> = {
+    walking: '朝の散歩', morning_walk: '朝の散歩', running: 'ランニング', cycling: 'サイクリング',
+  };
+
+  const closedPlanConversations = closedFixedConvs.map(conv => {
+    const inv = Array.isArray(conv.invitations) ? conv.invitations[0] : conv.invitations;
+    const plan = Array.isArray(conv.fixed_plans) ? conv.fixed_plans[0] : conv.fixed_plans;
+    const isSender = inv?.sender_user_id === user.id;
+    const otherId = isSender ? inv?.receiver_user_id : inv?.sender_user_id;
+    const otherProfile = otherId ? closedProfilesMap.get(otherId) : null;
+
+    return {
+      conversation_id: conv.conversation_id,
+      invitation_status: inv?.invitation_status || 'declined',
+      is_sender: isSender,
+      other_nickname: otherProfile?.nickname || 'ユーザー',
+      other_avatar_url: otherProfile?.avatar_url || null,
+      activity_type: plan?.activity_type || '',
+      activity_label: plan?.activity_type ? (activityLabelsMap[plan.activity_type] || plan.activity_type) : '',
+      days_of_week: plan?.days_of_week || [],
+      start_time: (plan?.start_time || '').substring(0, 5),
+    };
+  });
+
   return <ConnectionsView 
     eventInvitations={eventInvitations || []} 
     activeConversations={activeConversations} 
     sentPlanInvitations={sentPlanInvitations}
     receivedPlanInvitations={receivedPlanInvitations}
+    closedPlanConversations={closedPlanConversations}
     initialTab={initialTab}
   />;
 }
