@@ -4,10 +4,13 @@ import React from 'react';
 import Link from 'next/link';
 import { PageContainer } from '@/components/layout/PageContainer';
 import { EventParticipationButton } from '@/components/events/EventParticipationButton';
+import { joinEventGroupChat } from '@/app/actions/joinEventGroupChat';
 import { EventTopNav } from '@/features/events/components/EventTopNav';
 import { EventParticipantPreviewData } from '@/features/events/lib/getEventParticipantPreview';
 import { Database } from '@/types/database.types';
 import { formatEventDateTime } from '@/utils/dateFormatter';
+import { useRouter } from 'next/navigation';
+import { useState, useTransition } from 'react';
 import styles from './EventDetailView.module.css';
 
 type EventRow = Database['public']['Tables']['events']['Row'];
@@ -29,6 +32,30 @@ export const EventDetailView: React.FC<EventDetailViewProps> = ({
   pendingRequestCount = 0,
   isCreator = false,
 }) => {
+  const router = useRouter();
+  const [isPending, startTransition] = useTransition();
+
+  const handleJoinGroup = () => {
+    startTransition(async () => {
+      try {
+        const result = await joinEventGroupChat(event.event_id);
+        console.log("joinEventGroupChat result:", result);
+        
+        if (result.success) {
+          if (!result.conversationId || result.conversationId === 'undefined' || result.conversationId === 'null') {
+            alert('Error: conversationId is invalid. Value: ' + result.conversationId);
+            return;
+          }
+          router.push(`/chat/${result.conversationId}`);
+        } else {
+          alert('グループへの参加に失敗しました: ' + result.error);
+        }
+      } catch (err: any) {
+        alert('Exception in handleJoinGroup: ' + err.message);
+      }
+    });
+  };
+
   let ctaUrl: string | null = null;
   let ctaText: string | null = null;
   let ctaDisabled = false;
@@ -152,9 +179,13 @@ export const EventDetailView: React.FC<EventDetailViewProps> = ({
             {participation?.participation_status === 'going' &&
               participation.participation_date &&
               participation.arrival_time && (
-                <Link className={styles.peopleLink} href={`/events/${event.event_id}/people`}>
-                  同じ時間に参加する人を見る
-                </Link>
+                <button 
+                  className={styles.peopleLink} 
+                  onClick={handleJoinGroup}
+                  disabled={isPending}
+                >
+                  {isPending ? '参加中...' : '同じ時間に参加する人を見る'}
+                </button>
               )}
 
             {event.place_name && (

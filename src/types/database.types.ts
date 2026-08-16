@@ -644,6 +644,10 @@ export type Database = {
           user_id: string
         }[]
       }
+      get_or_join_event_group_chat: {
+        Args: { p_event_id: string }
+        Returns: string
+      }
       get_received_event_invitations: {
         Args: never
         Returns: {
@@ -665,6 +669,10 @@ export type Database = {
           nickname: string
           user_id: string
         }[]
+      }
+      is_conversation_member: {
+        Args: { p_conversation_id: string }
+        Returns: boolean
       }
       join_event: { Args: { p_event_id: string }; Returns: undefined }
       join_event_with_plan: {

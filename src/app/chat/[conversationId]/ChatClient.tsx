@@ -22,6 +22,8 @@ interface ChatClientProps {
     place_name: string;
   };
   otherNickname: string;
+  isGroupChat?: boolean;
+  participantCount?: number;
 }
 
 export default function ChatClient({
@@ -29,7 +31,9 @@ export default function ChatClient({
   currentUserId,
   initialMessages,
   eventContext,
-  otherNickname
+  otherNickname,
+  isGroupChat = false,
+  participantCount = 2
 }: ChatClientProps) {
   const router = useRouter();
   const supabase = createClient();
@@ -108,13 +112,16 @@ export default function ChatClient({
     return `${d.getHours()}:${d.getMinutes().toString().padStart(2, '0')}`;
   };
 
+  const hasMessageFromOther = messages.some(m => m.sender_user_id !== currentUserId);
+  const isAloneInGroup = isGroupChat && participantCount <= 1 && !hasMessageFromOther;
+
   return (
     <div style={{ height: '100dvh', display: 'flex', flexDirection: 'column' }}>
       <ChatLayout
         header={
           <div style={{ backgroundColor: '#fff', borderBottom: '1px solid #E5E7EB' }}>
             <MobileHeader 
-              title={`${otherNickname}さん`} 
+              title={isGroupChat ? otherNickname : `${otherNickname}さん`} 
               leftElement={
                 <Button variant="ghost" onClick={() => router.push('/connections')} style={{ padding: '0 8px' }}>
                   <svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round">
@@ -140,7 +147,15 @@ export default function ChatClient({
           </div>
         }
         messageList={
-          messages.length === 0 ? (
+          isAloneInGroup ? (
+            <div style={{ textAlign: 'center', marginTop: '60px', color: '#666' }}>
+              <div style={{ marginBottom: '8px', fontSize: '15px', fontWeight: 600 }}>まだ他の参加者はいません</div>
+              <div style={{ fontSize: '14px', lineHeight: 1.5 }}>
+                参加者が増えると、<br />
+                ここでイベントについて話せます。
+              </div>
+            </div>
+          ) : messages.length === 0 ? (
             <div style={{ textAlign: 'center', marginTop: '40px', color: '#999' }}>
               まだメッセージはありません
             </div>
@@ -158,7 +173,7 @@ export default function ChatClient({
             </div>
           )
         }
-        inputArea={<ChatComposer onSend={handleSend} isSending={isSending} />}
+        inputArea={!isAloneInGroup ? <ChatComposer onSend={handleSend} isSending={isSending} /> : null}
       />
     </div>
   );
