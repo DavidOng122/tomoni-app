@@ -11,10 +11,20 @@ import styles from './DiscoverView.module.css';
 
 type EventRow = Database['public']['Tables']['events']['Row'];
 
+export interface CurrentActivityData {
+  name: string;
+  verified: boolean;
+  eventTitle: string;
+  dateTime: string;
+  location: string;
+  avatarUrl: string;
+}
+
 interface DiscoverViewProps {
   recommendations: DiscoverRecommendation[];
   hasPlans: boolean;
   events: EventRow[];
+  currentActivity?: CurrentActivityData | null;
 }
 
 const matchReasonLabels: Record<MatchReasonCode, string> = {
@@ -53,7 +63,7 @@ const PinIcon = () => (
   </svg>
 );
 
-export const DiscoverView: React.FC<DiscoverViewProps> = ({ recommendations, hasPlans, events }) => {
+export const DiscoverView: React.FC<DiscoverViewProps> = ({ recommendations, hasPlans, events, currentActivity }) => {
   const router = useRouter();
 
   const navItems = [
@@ -96,6 +106,26 @@ export const DiscoverView: React.FC<DiscoverViewProps> = ({ recommendations, has
         </div>
 
         <main className={styles.content}>
+          {currentActivity && (
+            <section aria-label="現在の活動">
+              <div className={styles.currentCard}>
+                <div className={styles.currentAvatarGroup}>
+                  <img className={styles.currentAvatar} src={currentActivity.avatarUrl} alt="Avatar" width="50" height="50" />
+                  {currentActivity.verified ? <span className={styles.verified}>確認済み</span> : null}
+                </div>
+                <div className={styles.currentDetails}>
+                  <div className={styles.currentTitleLine}>
+                    <h2>{currentActivity.name}</h2>
+                    <span className={styles.titleDivider} aria-hidden="true" />
+                    <h3>{currentActivity.eventTitle}</h3>
+                  </div>
+                  <div className={styles.metaLine}><ClockIcon /><span>{currentActivity.dateTime}</span></div>
+                  <div className={styles.metaLine}><PinIcon /><span>{currentActivity.location}</span></div>
+                </div>
+              </div>
+            </section>
+          )}
+
           <section className={styles.section}>
             <div className={styles.sectionHeading}>
               <h2>予定からつながる</h2>

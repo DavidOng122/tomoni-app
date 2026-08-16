@@ -76,19 +76,19 @@ export const MyPageView: React.FC<MyPageViewProps> = ({ profile, fixedPlans }) =
               {displayedProfile.age_range}歳
               {displayedProfile.gender && displayedProfile.gender !== 'prefer_not_to_say'
                 ? `　❘　${getGenderLabel(displayedProfile.gender)}`
-                : ''}
+                : null}
               {'　❘　世田谷区'}
             </p>
 
-            {displayedProfile.tags?.length > 0 && (
+            {displayedProfile.tags?.length > 0 ? (
               <div className={styles.tags}>
                 {displayedProfile.tags.map((tag: string) => (
                   <span key={tag}>{getTagLabel(tag)}</span>
                 ))}
               </div>
-            )}
+            ) : null}
 
-            {displayedProfile.bio && <p className={styles.bio}>{displayedProfile.bio}</p>}
+            {displayedProfile.bio ? <p className={styles.bio}>{displayedProfile.bio}</p> : null}
           </section>
 
           <section className={styles.stats} aria-label="活動実績">
