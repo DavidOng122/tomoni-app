@@ -2,8 +2,10 @@ import { createClient } from '@/infrastructure/auth/server';
 import ConnectionsView from './ConnectionsView';
 import { getEventParticipantPreview } from '@/features/events/lib/getEventParticipantPreview';
 
-export default async function ConnectionsPage() {
+export default async function ConnectionsPage({ searchParams }: { searchParams: Promise<{ tab?: string }> }) {
   const supabase = await createClient();
+  const resolvedSearchParams = await searchParams;
+  const initialTab = resolvedSearchParams.tab === 'plans' ? '同行予定' : 'あいさつ';
 
   const { data: eventInvitations, error } = await supabase
     .rpc('get_received_event_invitations');
@@ -15,10 +17,10 @@ export default async function ConnectionsPage() {
   const { data: { user }, error: authError } = await supabase.auth.getUser();
 
   if (authError || !user) {
-    return <ConnectionsView eventInvitations={eventInvitations || []} activeConversations={[]} />;
+    return <ConnectionsView eventInvitations={eventInvitations || []} activeConversations={[]} sentPlanInvitations={[]} initialTab={initialTab} />;
   }
 
-  // Fetch active conversations
+  // Fetch active conversations (Events + Accepted Fixed Plans)
   const { data: conversationsData, error: convError } = await supabase
     .from('conversations')
     .select(`
@@ -27,13 +29,15 @@ export default async function ConnectionsPage() {
       related_invitation_id,
       fixed_plan_id,
       events ( title, poster_url, start_at, end_at ),
+      fixed_plans ( activity_type ),
+      invitations ( invitation_status ),
       conversation_members (
         user_id,
         left_at
       )
     `)
     .eq('conversation_status', 'active')
-    .not('event_id', 'is', null);
+    .or('event_id.not.is.null,fixed_plan_id.not.is.null');
 
   if (convError) {
     console.error('Error fetching conversations:', convError);
@@ -67,17 +71,28 @@ export default async function ConnectionsPage() {
 
   const filteredConvs = (conversationsData || []).filter(conv => {
     const myMember = conv.conversation_members?.find((m: any) => m.user_id === user.id);
-    return myMember && myMember.left_at === null;
+    if (!myMember || myMember.left_at !== null) return false;
+    
+    if (conv.event_id) return true;
+    
+    // For fixed plan conversations, only show if accepted
+    if (conv.fixed_plan_id) {
+      const inv = Array.isArray(conv.invitations) ? conv.invitations[0] : conv.invitations;
+      return inv?.invitation_status === 'accepted';
+    }
+    return false;
   });
 
   const activeConversations = await Promise.all(filteredConvs.map(async conv => {
     const isGroupChat = conv.event_id && !conv.related_invitation_id && !conv.fixed_plan_id;
+    const isFixedPlan = !!conv.fixed_plan_id;
     const otherMember = conv.conversation_members?.find((m: any) => m.user_id !== user.id);
     const eventInfo = Array.isArray(conv.events) ? conv.events[0] : conv.events;
+    const planInfo = Array.isArray(conv.fixed_plans) ? conv.fixed_plans[0] : conv.fixed_plans;
     
     let displayName = 'ユーザー';
     let displayAvatar = null;
-    let subtitle = eventInfo?.title || 'イベント';
+    let subtitle = '予定';
 
     if (isGroupChat) {
       displayName = eventInfo?.title || 'イベント';
@@ -90,15 +105,118 @@ export default async function ConnectionsPage() {
       const profileInfo = otherMember ? profilesMap.get(otherMember.user_id) : null;
       displayName = profileInfo?.nickname || 'ユーザー';
       displayAvatar = profileInfo?.avatar_url || null;
+      
+      if (isFixedPlan) {
+        const activityLabels: Record<string, string> = { walking: '朝の散歩', morning_walk: '朝の散歩', running: 'ランニング', cycling: 'サイクリング' };
+        subtitle = planInfo?.activity_type ? (activityLabels[planInfo.activity_type] || planInfo.activity_type) : '同行予定';
+      } else {
+        subtitle = eventInfo?.title || 'イベント';
+      }
     }
 
     return {
       conversation_id: conv.conversation_id,
       other_nickname: displayName,
       other_avatar_url: displayAvatar,
-      event_title: subtitle
+      event_title: subtitle,
+      is_fixed_plan: isFixedPlan,
     };
   }));
 
-  return <ConnectionsView eventInvitations={eventInvitations || []} activeConversations={activeConversations} />;
+  // Fetch pending fixed plan invitations sent by the current user
+  const { data: sentInvitationsData, error: sentInvError } = await supabase
+    .from('invitations')
+    .select(`
+      invitation_id,
+      fixed_plan_id,
+      receiver_user_id,
+      invitation_status,
+      fixed_plans ( activity_type, days_of_week, start_time ),
+      conversations!inner ( conversation_id )
+    `)
+    .eq('sender_user_id', user.id)
+    .eq('invitation_status', 'pending')
+    .not('fixed_plan_id', 'is', null)
+    .is('event_id', null);
+
+  if (sentInvError) {
+    console.error('Error fetching sent fixed plan invitations:', sentInvError);
+  }
+
+  // Fetch pending fixed plan invitations RECEIVED by the current user
+  const { data: receivedInvitationsData, error: receivedInvError } = await supabase
+    .from('invitations')
+    .select(`
+      invitation_id,
+      fixed_plan_id,
+      sender_user_id,
+      invitation_status,
+      fixed_plans ( activity_type, days_of_week, start_time ),
+      conversations!inner ( conversation_id )
+    `)
+    .eq('receiver_user_id', user.id)
+    .eq('invitation_status', 'pending')
+    .not('fixed_plan_id', 'is', null)
+    .is('event_id', null);
+
+  if (receivedInvError) {
+    console.error('Error fetching received fixed plan invitations:', receivedInvError);
+  }
+
+  // We need the receiver AND sender profiles
+  const profileIdsToFetch = new Set<string>();
+  sentInvitationsData?.forEach(inv => profileIdsToFetch.add(inv.receiver_user_id));
+  receivedInvitationsData?.forEach(inv => profileIdsToFetch.add(inv.sender_user_id));
+
+  const planProfilesMap = new Map<string, { nickname: string, avatar_url: string | null }>();
+  if (profileIdsToFetch.size > 0) {
+    const { data: planProfilesData } = await supabase
+      .from('profiles')
+      .select('user_id, nickname, avatar_url')
+      .in('user_id', Array.from(profileIdsToFetch));
+      
+    planProfilesData?.forEach(p => {
+      planProfilesMap.set(p.user_id, p);
+    });
+  }
+
+  const sentPlanInvitations = (sentInvitationsData || []).map(inv => {
+    const receiverProfile = planProfilesMap.get(inv.receiver_user_id);
+    const planInfo = Array.isArray(inv.fixed_plans) ? inv.fixed_plans[0] : inv.fixed_plans;
+    const conversationInfo = Array.isArray(inv.conversations) ? inv.conversations[0] : inv.conversations;
+
+    return {
+      invitation_id: inv.invitation_id,
+      conversation_id: conversationInfo?.conversation_id || '',
+      receiver_nickname: receiverProfile?.nickname || 'ユーザー',
+      receiver_avatar_url: receiverProfile?.avatar_url || null,
+      activity_type: planInfo?.activity_type || '',
+      days_of_week: planInfo?.days_of_week || [],
+      start_time: planInfo?.start_time || ''
+    };
+  });
+
+  const receivedPlanInvitations = (receivedInvitationsData || []).map(inv => {
+    const senderProfile = planProfilesMap.get(inv.sender_user_id);
+    const planInfo = Array.isArray(inv.fixed_plans) ? inv.fixed_plans[0] : inv.fixed_plans;
+    const conversationInfo = Array.isArray(inv.conversations) ? inv.conversations[0] : inv.conversations;
+
+    return {
+      invitation_id: inv.invitation_id,
+      conversation_id: conversationInfo?.conversation_id || '',
+      sender_nickname: senderProfile?.nickname || 'ユーザー',
+      sender_avatar_url: senderProfile?.avatar_url || null,
+      activity_type: planInfo?.activity_type || '',
+      days_of_week: planInfo?.days_of_week || [],
+      start_time: planInfo?.start_time || ''
+    };
+  });
+
+  return <ConnectionsView 
+    eventInvitations={eventInvitations || []} 
+    activeConversations={activeConversations} 
+    sentPlanInvitations={sentPlanInvitations}
+    receivedPlanInvitations={receivedPlanInvitations}
+    initialTab={initialTab}
+  />;
 }

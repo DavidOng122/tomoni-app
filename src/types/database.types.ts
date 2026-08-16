@@ -581,6 +581,10 @@ export type Database = {
         Args: { p_invitation_id: string }
         Returns: string
       }
+      accept_fixed_schedule_invitation: {
+        Args: { p_invitation_id: string }
+        Returns: Json
+      }
       approve_event_participant: {
         Args: { p_participation_id: string }
         Returns: string
@@ -593,6 +597,10 @@ export type Database = {
         Args: { p_event_id: string }
         Returns: undefined
       }
+      cancel_fixed_schedule_invitation: {
+        Args: { p_invitation_id: string }
+        Returns: Json
+      }
       complete_onboarding: {
         Args: { p_profile: Json; p_schedules: Json }
         Returns: Json
@@ -600,6 +608,10 @@ export type Database = {
       create_event_invitation: {
         Args: { p_event_id: string; p_receiver_user_id: string }
         Returns: string
+      }
+      create_fixed_schedule_invitation: {
+        Args: { p_fixed_plan_id: string; p_receiver_id: string }
+        Returns: Json
       }
       create_user_event: {
         Args: {
@@ -620,6 +632,10 @@ export type Database = {
       decline_event_invitation: {
         Args: { p_invitation_id: string }
         Returns: boolean
+      }
+      decline_fixed_schedule_invitation: {
+        Args: { p_invitation_id: string }
+        Returns: Json
       }
       get_discover_recommendations: {
         Args: { p_my_plan_id?: string }

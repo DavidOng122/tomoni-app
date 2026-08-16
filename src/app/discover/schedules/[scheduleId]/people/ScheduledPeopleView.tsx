@@ -1,14 +1,16 @@
 'use client';
 
-import React, { useMemo, useState, useSyncExternalStore } from 'react';
+import React, { useState } from 'react';
 import { PageContainer } from '@/components/layout/PageContainer';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 import { DiscoverRecommendation, MatchReasonCode } from '@/features/discover/types';
+import { createFixedScheduleInvitation } from '@/app/actions/createFixedScheduleInvitation';
 
 import styles from './ScheduledPeopleView.module.css';
 
 interface ScheduledPeopleViewProps {
   plan: {
+    fixed_plan_id: string;
     days_of_week: string[];
     start_time: string;
     place_name: string | null;
@@ -42,8 +44,7 @@ const dayLabels: Record<string, string> = {
 
 export const ScheduledPeopleView: React.FC<ScheduledPeopleViewProps> = ({ plan, recommendations }) => {
   const router = useRouter();
-  const searchParams = useSearchParams();
-
+  const [invitingId, setInvitingId] = useState<string | null>(null);
 
   const handleBack = () => {
     if (window.history.length > 2) {
@@ -53,13 +54,22 @@ export const ScheduledPeopleView: React.FC<ScheduledPeopleViewProps> = ({ plan, 
     }
   };
 
-  const handleInvite = (personId: string) => {
-    alert('機能は準備中です');
+  const handleInvite = async (personId: string) => {
+    if (invitingId) return;
+    setInvitingId(personId);
+    
+    const result = await createFixedScheduleInvitation(plan.fixed_plan_id, personId);
+    
+    if (result.success && result.conversationId) {
+      router.push(`/chat/${result.conversationId}`);
+    } else {
+      alert(result.error || 'エラーが発生しました');
+      setInvitingId(null);
+    }
   };
 
   const formattedDays = plan.days_of_week.map((day) => dayLabels[day] || day).join('・');
   const formattedTime = plan.start_time.substring(0, 5).replace(/^0/, '');
-
 
   return (
     <div className={styles.screen}>
@@ -120,8 +130,9 @@ export const ScheduledPeopleView: React.FC<ScheduledPeopleViewProps> = ({ plan, 
                         type="button"
                         className={styles.inviteButton}
                         onClick={() => handleInvite(person.candidateId)}
+                        disabled={invitingId !== null}
                       >
-                        同行に誘う
+                        {invitingId === person.candidateId ? '送信中...' : '同行に誘う'}
                       </button>
                     </article>
                   ))
