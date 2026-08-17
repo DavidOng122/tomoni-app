@@ -60,5 +60,43 @@ export default async function MyPage() {
     );
   }
 
-  return <MyPageView profile={profile} fixedPlans={fixedPlans || []} />;
+  // Fetch real connections (only 'active' rows from public.connections)
+  const { data: connectionsAsA } = await supabase
+    .from('connections')
+    .select('connection_id, user_b_id')
+    .eq('user_a_id', user.id)
+    .eq('connection_status', 'active');
+
+  const { data: connectionsAsB } = await supabase
+    .from('connections')
+    .select('connection_id, user_a_id')
+    .eq('user_b_id', user.id)
+    .eq('connection_status', 'active');
+
+  const connectedUserIds = [
+    ...(connectionsAsA || []).map((c) => c.user_b_id),
+    ...(connectionsAsB || []).map((c) => c.user_a_id),
+  ];
+
+  const connectionCount = connectedUserIds.length;
+
+  // Resolve connected user profiles (RLS allows reading active profiles)
+  let connectedProfiles: { user_id: string; nickname: string; avatar_url: string }[] = [];
+  if (connectedUserIds.length > 0) {
+    const { data: profiles } = await supabase
+      .from('profiles')
+      .select('user_id, nickname, avatar_url')
+      .in('user_id', connectedUserIds)
+      .eq('profile_status', 'active');
+    connectedProfiles = profiles || [];
+  }
+
+  return (
+    <MyPageView
+      profile={profile}
+      fixedPlans={fixedPlans || []}
+      connectionCount={connectionCount}
+      connectedProfiles={connectedProfiles}
+    />
+  );
 }

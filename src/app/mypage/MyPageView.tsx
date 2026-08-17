@@ -11,12 +11,20 @@ import { getGenderLabel, getTagLabel } from './lib/mappers';
 
 import styles from './MyPageView.module.css';
 
+interface ConnectedProfile {
+  user_id: string;
+  nickname: string;
+  avatar_url: string;
+}
+
 interface MyPageViewProps {
   profile: any;
   fixedPlans: any[];
+  connectionCount: number;
+  connectedProfiles: ConnectedProfile[];
 }
 
-export const MyPageView: React.FC<MyPageViewProps> = ({ profile, fixedPlans }) => {
+export const MyPageView: React.FC<MyPageViewProps> = ({ profile, fixedPlans, connectionCount, connectedProfiles }) => {
   const router = useRouter();
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const displayedProfile = profile;
@@ -97,6 +105,10 @@ export const MyPageView: React.FC<MyPageViewProps> = ({ profile, fixedPlans }) =
               <strong>{displayedFixedPlanCount}</strong>
               <span>固定予定</span>
             </div>
+            <div>
+              <strong>{connectionCount}</strong>
+              <span>つながり</span>
+            </div>
           </section>
 
           <section className={styles.fixedPlansSection}>
@@ -137,6 +149,28 @@ export const MyPageView: React.FC<MyPageViewProps> = ({ profile, fixedPlans }) =
               <span aria-hidden="true">＋</span>
               別の固定予定を追加する
             </button>
+          </section>
+
+          <section className={styles.connectionsSection}>
+            <h3>つながった人</h3>
+            {connectedProfiles.length === 0 ? (
+              <div className={styles.emptyConnections}>
+                まだつながりはありません
+              </div>
+            ) : (
+              <div className={styles.connectionList}>
+                {connectedProfiles.map((person) => (
+                  <div key={person.user_id} className={styles.connectionCard}>
+                    <img
+                      className={styles.connectionAvatar}
+                      src={person.avatar_url || '/images/mypage/profile-miki.png'}
+                      alt={person.nickname}
+                    />
+                    <span className={styles.connectionName}>{person.nickname}</span>
+                  </div>
+                ))}
+              </div>
+            )}
           </section>
         </main>
       </PageContainer>

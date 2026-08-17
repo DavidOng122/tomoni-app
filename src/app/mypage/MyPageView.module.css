@@ -251,6 +251,65 @@
   font-weight: 400;
 }
 
+.connectionsSection {
+  width: 100%;
+  padding: 0 7px;
+}
+
+.connectionsSection h3 {
+  margin: 0 0 14px;
+  font-size: 20px;
+  font-weight: 600;
+  line-height: 1.45;
+}
+
+.emptyConnections {
+  display: flex;
+  min-height: 100px;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid #eaeaea;
+  border-radius: 16px;
+  padding: 16px 24px;
+  background: #fff;
+  color: #999;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.connectionList {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+  gap: 16px;
+}
+
+.connectionCard {
+  display: flex;
+  align-items: center;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.connectionAvatar {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: #e7e7e7;
+  object-fit: cover;
+}
+
+.connectionName {
+  color: #333;
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 1.3;
+  text-align: center;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 80px;
+}
+
 .settingsModalOverlay {
   position: fixed;
   top: 0;
