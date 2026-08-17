@@ -1,11 +1,12 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { BottomNavigation } from '@/components/layout/BottomNavigation';
 import { PageContainer } from '@/components/layout/PageContainer';
 import { ACTIVITY_LABELS } from '@/features/fixed-schedules/lib/constants';
 import { formatWeekdays } from '@/features/fixed-schedules/lib/formatters';
+import { SignOutButton } from '@/features/auth/components/SignOutButton';
 import { getGenderLabel, getTagLabel } from './lib/mappers';
 
 import styles from './MyPageView.module.css';
@@ -15,14 +16,9 @@ interface MyPageViewProps {
   fixedPlans: any[];
 }
 
-const connectionAvatars = [
-  '/images/mypage/connection-miki.png',
-  '/images/mypage/connection-julia.png',
-  '/images/mypage/connection-megan.png',
-];
-
 export const MyPageView: React.FC<MyPageViewProps> = ({ profile, fixedPlans }) => {
   const router = useRouter();
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const displayedProfile = profile;
   const displayedFixedPlans = fixedPlans;
   const displayedFixedPlanCount = fixedPlans.length;
@@ -55,7 +51,12 @@ export const MyPageView: React.FC<MyPageViewProps> = ({ profile, fixedPlans }) =
         <main className={styles.content}>
           <header className={styles.header}>
             <h1>マイページ</h1>
-            <button type="button" className={styles.settingsButton} aria-label="設定">
+            <button 
+              type="button" 
+              className={styles.settingsButton} 
+              aria-label="設定"
+              onClick={() => setIsSettingsOpen(true)}
+            >
               <img src="/images/mypage/settings.svg" alt="" aria-hidden="true" />
             </button>
           </header>
@@ -96,16 +97,6 @@ export const MyPageView: React.FC<MyPageViewProps> = ({ profile, fixedPlans }) =
               <strong>{displayedFixedPlanCount}</strong>
               <span>固定予定</span>
             </div>
-            <i aria-hidden="true" />
-            <div>
-              <strong>3</strong>
-              <span>参加済み</span>
-            </div>
-            <i aria-hidden="true" />
-            <div>
-              <strong>4</strong>
-              <span>つながり</span>
-            </div>
           </section>
 
           <section className={styles.fixedPlansSection}>
@@ -138,33 +129,32 @@ export const MyPageView: React.FC<MyPageViewProps> = ({ profile, fixedPlans }) =
                 ))
               )}
             </div>
-            <button type="button" className={styles.addPlanButton}>
+            <button 
+              type="button" 
+              className={styles.addPlanButton}
+              onClick={() => router.push('/mypage/schedule/add')}
+            >
               <span aria-hidden="true">＋</span>
               別の固定予定を追加する
             </button>
           </section>
-
-          <section className={styles.connectionsSection}>
-            <h3>つながり</h3>
-            <div className={styles.connectionCard}>
-              <div className={styles.connectionCopy}>
-                <span>世田谷区</span>
-                <span>つながった人</span>
-              </div>
-              <div className={styles.connectionPeople}>
-                <div className={styles.avatarStack}>
-                  {connectionAvatars.map((avatar, index) => (
-                    <img key={avatar} src={avatar} alt="" aria-hidden="true" style={{ zIndex: 4 - index }} />
-                  ))}
-                  <span>+7</span>
-                </div>
-                <img className={styles.chevron} src="/images/mypage/chevron.svg" alt="" aria-hidden="true" />
-              </div>
-            </div>
-          </section>
         </main>
       </PageContainer>
       <BottomNavigation items={navItems} />
+
+      {isSettingsOpen && (
+        <div className={styles.settingsModalOverlay} onClick={() => setIsSettingsOpen(false)}>
+          <div className={styles.settingsModalContent} onClick={(e) => e.stopPropagation()}>
+            <div className={styles.settingsModalHeader}>
+              <h3>設定</h3>
+              <button type="button" className={styles.settingsModalClose} onClick={() => setIsSettingsOpen(false)}>✕</button>
+            </div>
+            <div className={styles.settingsModalBody}>
+              <SignOutButton fullWidth />
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

@@ -9,10 +9,7 @@ import { FixedActionArea } from '@/components/layout/FixedActionArea';
 import { useOnboardingSchedules } from '../onboarding/useOnboardingSchedules';
 import { formatTo12Hour, formatTo24Hour } from '../lib/formatters';
 
-import { LocationSection } from './onboarding-form/LocationSection';
-import { ActivityTypeSelector } from './onboarding-form/ActivityTypeSelector';
-import { WeekdaySelector } from './onboarding-form/WeekdaySelector';
-import { StartTimeSelector } from './onboarding-form/StartTimeSelector';
+import { FixedScheduleForm, isScheduleFormValid } from './FixedScheduleForm';
 
 export const FixedScheduleOnboardingView: React.FC = () => {
   const router = useRouter();
@@ -40,41 +37,7 @@ export const FixedScheduleOnboardingView: React.FC = () => {
     };
   });
 
-  const [displayTime, setDisplayTime] = useState('3:00');
-  const [isPm, setIsPm] = useState(true);
-
-  useEffect(() => {
-    if (editingScheduleId) {
-      const editingSchedule = schedules.find((s) => s.clientId === editingScheduleId);
-      if (!editingSchedule) {
-        clearEditing();
-      } else if (editingSchedule.startTime) {
-        const { time, isPm: pm } = formatTo12Hour(editingSchedule.startTime);
-        // eslint-disable-next-line react-hooks/set-state-in-effect
-        setDisplayTime(time);
-        // eslint-disable-next-line react-hooks/set-state-in-effect
-        setIsPm(pm);
-      }
-    }
-  }, [editingScheduleId, schedules, clearEditing]);
-
-  // Sync internal display time to canonical startTime format
-  useEffect(() => {
-    if (displayTime) {
-      const canonicalTime = formatTo24Hour(displayTime, isPm);
-      if (canonicalTime) {
-        // eslint-disable-next-line react-hooks/set-state-in-effect
-        setDraft(prev => ({ ...prev, startTime: canonicalTime }));
-      }
-    }
-  }, [displayTime, isPm]);
-
-  const isNextEnabled =
-    draft.activityType !== null &&
-    (draft.activityType !== 'other' || (draft.customActivityName && draft.customActivityName.trim().length > 0)) &&
-    draft.daysOfWeek.length > 0 &&
-    draft.place !== null &&
-    draft.startTime !== '';
+  const isNextEnabled = isScheduleFormValid(draft);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -89,28 +52,7 @@ export const FixedScheduleOnboardingView: React.FC = () => {
     router.push('/onboarding/schedules');
   };
 
-  const handleActivityChange = (activityType: ActivityType) => {
-    setDraft((prev) => ({
-      ...prev,
-      activityType,
-      customActivityName: activityType === 'other' ? prev.customActivityName : null
-    }));
-  };
 
-  const handleDayToggle = (day: DayOfWeek) => {
-    setDraft((prev) => {
-      const isSelected = prev.daysOfWeek.includes(day);
-      const daysOfWeek = isSelected
-        ? prev.daysOfWeek.filter((d) => d !== day)
-        : [...prev.daysOfWeek, day];
-      return { ...prev, daysOfWeek };
-    });
-  };
-
-  const handleTimeChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
-    let val = e.target.value.replace(/[^0-9:]/g, '');
-    setDisplayTime(val);
-  };
 
   return (
     <form className={styles.form} onSubmit={handleSubmit}>
@@ -128,53 +70,31 @@ export const FixedScheduleOnboardingView: React.FC = () => {
         <p className={styles.description}>活動・曜日・時間帯を選んでください</p>
       </header>
 
-      <LocationSection
-        place={draft.place}
-        onChange={(place) => setDraft(prev => ({ ...prev, place }))}
-      />
-
-      <ActivityTypeSelector
-        value={draft.activityType}
-        onChange={handleActivityChange}
-        customName={draft.customActivityName}
-        onCustomNameChange={(name) => setDraft(prev => ({ ...prev, customActivityName: name }))}
-      />
-
-      <WeekdaySelector
-        selectedDays={draft.daysOfWeek}
-        onToggleDay={handleDayToggle}
-      />
-
-      <StartTimeSelector
-        displayTime={displayTime}
-        isPm={isPm}
-        onTimeChange={handleTimeChange}
-        onPmChange={setIsPm}
-      />
-
-      <FixedActionArea transparentBorder={true}>
-        <div className={styles.actionContent}>
-          <Button
-            type="submit"
-            fullWidth
-            disabled={!isNextEnabled}
-            className={styles.primaryAction}
-          >
-            次へ
-          </Button>
-          {schedules.length === 0 && (
+      <FixedScheduleForm draft={draft} onChange={setDraft}>
+        <FixedActionArea transparentBorder={true}>
+          <div className={styles.actionContent}>
             <Button
-              type="button"
-              variant="ghost"
+              type="submit"
               fullWidth
-              onClick={() => router.push('/onboarding/profile')}
-              className={styles.secondaryAction}
+              disabled={!isNextEnabled}
+              className={styles.primaryAction}
             >
-              スキップ
+              次へ
             </Button>
-          )}
-        </div>
-      </FixedActionArea>
+            {schedules.length === 0 && (
+              <Button
+                type="button"
+                variant="ghost"
+                fullWidth
+                onClick={() => router.push('/onboarding/profile')}
+                className={styles.secondaryAction}
+              >
+                スキップ
+              </Button>
+            )}
+          </div>
+        </FixedActionArea>
+      </FixedScheduleForm>
     </form>
   );
 };

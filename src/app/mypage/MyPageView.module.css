@@ -163,23 +163,12 @@
   line-height: 1.4;
 }
 
-.stats i {
-  width: 1px;
-  height: 32px;
-  background: #eaeaea;
-}
-
-.fixedPlansSection,
-.connectionsSection {
-  width: 100%;
-}
-
 .fixedPlansSection {
+  width: 100%;
   padding: 0 7px;
 }
 
-.fixedPlansSection h3,
-.connectionsSection h3 {
+.fixedPlansSection h3 {
   margin: 0 0 14px;
   font-size: 20px;
   font-weight: 600;
@@ -262,73 +251,65 @@
   font-weight: 400;
 }
 
-.connectionsSection h3 {
-  margin-left: 7px;
+.settingsModalOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.4);
+  z-index: 999;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
 }
 
-.connectionCard {
-  display: flex;
+.settingsModalContent {
   width: 100%;
-  min-height: 80px;
+  max-width: 480px;
+  background: #fff;
+  border-radius: 16px 16px 0 0;
+  padding: 24px;
+  padding-bottom: calc(24px + var(--safe-area-bottom, 0px));
+  box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.1);
+  animation: slideUp 0.3s ease-out;
+}
+
+@keyframes slideUp {
+  from {
+    transform: translateY(100%);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+
+.settingsModalHeader {
+  display: flex;
   align-items: center;
   justify-content: space-between;
-  border: 1px solid #e4e4e4;
-  border-radius: 17px;
-  padding: 0 16px 0 24px;
-  background: #fff;
-  box-shadow: inset 2px 4px 10.6px rgb(0 0 0 / 10%);
+  margin-bottom: 24px;
 }
 
-.connectionCopy {
+.settingsModalHeader h3 {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.settingsModalClose {
+  background: transparent;
+  border: none;
+  font-size: 20px;
+  color: #666;
+  cursor: pointer;
+  padding: 4px;
+}
+
+.settingsModalBody {
   display: flex;
   flex-direction: column;
-  color: #4f4e4e;
-  font-size: 15px;
-  font-weight: 600;
-  line-height: 1.45;
-}
-
-.connectionPeople,
-.avatarStack {
-  display: flex;
-  align-items: center;
-}
-
-.avatarStack {
-  margin-right: 14px;
-}
-
-.avatarStack img,
-.avatarStack span {
-  width: 30px;
-  height: 30px;
-  border: 2px solid #fff;
-  border-radius: 50%;
-  margin-left: -9px;
-}
-
-.avatarStack img:first-child {
-  margin-left: 0;
-}
-
-.avatarStack img {
-  object-fit: cover;
-}
-
-.avatarStack span {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: #757575;
-  color: #ebebeb;
-  font-size: 13px;
-  font-weight: 500;
-  z-index: 0;
-}
-
-.chevron {
-  width: 16px;
-  height: 16px;
+  gap: 16px;
 }
 
 .navIcon {
@@ -397,18 +378,4 @@
     padding-top: 28px;
   }
 
-  .connectionCard {
-    padding-right: 12px;
-    padding-left: 18px;
-  }
-
-  .avatarStack {
-    margin-right: 8px;
-  }
-
-  .avatarStack img,
-  .avatarStack span {
-    width: 28px;
-    height: 28px;
-  }
 }
