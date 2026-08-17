@@ -1,6 +1,7 @@
 import { createClient } from '@/infrastructure/auth/server';
 import ConnectionsView from './ConnectionsView';
 import { getEventParticipantPreview } from '@/features/events/lib/getEventParticipantPreview';
+import { getLatestMessagesByConversation } from '@/features/connections/domain/getLatestMessagesByConversation';
 
 export default async function ConnectionsPage({ searchParams }: { searchParams: Promise<{ tab?: string }> }) {
   const supabase = await createClient();
@@ -80,12 +81,26 @@ export default async function ConnectionsPage({ searchParams }: { searchParams: 
     return false;
   });
 
+  const conversationIds = filteredConvs.map((conversation) => conversation.conversation_id);
+  let latestMessageByConversation = new Map<string, { content: string; created_at: string }>();
+  if (conversationIds.length > 0) {
+    const { data: latestMessages } = await supabase
+      .from('messages')
+      .select('conversation_id, content, created_at')
+      .in('conversation_id', conversationIds)
+      .not('content', 'is', null)
+      .order('created_at', { ascending: false });
+
+    latestMessageByConversation = getLatestMessagesByConversation(latestMessages || []);
+  }
+
   const activeConversations = await Promise.all(filteredConvs.map(async conv => {
     const isGroupChat = conv.event_id && !conv.related_invitation_id && !conv.fixed_plan_id;
     const isFixedPlan = !!conv.fixed_plan_id;
     const otherMember = conv.conversation_members?.find((m: any) => m.user_id !== user.id);
     const eventInfo = Array.isArray(conv.events) ? conv.events[0] : conv.events;
     const planInfo = Array.isArray(conv.fixed_plans) ? conv.fixed_plans[0] : conv.fixed_plans;
+    const latestMessage = latestMessageByConversation.get(conv.conversation_id);
     
     let displayName = 'ユーザー';
     let displayAvatar = null;
@@ -117,6 +132,8 @@ export default async function ConnectionsPage({ searchParams }: { searchParams: 
       other_avatar_url: displayAvatar,
       event_title: subtitle,
       is_fixed_plan: isFixedPlan,
+      last_message: latestMessage?.content || null,
+      last_message_at: latestMessage?.created_at || null,
     };
   }));
 

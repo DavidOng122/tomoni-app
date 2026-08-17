@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import Image from 'next/image';
 import { createClient } from '@/infrastructure/auth/client';
 import { Database } from '@/types/database.types';
 import { ChatLayout } from '@/components/layout/ChatLayout';
@@ -11,6 +12,8 @@ import { ChatComposer } from '@/features/chat/components/ChatComposer';
 import { acceptFixedScheduleInvitation } from '@/app/actions/acceptFixedScheduleInvitation';
 import { declineFixedScheduleInvitation } from '@/app/actions/declineFixedScheduleInvitation';
 import { cancelFixedScheduleInvitation } from '@/app/actions/cancelFixedScheduleInvitation';
+import { getMessageAvatarUrl } from '@/features/chat/domain/getMessageAvatarUrl';
+import styles from './ChatClient.module.css';
 
 type MessageRow = Database['public']['Tables']['messages']['Row'];
 
@@ -21,6 +24,7 @@ export interface FixedPlanContext {
   isSender: boolean;
   otherNickname: string;
   otherAvatarUrl: string | null;
+  headline: string;
   activityLabel: string;
   inviteMessage: string;
   days_of_week: string;
@@ -55,132 +59,60 @@ function BackArrow() {
   );
 }
 
-// ─── UserAvatar ──────────────────────────────────────────────────────────────
-function UserAvatar({ url, name, size = 50 }: { url: string | null; name: string; size?: number }) {
-  return (
-    <div style={{
-      width: size,
-      height: size,
-      borderRadius: '50%',
-      backgroundColor: '#F0F0F0',
-      overflow: 'hidden',
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center',
-      flexShrink: 0,
-    }}>
-      {url ? (
-        <img src={url} alt={name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-      ) : (
-        <svg viewBox="0 0 24 24" fill="none" stroke="#BDBDBD" strokeWidth="1.8" style={{ width: size * 0.55, height: size * 0.55 }}>
-          <circle cx="12" cy="7" r="4" />
-          <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
-        </svg>
-      )}
-    </div>
-  );
-}
-
 // ─── Fixed Schedule Header ──────────────────────────────────────────
 function FixedPlanChatHeader({
   ctx,
   onBack,
-  onCancel,
   isActionLoading,
 }: {
   ctx: FixedPlanContext;
   onBack: () => void;
-  onCancel: () => void;
   isActionLoading: boolean;
 }) {
   const isPending = ctx.invitationStatus === 'pending';
   const isClosed = ctx.isConversationClosed;
 
   let badgeText = '同行予定';
-  let badgeBg = '#E8F5E9';
-  let badgeColor = '#2E7D32';
+  let badgeClassName = `${styles.statusBadge} ${styles.statusAccepted}`;
   if (isPending) {
     badgeText = '返事待ち';
-    badgeBg = '#FFF0F3';
-    badgeColor = '#FF0000';
+    badgeClassName = styles.statusBadge;
   } else if (isClosed) {
     badgeText = 'キャンセル済';
-    badgeBg = '#F5F5F5';
-    badgeColor = '#757575';
+    badgeClassName = `${styles.statusBadge} ${styles.statusClosed}`;
   }
 
   return (
-    <div style={{
-      backgroundColor: '#fff',
-      borderBottom: '1px solid #E9E9EB',
-      paddingBottom: '12px',
-    }}>
-      {/* Row: back button */}
-      <div style={{ padding: '12px 16px 8px' }}>
-        <Button variant="ghost" onClick={onBack} style={{ padding: '0 8px' }} aria-label="戻る" disabled={isActionLoading}>
-          <BackArrow />
-        </Button>
-      </div>
-
-      {/* Centered identity */}
-      <div style={{
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        gap: '6px',
-        paddingBottom: '4px',
-      }}>
-        <UserAvatar url={ctx.otherAvatarUrl} name={ctx.otherNickname} size={50} />
-
-        <span style={{
-          display: 'inline-block',
-          backgroundColor: badgeBg,
-          color: badgeColor,
-          fontSize: '11px',
-          fontWeight: 590,
-          lineHeight: '16px',
-          letterSpacing: '0.5px',
-          padding: '2px 10px',
-          borderRadius: '999px',
-        }}>
-          {badgeText}
-        </span>
-
-        {/* Other user name */}
-        <span style={{
-          color: '#000',
-          fontSize: '20px',
-          fontWeight: 590,
-          lineHeight: '16px',
-          letterSpacing: '0.5px',
-        }}>
-          {ctx.otherNickname}
-        </span>
-      </div>
-
-      {/* Sender-only cancel action when pending */}
-      {isPending && ctx.isSender && (
-        <div style={{ display: 'flex', justifyContent: 'center', marginTop: '10px' }}>
-          <button
-            type="button"
-            onClick={onCancel}
-            disabled={isActionLoading}
-            style={{
-              background: 'none',
-              border: 'none',
-              cursor: isActionLoading ? 'wait' : 'pointer',
-              color: '#FF6900',
-              fontSize: '14px',
-              fontWeight: 500,
-              lineHeight: '20px',
-              opacity: isActionLoading ? 0.5 : 1,
-            }}
-          >
-            {isActionLoading ? '処理中...' : '招待を取り消す'}
-          </button>
+    <header className={styles.fixedPlanHeader}>
+      <div className={styles.fixedPlanHeaderRow}>
+        <button
+          className={`${styles.iconButton} ${styles.backButton}`}
+          type="button"
+          onClick={onBack}
+          aria-label="戻る"
+          disabled={isActionLoading}
+        >
+          <Image src="/images/discover/invite-preview/back.svg" alt="" width={35} height={35} />
+        </button>
+        <div className={styles.identity}>
+          <div className={styles.avatarStatus}>
+            <div className={styles.avatar}>
+              {ctx.otherAvatarUrl ? (
+                <img src={ctx.otherAvatarUrl} alt={`${ctx.otherNickname}さん`} />
+              ) : (
+                <svg className={styles.avatarFallback} viewBox="0 0 24 24" fill="none" stroke="#BDBDBD" strokeWidth="1.8" aria-hidden="true">
+                  <circle cx="12" cy="7" r="4" />
+                  <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+                </svg>
+              )}
+            </div>
+            <span className={badgeClassName}>{badgeText}</span>
+          </div>
+          <span className={styles.personName}>{ctx.otherNickname}</span>
         </div>
-      )}
-    </div>
+        <Image className={styles.moreIcon} src="/images/discover/invite-preview/more.svg" alt="" width={20} height={4} />
+      </div>
+    </header>
   );
 }
 
@@ -307,161 +239,99 @@ function TerminalCard({ ctx, onDiscovery, onClose }: { ctx: FixedPlanContext; on
 }
 
 // ─── Invitation Context Card ─────────────────────────────────────────────────
-function InvitationCard({ ctx, onAccept, onDecline, isActionLoading }: { ctx: FixedPlanContext, onAccept: () => void, onDecline: () => void, isActionLoading: boolean }) {
+function InvitationCard({
+  ctx,
+  onAccept,
+  onCancel,
+  onDecline,
+  onOpenDetail,
+  isActionLoading,
+}: {
+  ctx: FixedPlanContext;
+  onAccept: () => void;
+  onCancel: () => void;
+  onDecline: () => void;
+  onOpenDetail: () => void;
+  isActionLoading: boolean;
+}) {
   const isPending = ctx.invitationStatus === 'pending';
-  
-  const headlineText = ctx.isSender
-    ? `${ctx.otherNickname}さんにお誘いを送りました`
-    : `${ctx.otherNickname}さんからお誘いが届いています`;
 
-  return (
-    <div style={{
-      margin: '16px auto',
-      width: '301px',
-      maxWidth: 'calc(100% - 32px)',
-      backgroundColor: '#fff',
-      border: '1px solid #E9E9EB',
-      borderRadius: '28px 16px 28px 28px',
-      boxShadow: 'inset 0 1px 3px rgba(0,0,0,0.06)',
-      padding: '16px',
-    }}>
-      {/* Headline + status badge */}
-      <div style={{
-        display: 'flex',
-        justifyContent: 'space-between',
-        alignItems: 'flex-start',
-        gap: '8px',
-        marginBottom: '10px',
-      }}>
-        {isPending ? (
-          <span style={{
-            fontSize: '13px',
-            fontWeight: 600,
-            color: '#1A2E24',
-            lineHeight: '18px',
-            flex: 1,
-          }}>
-            {headlineText}
-          </span>
-        ) : (
-          <span style={{
-            fontSize: '13px',
-            fontWeight: 600,
-            color: '#1A2E24',
-            lineHeight: '18px',
-            flex: 1,
-          }}>
+  if (!isPending) {
+    return (
+      <button
+        type="button"
+        className={styles.acceptedPlanCard}
+        onClick={onOpenDetail}
+        aria-label={`${ctx.activityLabel}の同行詳細を見る`}
+      >
+        <div className={styles.acceptedPlanHeading}>
+          <h2>{ctx.activityLabel}</h2>
+          <span className={styles.acceptedPlanBadge}>
+            <Image src="/images/discover/invite-preview/accepted-check.svg" alt="" width={14} height={14} />
             同行予定
           </span>
-        )}
-        {isPending && (
-          <span style={{
-            flexShrink: 0,
-            display: 'inline-block',
-            backgroundColor: '#FFF0F3',
-            color: '#FF0000',
-            fontSize: '11px',
-            fontWeight: 590,
-            lineHeight: '16px',
-            letterSpacing: '0.5px',
-            padding: '2px 8px',
-            borderRadius: '999px',
-            whiteSpace: 'nowrap',
-          }}>
-            返事待ち
-          </span>
-        )}
-      </div>
-
-      {/* Invite message */}
-      <p style={{
-        color: '#1A2E24',
-        fontSize: '15px',
-        fontWeight: 700,
-        lineHeight: '18.56px',
-        margin: '0 0 12px',
-      }}>
-        {ctx.inviteMessage}
-      </p>
-
-      {/* Date / time / place block */}
-      <div style={{
-        backgroundColor: '#ECECEC',
-        borderRadius: '10px',
-        padding: '10px 12px',
-        display: 'flex',
-        flexDirection: 'column',
-        gap: '6px',
-      }}>
-        {/* Time */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-          <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="#333" strokeWidth="2" strokeLinecap="round">
-            <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
-            <line x1="16" y1="2" x2="16" y2="6" />
-            <line x1="8" y1="2" x2="8" y2="6" />
-            <line x1="3" y1="10" x2="21" y2="10" />
-          </svg>
-          <span style={{ color: '#000', fontSize: '11px', fontFamily: 'Inter, sans-serif', fontWeight: 400, lineHeight: '11px' }}>
-            {ctx.days_of_week} {ctx.start_time}ごろ
-          </span>
         </div>
+        <div className={styles.acceptedPlanDetails}>
+          <div>
+            <Image src="/images/discover/invite-preview/accepted-calendar.svg" alt="" width={17} height={17} />
+            <span>{ctx.days_of_week} {ctx.start_time}ごろ</span>
+          </div>
+          {ctx.place_name && (
+            <div>
+              <Image src="/images/discover/invite-preview/accepted-location.svg" alt="" width={13} height={17} />
+              <span>{ctx.place_name}</span>
+            </div>
+          )}
+        </div>
+      </button>
+    );
+  }
 
-        {/* Place */}
-        {ctx.place_name && (
-          <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="#333" strokeWidth="2" strokeLinecap="round">
-              <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
-              <circle cx="12" cy="10" r="3" />
-            </svg>
-            <span style={{ color: '#000', fontSize: '11px', fontFamily: 'Inter, sans-serif', fontWeight: 400, lineHeight: '11px' }}>
-              {ctx.place_name}
+  return (
+    <article className={styles.invitationCard}>
+      <div className={styles.cardBody}>
+        <div className={styles.cardHeadlineRow}>
+          <p className={styles.cardHeadline}>{isPending ? ctx.headline : '同行予定'}</p>
+          {isPending && (
+            <span className={styles.waitingBadge}>
+              <Image src="/images/discover/invite-preview/waiting.svg" alt="" width={11} height={11} />
+              返信待ち
             </span>
+          )}
+        </div>
+        <p className={styles.inviteMessage}>{ctx.inviteMessage}</p>
+        <div className={styles.scheduleImage}>
+          <div className={styles.scheduleRow}>
+            <Image src="/images/discover/invite-preview/calendar.svg" alt="" width={14} height={14} />
+            <span>{ctx.days_of_week} {ctx.start_time}ごろ</span>
+          </div>
+        {ctx.place_name && (
+          <div className={styles.scheduleRow}>
+            <Image className={styles.locationIcon} src="/images/discover/invite-preview/location.svg" alt="" width={11} height={14} />
+            <span>{ctx.place_name}</span>
           </div>
         )}
+        </div>
       </div>
-
-      {/* Receiver Actions when pending */}
-      {isPending && !ctx.isSender && (
-        <div style={{ display: 'flex', gap: '8px', marginTop: '16px' }}>
-          <button
-            onClick={onDecline}
-            disabled={isActionLoading}
-            style={{
-              flex: 1,
-              backgroundColor: '#fff',
-              border: '1px solid #CCCCCC',
-              borderRadius: '11px',
-              color: '#000',
-              fontSize: '14px',
-              fontWeight: 500,
-              padding: '10px 0',
-              cursor: isActionLoading ? 'wait' : 'pointer',
-              opacity: isActionLoading ? 0.5 : 1,
-            }}
-          >
-            今回は見送る
-          </button>
-          <button
-            onClick={onAccept}
-            disabled={isActionLoading}
-            style={{
-              flex: 1,
-              backgroundColor: '#FF7622',
-              border: '1px solid #FF8861',
-              borderRadius: '11px',
-              color: '#fff',
-              fontSize: '14px',
-              fontWeight: 500,
-              padding: '10px 0',
-              cursor: isActionLoading ? 'wait' : 'pointer',
-              opacity: isActionLoading ? 0.5 : 1,
-            }}
-          >
-            一緒に行く
-          </button>
+      {isPending && (
+        <div className={styles.cardActions}>
+          {ctx.isSender ? (
+            <button className={styles.cancelButton} type="button" onClick={onCancel} disabled={isActionLoading}>
+              {isActionLoading ? '処理中...' : '招待を取り消す'}
+            </button>
+          ) : (
+            <div className={styles.receiverActions}>
+              <button className={styles.responseButton} type="button" onClick={onDecline} disabled={isActionLoading}>
+                今回は見送る
+              </button>
+              <button className={`${styles.responseButton} ${styles.acceptButton}`} type="button" onClick={onAccept} disabled={isActionLoading}>
+                一緒に行く
+              </button>
+            </div>
+          )}
         </div>
       )}
-    </div>
+    </article>
   );
 }
 
@@ -592,7 +462,6 @@ export default function ChatClient({
           <FixedPlanChatHeader
             ctx={ctx}
             onBack={() => router.push('/connections?tab=plans')}
-            onCancel={() => {}}
             isActionLoading={false}
           />
           <div style={{ flex: 1, overflowY: 'auto', backgroundColor: '#F8F8F8', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
@@ -607,18 +476,20 @@ export default function ChatClient({
     }
 
     const messageList = (
-      <div style={{ display: 'flex', flexDirection: 'column', paddingBottom: '16px' }}>
+      <div className={`${styles.messageList} ${ctx.invitationStatus === 'accepted' ? styles.acceptedMessageList : ''}`}>
         {/* Invitation context card — always shown above messages */}
-        <InvitationCard 
-          ctx={ctx} 
-          onAccept={handleAccept} 
-          onDecline={handleDecline} 
-          isActionLoading={isActionLoading} 
+        <InvitationCard
+          ctx={ctx}
+          onAccept={handleAccept}
+          onCancel={handleCancel}
+          onDecline={handleDecline}
+          onOpenDetail={() => router.push(`/connections/plans/${conversationId}`)}
+          isActionLoading={isActionLoading}
         />
 
         {/* Real messages only */}
         {messages.length > 0 && (
-          <div style={{ display: 'flex', flexDirection: 'column' }}>
+          <div className={styles.chatMessages}>
             {messages.map(msg => (
               <ChatMessage
                 key={msg.message_id}
@@ -626,6 +497,11 @@ export default function ChatClient({
                 content={msg.content || ''}
                 isMine={msg.sender_user_id === currentUserId}
                 time={formatMessageTime(msg.created_at)}
+                avatarUrl={getMessageAvatarUrl({
+                  currentUserId,
+                  senderUserId: msg.sender_user_id,
+                  otherAvatarUrl: ctx.otherAvatarUrl,
+                })}
               />
             ))}
           </div>
@@ -634,18 +510,16 @@ export default function ChatClient({
     );
 
     return (
-      <div style={{ height: '100dvh', display: 'flex', flexDirection: 'column' }}>
-        <FixedPlanChatHeader 
-          ctx={ctx} 
-          onBack={() => router.push('/connections?tab=plans')} 
-          onCancel={handleCancel}
+      <div className={styles.fixedPlanScreen}>
+        <FixedPlanChatHeader
+          ctx={ctx}
+          onBack={() => router.push('/connections?tab=plans')}
           isActionLoading={isActionLoading}
         />
-        <ChatLayout
-          header={null}
-          messageList={messageList}
-          inputArea={<ChatComposer onSend={handleSend} isSending={isSending} />}
-        />
+        <main className={styles.fixedPlanMain}>{messageList}</main>
+        <footer className={styles.fixedPlanFooter}>
+          <ChatComposer onSend={handleSend} isSending={isSending} variant="fixed-plan" />
+        </footer>
       </div>
     );
   }

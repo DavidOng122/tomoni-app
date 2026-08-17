@@ -577,6 +577,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      archive_fixed_plan: {
+        Args: { p_fixed_plan_id: string }
+        Returns: Json
+      }
       accept_event_invitation: {
         Args: { p_invitation_id: string }
         Returns: string

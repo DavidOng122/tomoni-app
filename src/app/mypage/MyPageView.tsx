@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
+import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { BottomNavigation } from '@/components/layout/BottomNavigation';
 import { PageContainer } from '@/components/layout/PageContainer';
@@ -8,6 +9,8 @@ import { ACTIVITY_LABELS } from '@/features/fixed-schedules/lib/constants';
 import { formatWeekdays } from '@/features/fixed-schedules/lib/formatters';
 import { SignOutButton } from '@/features/auth/components/SignOutButton';
 import { getGenderLabel, getTagLabel } from './lib/mappers';
+import { getConnectionPreview } from '@/features/connections/domain/getConnectionPreview';
+import { archiveFixedPlanAction } from '@/app/actions/archiveFixedPlanAction';
 
 import styles from './MyPageView.module.css';
 
@@ -20,16 +23,38 @@ interface ConnectedProfile {
 interface MyPageViewProps {
   profile: any;
   fixedPlans: any[];
+  attendedEventCount: number;
   connectionCount: number;
   connectedProfiles: ConnectedProfile[];
 }
 
-export const MyPageView: React.FC<MyPageViewProps> = ({ profile, fixedPlans, connectionCount, connectedProfiles }) => {
+export const MyPageView: React.FC<MyPageViewProps> = ({ profile, fixedPlans, attendedEventCount, connectionCount, connectedProfiles }) => {
   const router = useRouter();
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  const [visibleFixedPlans, setVisibleFixedPlans] = useState(fixedPlans);
+  const [deletingFixedPlanId, setDeletingFixedPlanId] = useState<string | null>(null);
+  const [planPendingDeletion, setPlanPendingDeletion] = useState<any | null>(null);
+  const [deleteError, setDeleteError] = useState<string | null>(null);
   const displayedProfile = profile;
-  const displayedFixedPlans = fixedPlans;
-  const displayedFixedPlanCount = fixedPlans.length;
+  const displayedFixedPlanCount = visibleFixedPlans.length;
+  const { visibleProfiles, overflowCount } = getConnectionPreview(connectedProfiles);
+
+  const handleDeleteFixedPlan = async (fixedPlanId: string) => {
+    setDeletingFixedPlanId(fixedPlanId);
+    setDeleteError(null);
+    try {
+      await archiveFixedPlanAction(fixedPlanId);
+      setVisibleFixedPlans((plans) => plans.filter(
+        (plan) => plan.fixed_plan_id !== fixedPlanId,
+      ));
+      setPlanPendingDeletion(null);
+      router.refresh();
+    } catch (error) {
+      setDeleteError(error instanceof Error ? error.message : '固定予定の削除に失敗しました');
+    } finally {
+      setDeletingFixedPlanId(null);
+    }
+  };
   const navItems = [
     {
       label: 'みつける',
@@ -86,7 +111,7 @@ export const MyPageView: React.FC<MyPageViewProps> = ({ profile, fixedPlans, con
               {displayedProfile.gender && displayedProfile.gender !== 'prefer_not_to_say'
                 ? `　❘　${getGenderLabel(displayedProfile.gender)}`
                 : null}
-              {'　❘　世田谷区'}
+              {'　❘　江戸川区'}
             </p>
 
             {displayedProfile.tags?.length > 0 ? (
@@ -106,38 +131,69 @@ export const MyPageView: React.FC<MyPageViewProps> = ({ profile, fixedPlans, con
               <span>固定予定</span>
             </div>
             <div>
+              <strong>{attendedEventCount}</strong>
+              <span>参加済み</span>
+            </div>
+            <div>
               <strong>{connectionCount}</strong>
               <span>つながり</span>
             </div>
           </section>
 
           <section className={styles.fixedPlansSection}>
-            <h3>固定予定</h3>
+            <div className={styles.fixedPlansHeader}>
+              <h3>固定予定</h3>
+              <button
+                type="button"
+                className={styles.companionPlansLink}
+                onClick={() => router.push('/connections?tab=plans')}
+              >
+                同行予定を見る <span aria-hidden="true">›</span>
+              </button>
+            </div>
             <div className={styles.planList}>
-              {displayedFixedPlans.length === 0 ? (
+              {visibleFixedPlans.length === 0 ? (
                 <div className={`${styles.planCard} ${styles.emptyPlan}`}>固定予定がありません</div>
               ) : (
-                displayedFixedPlans.map((plan) => (
-                  <article key={plan.fixed_plan_id} className={styles.planCard}>
-                    <h4>
-                      {plan.activity_type === 'other'
-                        ? plan.custom_activity_name
-                        : ACTIVITY_LABELS[plan.activity_type as keyof typeof ACTIVITY_LABELS] ||
-                          plan.activity_type}
-                    </h4>
-                    <p>
-                      <img src="/images/mypage/calendar.svg" alt="" aria-hidden="true" />
-                      <span>
-                        {formatWeekdays(plan.days_of_week)}{' '}
-                        {plan.start_time.substring(0, 5).replace(/^0/, '')}〜
-                        {plan.end_time?.substring(0, 5)}
-                      </span>
-                    </p>
-                    <p>
-                      <img src="/images/mypage/location.svg" alt="" aria-hidden="true" />
-                      <span>{plan.place_name}</span>
-                    </p>
-                  </article>
+                visibleFixedPlans.map((plan) => (
+                  <div key={plan.fixed_plan_id} className={styles.planItem}>
+                    <button
+                      type="button"
+                      className={styles.planCard}
+                      onClick={() => router.push(`/mypage/schedule/${plan.fixed_plan_id}/edit`)}
+                      aria-label={`${plan.activity_type === 'other' ? plan.custom_activity_name : ACTIVITY_LABELS[plan.activity_type as keyof typeof ACTIVITY_LABELS] || plan.activity_type}を編集`}
+                    >
+                      <h4>
+                        {plan.activity_type === 'other'
+                          ? plan.custom_activity_name
+                          : ACTIVITY_LABELS[plan.activity_type as keyof typeof ACTIVITY_LABELS] ||
+                            plan.activity_type}
+                      </h4>
+                      <p>
+                        <img src="/images/mypage/calendar.svg" alt="" aria-hidden="true" />
+                        <span>
+                          {formatWeekdays(plan.days_of_week)}{' '}
+                          {plan.start_time.substring(0, 5).replace(/^0/, '')}〜
+                        </span>
+                      </p>
+                      <p>
+                        <img src="/images/mypage/location.svg" alt="" aria-hidden="true" />
+                        <span>{plan.place_name}</span>
+                      </p>
+                    </button>
+                    <button
+                      type="button"
+                      className={styles.deletePlanButton}
+                      disabled={deletingFixedPlanId === plan.fixed_plan_id}
+                      onClick={() => {
+                        setDeleteError(null);
+                        setPlanPendingDeletion(plan);
+                      }}
+                    >
+                      <Image src="/images/schedules-delete.svg" width={14} height={14} alt="" aria-hidden="true" />
+                      {deletingFixedPlanId === plan.fixed_plan_id ? '削除中...' : '削除'}
+                    </button>
+                  </div>
                 ))
               )}
             </div>
@@ -152,29 +208,97 @@ export const MyPageView: React.FC<MyPageViewProps> = ({ profile, fixedPlans, con
           </section>
 
           <section className={styles.connectionsSection}>
-            <h3>つながった人</h3>
-            {connectedProfiles.length === 0 ? (
-              <div className={styles.emptyConnections}>
-                まだつながりはありません
-              </div>
-            ) : (
-              <div className={styles.connectionList}>
-                {connectedProfiles.map((person) => (
-                  <div key={person.user_id} className={styles.connectionCard}>
-                    <img
-                      className={styles.connectionAvatar}
-                      src={person.avatar_url || '/images/mypage/profile-miki.png'}
-                      alt={person.nickname}
-                    />
-                    <span className={styles.connectionName}>{person.nickname}</span>
-                  </div>
-                ))}
-              </div>
-            )}
+            <h3>つながり</h3>
+            <button
+              type="button"
+              className={styles.connectionSummaryCard}
+              onClick={() => router.push('/connections')}
+            >
+              <span className={styles.connectionSummaryLabel}>
+                <span>江戸川区</span>
+                <span>つながった人</span>
+              </span>
+
+              <span className={styles.connectionSummaryAction}>
+                {visibleProfiles.length > 0 ? (
+                  <span className={styles.connectionAvatarStack} aria-label={`${connectionCount}人とつながっています`}>
+                    {visibleProfiles.map((person) => (
+                      <img
+                        key={person.user_id}
+                        src={person.avatar_url || '/images/mypage/profile-miki.png'}
+                        alt={person.nickname}
+                      />
+                    ))}
+                    {overflowCount > 0 ? (
+                      <span className={styles.connectionOverflow}>+{overflowCount}</span>
+                    ) : null}
+                  </span>
+                ) : null}
+                <img
+                  className={styles.connectionChevron}
+                  src="/images/mypage/chevron.svg"
+                  alt=""
+                  aria-hidden="true"
+                />
+              </span>
+            </button>
           </section>
         </main>
       </PageContainer>
       <BottomNavigation items={navItems} />
+
+      {planPendingDeletion ? (
+        <div
+          className={styles.deleteModalOverlay}
+          onClick={() => {
+            if (!deletingFixedPlanId) setPlanPendingDeletion(null);
+          }}
+        >
+          <section
+            className={styles.deleteModal}
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="delete-plan-title"
+            onClick={(event) => event.stopPropagation()}
+          >
+            <span className={styles.deleteModalIcon} aria-hidden="true">
+              <Image src="/images/schedules-delete.svg" width={22} height={22} alt="" />
+            </span>
+            <h3 id="delete-plan-title">固定予定を削除しますか？</h3>
+            <p className={styles.deleteModalPlanName}>
+              {planPendingDeletion.activity_type === 'other'
+                ? planPendingDeletion.custom_activity_name
+                : ACTIVITY_LABELS[planPendingDeletion.activity_type as keyof typeof ACTIVITY_LABELS]
+                  || planPendingDeletion.activity_type}
+            </p>
+            <p className={styles.deleteModalDescription}>
+              この固定予定はマイページとおすすめから表示されなくなります。
+            </p>
+            <div className={styles.deleteModalNotice}>
+              返事待ちの同行のお誘いも同時に取り消されます。決定済みの同行とチャットは残ります。
+            </div>
+            {deleteError ? <p className={styles.deleteModalError} role="alert">{deleteError}</p> : null}
+            <div className={styles.deleteModalActions}>
+              <button
+                type="button"
+                className={styles.deleteModalCancel}
+                disabled={Boolean(deletingFixedPlanId)}
+                onClick={() => setPlanPendingDeletion(null)}
+              >
+                キャンセル
+              </button>
+              <button
+                type="button"
+                className={styles.deleteModalConfirm}
+                disabled={Boolean(deletingFixedPlanId)}
+                onClick={() => handleDeleteFixedPlan(planPendingDeletion.fixed_plan_id)}
+              >
+                {deletingFixedPlanId ? '削除中...' : '削除する'}
+              </button>
+            </div>
+          </section>
+        </div>
+      ) : null}
 
       {isSettingsOpen && (
         <div className={styles.settingsModalOverlay} onClick={() => setIsSettingsOpen(false)}>

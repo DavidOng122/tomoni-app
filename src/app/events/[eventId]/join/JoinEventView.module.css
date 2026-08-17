@@ -4,6 +4,10 @@
   color: #000;
 }
 
+.successScreen {
+  background: #fff;
+}
+
 .page {
   --page-padding-x: 14px;
 }
@@ -14,6 +18,212 @@
   min-height: 100dvh;
   margin: 0 auto;
   padding: 55px 0 20px;
+}
+
+.successStage {
+  display: flex;
+  width: 100%;
+  max-width: 402px;
+  min-height: 100dvh;
+  flex-direction: column;
+  margin: 0 auto;
+  padding: 40px 0 27px;
+}
+
+.successBody {
+  display: flex;
+  min-height: 0;
+  flex: 1;
+  flex-direction: column;
+  align-items: center;
+  padding-top: 34px;
+}
+
+.successHero {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+.successHero > img {
+  width: 176px;
+  height: 138px;
+}
+
+.successHero > div {
+  margin-top: 24px;
+}
+
+.successHero h1,
+.successHero p {
+  margin: 0;
+  font-size: 20px;
+  line-height: 1.44;
+  letter-spacing: 1px;
+}
+
+.successHero h1 {
+  font-weight: 600;
+}
+
+.successHero p {
+  color: #666;
+  font-weight: 600;
+}
+
+.matchCard {
+  width: 100%;
+  min-height: 305px;
+  border: 1px solid #e6e6e6;
+  border-radius: 20px;
+  margin-top: 31px;
+  padding: 18px 22px 24px 13px;
+  background: #fff;
+  box-shadow: 0 4px 16px rgb(255 205 188 / 25%);
+}
+
+.matchCard header > div {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.matchCard header img {
+  width: 24px;
+  height: 24px;
+  flex: 0 0 24px;
+}
+
+.matchCard h2 {
+  margin: 0;
+  color: #1a1a2e;
+  font-size: 15px;
+  font-weight: 700;
+  line-height: 22.5px;
+}
+
+.matchCard header p {
+  margin: 0 0 0 2px;
+  color: #888;
+  font-size: 11px;
+  line-height: 14px;
+}
+
+.candidateGrid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  margin-top: 24px;
+  gap: 12px;
+}
+
+.candidate {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  align-items: center;
+  gap: 9px;
+}
+
+.candidateAvatar {
+  display: block;
+  width: 80px;
+  height: 80px;
+  overflow: hidden;
+  border-radius: 50%;
+  background: #f1f1f1;
+}
+
+.candidateAvatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.candidate h3 {
+  overflow: hidden;
+  max-width: 100%;
+  margin: 0;
+  color: #1a1a2e;
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 19.5px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.compatibilityLabel {
+  display: flex;
+  width: min(100%, 103px);
+  height: 21px;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  border-radius: 20px;
+  padding: 3px 8px;
+  background: #e6f4ea;
+  color: #2d7a45;
+  font-size: 10px;
+  font-weight: 500;
+  line-height: 15px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.candidate:nth-child(2) .compatibilityLabel {
+  background: #e0f7fa;
+  color: #00796b;
+}
+
+.candidate:nth-child(3) .compatibilityLabel {
+  background: #fce4ec;
+  color: #c2185b;
+}
+
+.candidate button {
+  width: min(100%, 106px);
+  min-height: 36px;
+  border: 1px solid #79747e;
+  border-radius: 20px;
+  padding: 7px 4px;
+  background: #fff;
+  color: #111;
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 19.5px;
+  cursor: pointer;
+}
+
+.candidate button:disabled {
+  border-color: #d5d5d5;
+  color: #777;
+  cursor: default;
+}
+
+.successFooter {
+  width: 100%;
+  margin-top: auto;
+  padding-top: 76px;
+  text-align: center;
+}
+
+.successFooter button {
+  width: 100%;
+  height: 45px;
+  border: 0;
+  border-radius: 26px;
+  background: #000;
+  color: #fff;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.successFooter p {
+  margin: 12px 0 0;
+  color: #666;
+  font-size: 12px;
+  line-height: 17px;
 }
 
 .backButton {
@@ -262,6 +472,28 @@
 
   .submitCard {
     margin-top: 32px;
+  }
+
+  .successStage {
+    padding-top: 32px;
+  }
+
+  .successBody {
+    padding-top: 26px;
+  }
+
+  .matchCard {
+    padding-right: 12px;
+    padding-left: 12px;
+  }
+
+  .candidateGrid {
+    gap: 7px;
+  }
+
+  .candidateAvatar {
+    width: 72px;
+    height: 72px;
   }
 }
 

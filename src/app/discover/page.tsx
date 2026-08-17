@@ -7,6 +7,14 @@ import { DiscoverRecommendation } from '@/features/discover/types';
 import { Database } from '@/types/database.types';
 import { ACTIVITY_LABELS } from '@/features/fixed-schedules/lib/constants';
 import { formatWeekdays } from '@/features/fixed-schedules/lib/formatters';
+import { filterRecommendationsForPlan } from '@/features/discover/domain/filterRecommendationsForPlan';
+import { getEventParticipantPreview } from '@/features/events/lib/getEventParticipantPreview';
+import { getEventOrganizerAvatarUrl } from '@/features/events/domain/getEventOrganizerAvatarUrl';
+import { sortCommunityEvents } from '@/features/events/domain/sortCommunityEvents';
+import {
+  formatUpcomingCompanionDateTime,
+  getNearestUpcomingCompanion,
+} from '@/features/discover/domain/getNearestUpcomingCompanion';
 
 
 export default async function DiscoverPage() {
@@ -17,55 +25,130 @@ export default async function DiscoverPage() {
     redirect('/welcome');
   }
 
-  // Check if the user has any active plans
-  const { count, data: plans } = await supabase
+  const { data: fixedPlans } = await supabase
     .from('fixed_plans')
-    .select('*', { count: 'exact' })
+    .select('*')
     .eq('user_id', user.id)
-    .eq('plan_status', 'active');
+    .eq('plan_status', 'active')
+    .order('created_at', { ascending: true })
+    .order('fixed_plan_id', { ascending: true });
 
-  const hasPlans = count !== null && count > 0;
-  const firstPlan = plans?.[0];
+  const activePlans = fixedPlans || [];
+  const hasPlans = activePlans.length > 0;
 
-  const { data: profile } = await supabase
-    .from('profiles')
-    .select('nickname, avatar_url, profile_status')
-    .eq('user_id', user.id)
-    .single();
+  const { data: acceptedInvitations } = await supabase
+    .from('invitations')
+    .select(`
+      invitation_id,
+      sender_user_id,
+      receiver_user_id,
+      fixed_plans(activity_type, custom_activity_name, days_of_week, start_time, place_name),
+      conversations!inner(
+        conversation_id,
+        conversation_status,
+        conversation_members(user_id, left_at)
+      )
+    `)
+    .eq('invitation_type', 'fixed_plan')
+    .eq('invitation_status', 'accepted')
+    .or(`sender_user_id.eq.${user.id},receiver_user_id.eq.${user.id}`);
 
-  let currentActivity = null;
-  if (profile) {
-    let eventTitle = '固定予定はありません';
-    let dateTime = '-';
-    let location = '-';
+  const acceptedCompanions = (acceptedInvitations || []).flatMap((invitation) => {
+    const fixedPlan = Array.isArray(invitation.fixed_plans)
+      ? invitation.fixed_plans[0]
+      : invitation.fixed_plans;
+    const conversation = Array.isArray(invitation.conversations)
+      ? invitation.conversations[0]
+      : invitation.conversations;
+    const isActiveMember = conversation?.conversation_members?.some(
+      (member) => member.user_id === user.id && member.left_at === null,
+    );
 
-    if (firstPlan) {
-      eventTitle = firstPlan.activity_type === 'other'
-        ? firstPlan.custom_activity_name || 'その他'
-        : ACTIVITY_LABELS[firstPlan.activity_type as keyof typeof ACTIVITY_LABELS] || firstPlan.activity_type;
-      
-      const formattedDays = formatWeekdays(firstPlan.days_of_week as any[]);
-      const timeStr = firstPlan.start_time.substring(0, 5).replace(/^0/, '');
-      dateTime = `毎週${formattedDays}曜 ${timeStr}ごろ`;
-      location = firstPlan.place_name;
+    if (!fixedPlan || conversation?.conversation_status !== 'active' || !isActiveMember) {
+      return [];
     }
 
-    currentActivity = {
-      name: profile.nickname,
-      verified: profile.profile_status === 'verified',
-      eventTitle,
-      dateTime,
-      location,
-      avatarUrl: profile.avatar_url || '/images/mypage/profile-miki.png'
-    };
+    const otherUserId = invitation.sender_user_id === user.id
+      ? invitation.receiver_user_id
+      : invitation.sender_user_id;
+
+    return [{ invitation, fixedPlan, conversation, otherUserId }];
+  });
+
+  const companionProfileByUserId = new Map<string, { nickname: string; avatar_url: string | null }>();
+  const companionUserIds = [...new Set(acceptedCompanions.map((item) => item.otherUserId))];
+
+  if (companionUserIds.length > 0) {
+    const { data: companionProfiles } = await supabase
+      .from('profiles')
+      .select('user_id, nickname, avatar_url')
+      .in('user_id', companionUserIds);
+
+    companionProfiles?.forEach((companionProfile) => {
+      companionProfileByUserId.set(companionProfile.user_id, companionProfile);
+    });
   }
 
-  let recommendations: DiscoverRecommendation[] = [];
-  if (hasPlans) {
-    recommendations = await getRecommendations(null);
-  }
+  const nearestCompanion = getNearestUpcomingCompanion(
+    acceptedCompanions.flatMap(({ invitation, fixedPlan, conversation, otherUserId }) => {
+      const companionProfile = companionProfileByUserId.get(otherUserId);
+      if (!companionProfile) return [];
+
+      return [{
+        invitationId: invitation.invitation_id,
+        conversationId: conversation.conversation_id,
+        otherUserId,
+        nickname: companionProfile.nickname,
+        avatarUrl: companionProfile.avatar_url,
+        activityType: fixedPlan.activity_type,
+        customActivityName: fixedPlan.custom_activity_name,
+        daysOfWeek: fixedPlan.days_of_week,
+        startTime: fixedPlan.start_time,
+        placeName: fixedPlan.place_name,
+      }];
+    }),
+  );
+
+  const currentActivity = nearestCompanion ? {
+    name: nearestCompanion.nickname,
+    verified: true,
+    eventTitle: nearestCompanion.activityType === 'other'
+      ? nearestCompanion.customActivityName || 'その他'
+      : ACTIVITY_LABELS[nearestCompanion.activityType as keyof typeof ACTIVITY_LABELS]
+        || nearestCompanion.activityType,
+    dateTime: formatUpcomingCompanionDateTime(nearestCompanion.nextOccurrence),
+    location: nearestCompanion.placeName,
+    avatarUrl: nearestCompanion.avatarUrl,
+  } : null;
+
+  const recommendationGroups = await Promise.all(activePlans.map(async (plan) => {
+    const planRecommendations = await getRecommendations(plan.fixed_plan_id);
+
+    return {
+      fixedPlanId: plan.fixed_plan_id,
+      title: plan.activity_type === 'other'
+        ? plan.custom_activity_name || 'その他'
+        : ACTIVITY_LABELS[plan.activity_type as keyof typeof ACTIVITY_LABELS] || plan.activity_type,
+      scheduleLabel: `毎週${formatWeekdays(plan.days_of_week as any[])}曜 ${plan.start_time.substring(0, 5).replace(/^0/, '')}ごろ`,
+      recommendations: filterRecommendationsForPlan(planRecommendations, plan.fixed_plan_id),
+    };
+  }));
 
   const now = new Date().toISOString();
+  const { data: ownGoingParticipations, error: participationsError } = await supabase
+    .from('event_participations')
+    .select('event_id')
+    .eq('user_id', user.id)
+    .eq('participation_status', 'going');
+
+  if (participationsError) {
+    console.error('Failed to fetch own event participations:', participationsError);
+  }
+
+  const joinedEventIds = new Set(
+    (ownGoingParticipations || []).map((participation) => participation.event_id),
+  );
+
   const { data: eventsData, error: eventsError } = await supabase
     .from('events')
     .select('*')
@@ -79,14 +162,64 @@ export default async function DiscoverPage() {
     console.error("Failed to fetch events:", eventsError);
   }
 
-  const events = eventsData || [];
+  let eventRows = eventsData || [];
+
+  const missingJoinedEventIds = [...joinedEventIds].filter(
+    (eventId) => !eventRows.some((event) => event.event_id === eventId),
+  );
+
+  if (missingJoinedEventIds.length > 0) {
+    const { data: missingJoinedEvents, error: missingJoinedEventsError } = await supabase
+      .from('events')
+      .select('*')
+      .in('event_id', missingJoinedEventIds)
+      .eq('event_status', 'scheduled')
+      .or(`end_at.gte.${now},and(end_at.is.null,start_at.gte.${now})`);
+
+    if (missingJoinedEventsError) {
+      console.error('Failed to fetch joined community events:', missingJoinedEventsError);
+    } else {
+      eventRows = [...eventRows, ...(missingJoinedEvents || [])];
+    }
+  }
+
+  eventRows = sortCommunityEvents(eventRows, joinedEventIds).slice(0, 10);
+  const organizerIds = eventRows.flatMap((event) => event.created_by_user_id ? [event.created_by_user_id] : []);
+  const organizerAvatarByUserId = new Map<string, string | null>();
+
+  if (organizerIds.length > 0) {
+    const { data: organizerProfiles } = await supabase
+      .from('profiles')
+      .select('user_id, avatar_url')
+      .in('user_id', organizerIds);
+    organizerProfiles?.forEach((organizer) => {
+      organizerAvatarByUserId.set(organizer.user_id, organizer.avatar_url);
+    });
+  }
+
+  const events = await Promise.all(eventRows.map(async (event) => ({
+    ...event,
+    isParticipating: joinedEventIds.has(event.event_id),
+    organizerAvatarUrl: getEventOrganizerAvatarUrl({
+      eventType: event.event_type,
+      sourceName: event.source_name,
+      creatorAvatarUrl: event.created_by_user_id
+        ? organizerAvatarByUserId.get(event.created_by_user_id) || null
+        : null,
+    }),
+    participantPreview: await getEventParticipantPreview(event.event_id),
+  })));
 
   return (
     <DiscoverView
-      recommendations={recommendations}
       hasPlans={hasPlans}
       events={events}
       currentActivity={currentActivity}
+      recommendationGroups={recommendationGroups}
+      todayWeekday={new Intl.DateTimeFormat('ja-JP', {
+        weekday: 'long',
+        timeZone: 'Asia/Tokyo',
+      }).format(new Date())}
     />
   );
 }

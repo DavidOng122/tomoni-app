@@ -1,11 +1,14 @@
 import React, { useState } from 'react';
+import Image from 'next/image';
+import styles from './ChatComposer.module.css';
 
 interface ChatComposerProps {
   onSend: (message: string) => Promise<void>;
   isSending: boolean;
+  variant?: 'default' | 'fixed-plan';
 }
 
-export const ChatComposer: React.FC<ChatComposerProps> = ({ onSend, isSending }) => {
+export const ChatComposer: React.FC<ChatComposerProps> = ({ onSend, isSending, variant = 'default' }) => {
   const [text, setText] = useState('');
 
   const handleSend = async () => {
@@ -26,6 +29,42 @@ export const ChatComposer: React.FC<ChatComposerProps> = ({ onSend, isSending })
       alert('メッセージの送信に失敗しました。');
     }
   };
+
+  const handleKeyDown = (event: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    if (event.key === 'Enter' && !event.shiftKey) {
+      event.preventDefault();
+      handleSend();
+    }
+  };
+
+  if (variant === 'fixed-plan') {
+    return (
+      <div className={styles.fixedPlanComposer}>
+        <button className={styles.addButton} type="button" aria-label="添付を追加">
+          <Image src="/images/discover/invite-preview/add.svg" alt="" width={87} height={87} />
+        </button>
+        <div className={styles.fixedPlanInputShell}>
+          <textarea
+            className={styles.fixedPlanInput}
+            value={text}
+            onChange={(event) => setText(event.target.value)}
+            onKeyDown={handleKeyDown}
+            placeholder="メッセージを入力..."
+            rows={1}
+          />
+          <button
+            className={styles.sendButton}
+            type="button"
+            onClick={handleSend}
+            disabled={isSending || !text.trim()}
+            aria-label="メッセージを送信"
+          >
+            <Image src="/images/discover/invite-preview/smile.svg" alt="" width={21} height={21} />
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div style={{
@@ -51,12 +90,7 @@ export const ChatComposer: React.FC<ChatComposerProps> = ({ onSend, isSending })
           fontFamily: 'inherit'
         }}
         rows={1}
-        onKeyDown={(e) => {
-          if (e.key === 'Enter' && !e.shiftKey) {
-            e.preventDefault();
-            handleSend();
-          }
-        }}
+        onKeyDown={handleKeyDown}
       />
       <button
         onClick={handleSend}

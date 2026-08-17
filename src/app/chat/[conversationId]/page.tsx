@@ -1,6 +1,8 @@
 import { createClient } from '@/infrastructure/auth/server';
-import { notFound } from 'next/navigation';
+import { notFound, redirect } from 'next/navigation';
 import ChatClient from './ChatClient';
+import { getFixedPlanInvitationCopy } from '@/features/invitations/domain/getFixedPlanInvitationCopy';
+import { getOtherParticipantUserId } from '@/features/chat/domain/getOtherParticipantUserId';
 
 export default async function ChatPage(props: { params: Promise<{ conversationId: string }> }) {
   const params = await props.params;
@@ -26,8 +28,8 @@ export default async function ChatPage(props: { params: Promise<{ conversationId
       related_invitation_id, 
       fixed_plan_id, 
       events(title, start_at, place_name),
-      invitations(sender_user_id, receiver_user_id, invitation_status),
-      fixed_plans(activity_type, days_of_week, start_time, place_name)
+      invitations(sender_user_id, receiver_user_id, invitation_status, message),
+      fixed_plans(fixed_plan_id, activity_type, custom_activity_name, days_of_week, start_time, place_name)
     `)
     .eq('conversation_id', conversationId)
     .single();
@@ -73,14 +75,29 @@ export default async function ChatPage(props: { params: Promise<{ conversationId
     throw new Error(`User left the conversation at ${myMemberData.left_at}`);
   }
 
-  // Load other member profile (for 1-on-1 or just one example member for now)
-  const { data: otherMemberData } = await supabase
+  if (isGroupChat) {
+    redirect(`/events/${conversationData.event_id}/people`);
+  }
+
+  // Resolve the other member first, then load their profile separately.
+  // conversation_members does not have a reliable direct embed to profiles.
+  const { data: conversationMembers } = await supabase
     .from('conversation_members')
-    .select('profiles(nickname, avatar_url)')
+    .select('user_id, left_at')
     .eq('conversation_id', conversationId)
-    .neq('user_id', user.id)
-    .is('left_at', null)
-    .limit(1);
+    .is('left_at', null);
+
+  const otherParticipantUserId = getOtherParticipantUserId(
+    user.id,
+    conversationMembers || [],
+  );
+  const { data: otherProfile } = otherParticipantUserId
+    ? await supabase
+        .from('profiles')
+        .select('nickname, avatar_url')
+        .eq('user_id', otherParticipantUserId)
+        .maybeSingle()
+    : { data: null };
 
   // Load latest 100 messages
   const { data: rawMessages } = await supabase
@@ -98,8 +115,7 @@ export default async function ChatPage(props: { params: Promise<{ conversationId
   let otherAvatarUrl: string | null = null;
   if (isGroupChat) {
     otherNickname = eventContext?.title || 'イベントグループ';
-  } else if (otherMemberData && otherMemberData.length > 0) {
-    const otherProfile = Array.isArray(otherMemberData[0].profiles) ? otherMemberData[0].profiles[0] : otherMemberData[0].profiles;
+  } else if (otherProfile) {
     otherNickname = otherProfile?.nickname || 'ユーザー';
     otherAvatarUrl = otherProfile?.avatar_url || null;
   }
@@ -111,18 +127,6 @@ export default async function ChatPage(props: { params: Promise<{ conversationId
     participantCount = preview?.participantCount || 1;
   }
 
-  const ACTIVITY_LABELS: Record<string, string> = {
-    walking: '朝の散歩',
-    morning_walk: '朝の散歩',
-    running: 'ランニング',
-    cycling: 'サイクリング',
-  };
-  const ACTIVITY_INVITE_LABELS: Record<string, string> = {
-    walking: '一緒に朝の散歩に行きませんか？',
-    morning_walk: '一緒に朝の散歩に行きませんか？',
-    running: '一緒にランニングしませんか？',
-    cycling: '一緒にサイクリングしませんか？',
-  };
   const DAY_LABELS: Record<string, string> = { mon: '月', tue: '火', wed: '水', thu: '木', fri: '金', sat: '土', sun: '日' };
 
   let fixedPlanContext: {
@@ -131,6 +135,7 @@ export default async function ChatPage(props: { params: Promise<{ conversationId
     isSender: boolean;
     otherNickname: string;
     otherAvatarUrl: string | null;
+    headline: string;
     activityLabel: string;
     inviteMessage: string;
     days_of_week: string;
@@ -145,6 +150,13 @@ export default async function ChatPage(props: { params: Promise<{ conversationId
     const plan = Array.isArray(conversationData.fixed_plans) ? conversationData.fixed_plans[0] : conversationData.fixed_plans;
     if (inv && plan) {
       const isSender = inv.sender_user_id === user.id;
+      const invitationCopy = getFixedPlanInvitationCopy({
+        activityType: plan.activity_type,
+        customActivityName: plan.custom_activity_name,
+        invitationMessage: inv.message,
+        isSender,
+        otherNickname,
+      });
       // Sender → their own fixed plan's people page
       // Receiver → /discover (schema does not store which receiver plan was matched)
       const discoveryUrl = isSender
@@ -157,8 +169,9 @@ export default async function ChatPage(props: { params: Promise<{ conversationId
         isSender,
         otherNickname,
         otherAvatarUrl,
-        activityLabel: ACTIVITY_LABELS[plan.activity_type] || plan.activity_type,
-        inviteMessage: ACTIVITY_INVITE_LABELS[plan.activity_type] || `一緒に${ACTIVITY_LABELS[plan.activity_type] || plan.activity_type}に行きませんか？`,
+        headline: invitationCopy.headline,
+        activityLabel: invitationCopy.activityLabel,
+        inviteMessage: invitationCopy.inviteMessage,
         days_of_week: (plan.days_of_week as string[]).map((d) => DAY_LABELS[d] || d).join('・'),
         start_time: plan.start_time.substring(0, 5),
         place_name: (plan as Record<string, unknown>).place_name as string || '',

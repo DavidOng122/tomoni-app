@@ -1,0 +1,447 @@
+.fixedPlanScreen {
+  display: flex;
+  width: 100%;
+  max-width: 402px;
+  height: 100dvh;
+  margin: 0 auto;
+  flex-direction: column;
+  overflow: hidden;
+  background: #f5f5f5;
+}
+
+.fixedPlanHeader {
+  position: relative;
+  width: 100%;
+  height: 143px;
+  flex: 0 0 143px;
+  padding-top: 57px;
+}
+
+.fixedPlanHeaderRow {
+  display: flex;
+  width: min(302px, calc(100% - 64px));
+  height: 87px;
+  margin: 0 auto;
+  align-items: flex-start;
+  justify-content: space-between;
+  padding-top: 8px;
+}
+
+.iconButton {
+  display: grid;
+  flex: 0 0 auto;
+  place-items: center;
+  border: 0;
+  padding: 0;
+  background: transparent;
+}
+
+.backButton {
+  width: 35px;
+  height: 35px;
+  cursor: pointer;
+}
+
+.backButton img {
+  width: 35px;
+  height: 35px;
+}
+
+.identity {
+  display: flex;
+  align-items: center;
+  gap: 13px;
+}
+
+.avatarStatus {
+  display: flex;
+  width: 60px;
+  flex-direction: column;
+  align-items: center;
+}
+
+.avatar {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  width: 50px;
+  height: 50px;
+  overflow: hidden;
+  place-items: center;
+  border-radius: 50%;
+  background: #f3f4f6;
+}
+
+.avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.avatarFallback {
+  width: 28px;
+  height: 28px;
+}
+
+.statusBadge {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  min-width: 60px;
+  height: 26px;
+  margin-top: -9px;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid #fffcfc;
+  border-radius: 20px;
+  padding: 0 8px;
+  background: #fff0f3;
+  color: #f00;
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 16px;
+  letter-spacing: 0.5px;
+  white-space: nowrap;
+}
+
+.statusAccepted {
+  background: #e8f5e9;
+  color: #2e7d32;
+}
+
+.statusClosed {
+  background: #eee;
+  color: #757575;
+}
+
+.personName {
+  color: #000;
+  font-size: 20px;
+  font-weight: 600;
+  line-height: 24px;
+  letter-spacing: 0.5px;
+  white-space: nowrap;
+}
+
+.moreIcon {
+  width: 20px;
+  height: 4px;
+  margin-top: 17px;
+}
+
+.fixedPlanMain {
+  min-height: 0;
+  flex: 1;
+  overflow-y: auto;
+  scrollbar-width: none;
+}
+
+.fixedPlanMain::-webkit-scrollbar {
+  display: none;
+}
+
+.messageList {
+  display: flex;
+  width: min(349px, calc(100% - 32px));
+  margin: 0 auto;
+  align-items: flex-end;
+  flex-direction: column;
+  padding: 40px 0 16px;
+}
+
+.invitationCard {
+  width: 301px;
+  max-width: calc(100% - 32px);
+  min-height: 244px;
+  margin: 0;
+  overflow: hidden;
+  border: 1px solid #e9e9eb;
+  border-radius: 28px 16px 28px 28px;
+  background: #fff;
+  box-shadow: inset 3px 2px 10.1px rgba(0, 0, 0, 0.1);
+}
+
+.acceptedMessageList {
+  width: min(384px, calc(100% - 18px));
+  align-items: center;
+}
+
+.acceptedPlanCard {
+  display: flex;
+  width: 100%;
+  min-height: 123px;
+  flex-direction: column;
+  align-items: flex-start;
+  border: 1px solid #eaeaea;
+  border-radius: 16px;
+  padding: 11px 20px 20px;
+  background: #fff;
+  box-shadow: inset 0 4px 11.6px rgba(0, 0, 0, 0.08);
+  cursor: pointer;
+  font-family: inherit;
+  text-align: left;
+}
+
+.acceptedPlanCard:focus-visible {
+  border-color: #ff8861;
+  box-shadow: 0 0 0 3px rgb(255 136 97 / 18%);
+  outline: none;
+}
+
+.acceptedPlanHeading {
+  display: flex;
+  width: 100%;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.acceptedPlanHeading h2 {
+  min-width: 0;
+  overflow: hidden;
+  margin: 0;
+  color: #101828;
+  font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-size: 18px;
+  font-weight: 700;
+  line-height: 24.75px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.acceptedPlanBadge {
+  display: flex;
+  min-height: 34px;
+  align-items: center;
+  gap: 6px;
+  flex: 0 0 auto;
+  border: 0.667px solid #b9f8cf;
+  border-radius: 999px;
+  padding: 6px 12px;
+  background: #f0fdf4;
+  color: #008236;
+  font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 20px;
+  white-space: nowrap;
+}
+
+.acceptedPlanBadge img {
+  width: 14px;
+  height: 14px;
+}
+
+.acceptedPlanDetails {
+  display: flex;
+  height: 56px;
+  flex-direction: column;
+}
+
+.acceptedPlanDetails > div {
+  display: flex;
+  min-height: 22px;
+  align-items: center;
+  gap: 10px;
+  color: #4a5565;
+  font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 20px;
+  white-space: nowrap;
+}
+
+.acceptedPlanDetails > div + div {
+  min-height: 34px;
+  padding-top: 10px;
+}
+
+.acceptedPlanDetails img {
+  flex: 0 0 auto;
+}
+
+.cardBody {
+  padding: 15px 15px 0;
+}
+
+.cardHeadlineRow {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.cardHeadline {
+  overflow: hidden;
+  margin: 0;
+  color: #3e3e3e;
+  font-size: 11px;
+  font-weight: 400;
+  line-height: 20px;
+  letter-spacing: -0.15px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.waitingBadge {
+  display: flex;
+  width: 72px;
+  height: 24px;
+  flex: 0 0 72px;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  border-radius: 999px;
+  background: #f4f3f4;
+  color: #666;
+  font-size: 10px;
+  line-height: 16px;
+}
+
+.waitingBadge img {
+  width: 11px;
+  height: 11px;
+}
+
+.inviteMessage {
+  overflow: hidden;
+  margin: 7px 0 12px;
+  color: #1a2e24;
+  font-size: 15px;
+  font-weight: 700;
+  line-height: 19px;
+  letter-spacing: -0.14px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.scheduleImage {
+  position: relative;
+  display: flex;
+  height: 103px;
+  flex-direction: column;
+  justify-content: flex-end;
+  gap: 5px;
+  overflow: hidden;
+  border-radius: 12px;
+  padding: 0 15px 11px;
+  background: #ececec url('/images/discover/event-walk.png') center 49% / cover no-repeat;
+  color: #fff;
+}
+
+.scheduleImage::before {
+  position: absolute;
+  inset: 30% 0 0;
+  background: linear-gradient(transparent, rgba(0, 0, 0, 0.48));
+  content: '';
+}
+
+.scheduleRow {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 11px;
+  white-space: nowrap;
+}
+
+.scheduleRow img {
+  width: 14px;
+  height: 14px;
+  filter: invert(1);
+}
+
+.scheduleRow img.locationIcon {
+  width: 11px;
+}
+
+.cardActions {
+  display: flex;
+  min-height: 43px;
+  margin: 22px 15px 0;
+  align-items: flex-start;
+  justify-content: center;
+  border-top: 1px solid #eee;
+  padding-top: 6px;
+}
+
+.cancelButton {
+  min-width: 120px;
+  min-height: 32px;
+  border: 0;
+  padding: 0 8px;
+  background: transparent;
+  color: #ff5b4e;
+  cursor: pointer;
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 20px;
+  letter-spacing: -0.15px;
+}
+
+.cancelButton:disabled,
+.responseButton:disabled {
+  cursor: wait;
+  opacity: 0.5;
+}
+
+.receiverActions {
+  display: flex;
+  width: 100%;
+  gap: 8px;
+}
+
+.responseButton {
+  min-height: 32px;
+  flex: 1;
+  border: 1px solid #ccc;
+  border-radius: 11px;
+  background: #fff;
+  color: #000;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.acceptButton {
+  border-color: #ff8861;
+  background: #ff7622;
+  color: #fff;
+}
+
+.chatMessages {
+  display: flex;
+  width: min(349px, calc(100% - 32px));
+  margin: 24px auto 0;
+  flex-direction: column;
+}
+
+.fixedPlanFooter {
+  display: flex;
+  width: 100%;
+  height: 90px;
+  flex: 0 0 90px;
+  align-items: flex-start;
+  justify-content: center;
+  background: #f5f5f5;
+}
+
+@media (max-height: 700px) {
+  .fixedPlanHeader {
+    height: 120px;
+    flex-basis: 120px;
+    padding-top: 34px;
+  }
+
+  .messageList {
+    padding-top: 24px;
+  }
+
+  .fixedPlanFooter {
+    height: 90px;
+    flex-basis: 90px;
+  }
+}

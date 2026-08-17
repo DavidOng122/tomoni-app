@@ -195,6 +195,12 @@
   background: #f1f1f1;
 }
 
+.recommendationGroups {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
 .recommendationIntro {
   display: flex;
   width: 100%;
@@ -221,7 +227,7 @@
   background-image: url('/images/discover/scheduled-people/walking.svg');
   background-position: center;
   background-repeat: no-repeat;
-  background-size: 17px 17px;
+  background-size: auto 17px;
 }
 
 .recommendationIntro div {
@@ -258,6 +264,14 @@
 
 .recommendationList::-webkit-scrollbar {
   display: none;
+}
+
+.recommendationEmpty {
+  padding: 10px 8px 2px;
+  color: #666;
+  font-size: 13px;
+  line-height: 1.55;
+  text-align: center;
 }
 
 .recommendationCard {
@@ -440,8 +454,17 @@
   flex: 1;
 }
 
+.eventTitleRow {
+  display: flex;
+  min-width: 0;
+  align-items: flex-start;
+  gap: 7px;
+}
+
 .eventDetails h3 {
   display: -webkit-box;
+  min-width: 0;
+  flex: 1;
   margin-bottom: 2px;
   overflow: hidden;
   font-size: 16px;
@@ -449,6 +472,22 @@
   line-height: 1.28;
   -webkit-box-orient: vertical;
   -webkit-line-clamp: 2;
+}
+
+.participationBadge {
+  display: inline-flex;
+  min-height: 20px;
+  flex: 0 0 auto;
+  align-items: center;
+  border: 0.7px solid #fff;
+  border-radius: 999px;
+  padding: 2px 8px;
+  background: #cffbdc;
+  color: #2b7a3e;
+  font-size: 11px;
+  font-weight: 650;
+  line-height: 16px;
+  white-space: nowrap;
 }
 
 .participantStack {
@@ -462,7 +501,7 @@
   width: 20px;
   height: 20px;
   margin-right: -5px;
-  border: 1px solid #fff;
+  border: 0;
   border-radius: 50%;
 }
 

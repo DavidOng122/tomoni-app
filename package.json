@@ -10,7 +10,8 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint .",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "test": "node --test tests/discover/filterRecommendationsForPlan.test.mjs tests/discover/getNearestUpcomingCompanion.test.mjs tests/connections/getConnectionPreview.test.mjs tests/connections/getLatestMessagesByConversation.test.mjs tests/connections/fixedPlanNavigation.test.mjs tests/mypage/loadingShell.test.mjs tests/mypage/profileStats.test.mjs tests/invitations/getFixedPlanInvitationCopy.test.mjs tests/chat/getOtherParticipantUserId.test.mjs tests/chat/getMessageAvatarUrl.test.mjs tests/chat/fixedPlanLayout.test.mjs tests/events/communityEventSeed.test.mjs tests/events/createEventDescription.test.mjs tests/events/getParticipantAvatarPreview.test.mjs tests/events/getOfficialEventActions.test.mjs tests/events/joinSuccessView.test.mjs tests/events/sortCommunityEvents.test.mjs tests/fixed-schedules/canViewAcceptedPlanDetail.test.mjs tests/fixed-schedules/normalizeFixedPlanDraft.test.mjs tests/fixed-schedules/fixedPlanManagement.test.mjs"
   },
   "dependencies": {
     "@supabase/ssr": "^0.12.4",

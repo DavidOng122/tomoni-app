@@ -63,15 +63,17 @@ export default async function MyPage() {
   // Fetch real connections (only 'active' rows from public.connections)
   const { data: connectionsAsA } = await supabase
     .from('connections')
-    .select('connection_id, user_b_id')
+    .select('connection_id, user_b_id, connected_at')
     .eq('user_a_id', user.id)
-    .eq('connection_status', 'active');
+    .eq('connection_status', 'active')
+    .order('connected_at', { ascending: true });
 
   const { data: connectionsAsB } = await supabase
     .from('connections')
-    .select('connection_id, user_a_id')
+    .select('connection_id, user_a_id, connected_at')
     .eq('user_b_id', user.id)
-    .eq('connection_status', 'active');
+    .eq('connection_status', 'active')
+    .order('connected_at', { ascending: true });
 
   const connectedUserIds = [
     ...(connectionsAsA || []).map((c) => c.user_b_id),
@@ -88,13 +90,30 @@ export default async function MyPage() {
       .select('user_id, nickname, avatar_url')
       .in('user_id', connectedUserIds)
       .eq('profile_status', 'active');
-    connectedProfiles = profiles || [];
+    const profilesByUserId = new Map(
+      (profiles || []).map((connectedProfile) => [connectedProfile.user_id, connectedProfile]),
+    );
+    connectedProfiles = connectedUserIds.flatMap((connectedUserId) => {
+      const connectedProfile = profilesByUserId.get(connectedUserId);
+      return connectedProfile ? [connectedProfile] : [];
+    });
+  }
+
+  const { count: attendedEventCount, error: attendedEventError } = await supabase
+    .from('event_participations')
+    .select('participation_id', { count: 'exact', head: true })
+    .eq('user_id', user.id)
+    .eq('participation_status', 'attended');
+
+  if (attendedEventError) {
+    console.error('Failed to load attended event count:', attendedEventError);
   }
 
   return (
     <MyPageView
       profile={profile}
       fixedPlans={fixedPlans || []}
+      attendedEventCount={attendedEventCount || 0}
       connectionCount={connectionCount}
       connectedProfiles={connectedProfiles}
     />

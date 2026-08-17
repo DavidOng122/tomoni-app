@@ -24,7 +24,7 @@
 
 .content {
   width: 100%;
-  padding-bottom: 126px;
+  padding-bottom: 178px;
 }
 
 .hero {
@@ -60,14 +60,12 @@
   display: flex;
   min-width: 0;
   align-items: center;
+  justify-content: space-between;
   gap: 9px;
 }
 
-.titleRowRegistration {
-  padding-right: 58px;
-}
-
 .titleRow h1 {
+  min-width: 0;
   margin: 0;
   font-size: 24px;
   font-weight: 600;
@@ -75,16 +73,28 @@
   word-break: break-word;
 }
 
-.externalMark {
+.titleActions {
+  display: flex;
+  align-items: center;
+  flex: 0 0 auto;
+  gap: 8px;
+}
+
+.officialLinkIcon {
+  display: flex;
+  width: 30px;
+  height: 31px;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+}
+
+.officialLinkIcon img {
   width: 18px;
   height: 18px;
-  flex: 0 0 18px;
 }
 
 .registrationBadge {
-  position: absolute;
-  top: 0;
-  right: 0;
   display: flex;
   min-width: 58px;
   height: 31px;
@@ -318,10 +328,14 @@
 }
 
 .externalButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
   width: 100%;
   border: 1px solid #111;
   background: #fff;
   color: #111;
+  text-decoration: none;
 }
 
 .externalButton:disabled {

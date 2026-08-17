@@ -1,0 +1,276 @@
+.screen {
+  min-height: 100dvh;
+  background: #f9f8f8;
+  color: #101828;
+}
+
+.content {
+  width: min(402px, 100%);
+  min-height: 100dvh;
+  margin: 0 auto;
+  padding: 65px 13px 64px;
+}
+
+.header {
+  position: relative;
+  display: flex;
+  align-items: center;
+  width: 100%;
+  height: 36px;
+  padding-left: 24px;
+}
+
+.header a {
+  display: inline-flex;
+  flex: 0 0 auto;
+}
+
+.header h1 {
+  position: absolute;
+  left: 50%;
+  margin: 0;
+  transform: translateX(-50%);
+  color: #000;
+  font-size: 16px;
+  font-weight: 600;
+  line-height: 1;
+  letter-spacing: 0.5px;
+  white-space: nowrap;
+}
+
+.person {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  min-height: 82px;
+  margin: 26px 16px 15px;
+  padding: 14px 26px 14px 41px;
+}
+
+.avatar {
+  display: block;
+  flex: 0 0 54px;
+  width: 54px;
+  height: 54px;
+  overflow: hidden;
+  border-radius: 50%;
+  background: #f3f4f6;
+}
+
+.avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.personName,
+.personArea {
+  margin: 0;
+}
+
+.personName {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  line-height: 22.5px;
+  white-space: nowrap;
+}
+
+.personName strong {
+  color: #1a1a1a;
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.personName span {
+  color: #000;
+  font-size: 12px;
+  font-weight: 510;
+}
+
+.personArea {
+  padding-top: 2px;
+  overflow: hidden;
+  color: #888;
+  font-size: 13px;
+  font-weight: 510;
+  line-height: 19.5px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.planCard {
+  min-height: 123px;
+  margin: 0 16px;
+  padding: 11px 14px 20px 15px;
+  border: 1px solid #eaeaea;
+  border-radius: 16px;
+  background: #fff;
+  box-shadow: inset 0 4px 11.6px rgb(0 0 0 / 8%);
+}
+
+.planHeading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.planHeading h2 {
+  min-width: 0;
+  margin: 0;
+  overflow: hidden;
+  color: #101828;
+  font-size: 18px;
+  font-weight: 700;
+  line-height: 24.75px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.acceptedBadge {
+  display: inline-flex;
+  flex: 0 0 auto;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border: 1px solid #b9f8cf;
+  border-radius: 999px;
+  background: #f0fdf4;
+  color: #008236;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 20px;
+}
+
+.planDetails {
+  display: grid;
+  gap: 10px;
+  padding-top: 2px;
+}
+
+.planDetails p {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 0;
+  color: #4a5565;
+  font-size: 14px;
+  line-height: 20px;
+}
+
+.planDetails p img {
+  flex: 0 0 auto;
+}
+
+.meetup {
+  margin: 26px 16px 0;
+}
+
+.eyebrow {
+  margin: 0;
+  color: #505050;
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 16px;
+}
+
+.meetup h2 {
+  margin: 8px 0 0;
+  color: #101828;
+  font-size: 20px;
+  font-weight: 700;
+  line-height: 25px;
+}
+
+.explanation {
+  width: 284px;
+  max-width: 100%;
+  margin: 4px 0 0;
+  color: #848484;
+  font-size: 12px;
+  font-weight: 510;
+  line-height: 16px;
+}
+
+.map {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 175px;
+  margin-top: 12px;
+  overflow: hidden;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  background: #dedede;
+  color: #667085;
+  font-size: 13px;
+}
+
+.tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 17px;
+  margin-top: 12px;
+}
+
+.tags span {
+  padding: 6px 12px;
+  border: 1px solid #ff8861;
+  border-radius: 999px;
+  background: #ffe7df;
+  color: #ff7622;
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 16px;
+  white-space: nowrap;
+}
+
+.privacyNotice {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: calc(100% - 37px);
+  min-height: 46px;
+  margin: 32px 21px 0 16px;
+  padding: 7px 16px 8px;
+  border: 1px solid #f9f9f9;
+  border-radius: 12px;
+  background: #fff;
+  box-shadow: inset 2px 1px 7px rgb(0 0 0 / 11%);
+}
+
+.privacyNotice p {
+  margin: 0;
+  color: #131313;
+  font-size: 14px;
+  font-weight: 510;
+  line-height: 20px;
+  white-space: nowrap;
+}
+
+@media (max-width: 380px) {
+  .content {
+    padding-right: 8px;
+    padding-left: 8px;
+  }
+
+  .person {
+    padding-right: 12px;
+    padding-left: 20px;
+  }
+
+  .privacyNotice {
+    width: calc(100% - 24px);
+    margin-right: 12px;
+    margin-left: 12px;
+    padding-right: 8px;
+    padding-left: 8px;
+  }
+
+  .privacyNotice p {
+    font-size: 12px;
+  }
+}

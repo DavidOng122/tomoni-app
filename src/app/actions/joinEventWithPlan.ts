@@ -7,7 +7,7 @@ export async function joinEventWithPlanAction(
   eventId: string, 
   arrivalTime: string, 
   durationMinutes: number | null
-) {
+): Promise<{ success: boolean; error?: string }> {
   const supabase = await createClient();
   
   // Enforce correct duration constraint on server side as well (though DB will reject anyway)
@@ -34,6 +34,6 @@ export async function joinEventWithPlanAction(
 
   revalidatePath(`/events/${eventId}`);
   revalidatePath(`/events/${eventId}/requests`);
-  
+
   return { success: true };
 }

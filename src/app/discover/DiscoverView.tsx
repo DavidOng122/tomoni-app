@@ -1,15 +1,22 @@
 'use client';
 
 import React from 'react';
+import Image from 'next/image';
 import { PageContainer } from '@/components/layout/PageContainer';
 import { BottomNavigation } from '@/components/layout/BottomNavigation';
 import { useRouter } from 'next/navigation';
 import { DiscoverRecommendation, MatchReasonCode } from '@/features/discover/types';
 import { Database } from '@/types/database.types';
 import { formatEventDateTime } from '@/utils/dateFormatter';
+import { getParticipantAvatarPreview } from '@/features/events/domain/getParticipantAvatarPreview';
+import type { EventParticipantPreviewData } from '@/features/events/lib/getEventParticipantPreview';
 import styles from './DiscoverView.module.css';
 
-type EventRow = Database['public']['Tables']['events']['Row'];
+type EventRow = Database['public']['Tables']['events']['Row'] & {
+  isParticipating: boolean;
+  organizerAvatarUrl: string | null;
+  participantPreview: EventParticipantPreviewData | null;
+};
 
 export interface CurrentActivityData {
   name: string;
@@ -17,18 +24,25 @@ export interface CurrentActivityData {
   eventTitle: string;
   dateTime: string;
   location: string;
-  avatarUrl: string;
+  avatarUrl: string | null;
+}
+
+interface RecommendationGroup {
+  fixedPlanId: string;
+  title: string;
+  scheduleLabel: string;
+  recommendations: DiscoverRecommendation[];
 }
 
 interface DiscoverViewProps {
-  recommendations: DiscoverRecommendation[];
   hasPlans: boolean;
   events: EventRow[];
   currentActivity?: CurrentActivityData | null;
+  recommendationGroups: RecommendationGroup[];
+  todayWeekday: string;
 }
 
-const matchReasonLabels: Record<MatchReasonCode, string> = {
-  same_activity: '同じ活動',
+const matchReasonLabels: Omit<Record<MatchReasonCode, string>, 'same_activity'> = {
   same_time: '同じ時間ごろ',
   nearby: '近くに住んでいる',
   shared_day: '同じ曜日'
@@ -63,8 +77,9 @@ const PinIcon = () => (
   </svg>
 );
 
-export const DiscoverView: React.FC<DiscoverViewProps> = ({ recommendations, hasPlans, events, currentActivity }) => {
+export const DiscoverView: React.FC<DiscoverViewProps> = ({ hasPlans, events, currentActivity, recommendationGroups, todayWeekday }) => {
   const router = useRouter();
+  const firstRecommendationGroup = recommendationGroups[0] ?? null;
 
   const navItems = [
     {
@@ -110,7 +125,17 @@ export const DiscoverView: React.FC<DiscoverViewProps> = ({ recommendations, has
             <section aria-label="現在の活動">
               <div className={styles.currentCard}>
                 <div className={styles.currentAvatarGroup}>
-                  <img className={styles.currentAvatar} src={currentActivity.avatarUrl} alt="Avatar" width="50" height="50" />
+                  {currentActivity.avatarUrl ? (
+                    <img
+                      className={styles.currentAvatar}
+                      src={currentActivity.avatarUrl}
+                      alt={currentActivity.name}
+                      width="50"
+                      height="50"
+                    />
+                  ) : (
+                    <span className={styles.currentAvatar} aria-hidden="true" />
+                  )}
                   {currentActivity.verified ? <span className={styles.verified}>確認済み</span> : null}
                 </div>
                 <div className={styles.currentDetails}>
@@ -129,7 +154,15 @@ export const DiscoverView: React.FC<DiscoverViewProps> = ({ recommendations, has
           <section className={styles.section}>
             <div className={styles.sectionHeading}>
               <h2>予定からつながる</h2>
-              {hasPlans && recommendations.length > 0 && <span className={styles.seeAll}>すべて見る <span aria-hidden="true">›</span></span>}
+              {firstRecommendationGroup && firstRecommendationGroup.recommendations.length > 0 && (
+                <button
+                  type="button"
+                  className={styles.seeAll}
+                  onClick={() => router.push(`/discover/schedules/${firstRecommendationGroup.fixedPlanId}/people`)}
+                >
+                  すべて見る <span aria-hidden="true">›</span>
+                </button>
+              )}
             </div>
 
             {!hasPlans ? (
@@ -137,51 +170,52 @@ export const DiscoverView: React.FC<DiscoverViewProps> = ({ recommendations, has
                 <p>固定予定を追加すると、<br/>近くで同じ活動をしている人を<br/>見つけられます</p>
                 <button onClick={() => router.push('/mypage')}>固定予定を追加</button>
               </div>
-            ) : recommendations.length === 0 ? (
-              <div className={styles.emptyState}>
-                <p>現在おすすめできるユーザーがいません。<br/>もう少しお待ちください。</p>
-              </div>
             ) : (
-              <div className={styles.recommendationPanel}>
-                <button
-                  type="button"
-                  className={styles.recommendationIntro}
-                  onClick={() => {
-                    const scheduleId = recommendations[0]?.match.myPlanId;
-                    if (scheduleId) {
-                      router.push(`/discover/schedules/${scheduleId}/people`);
-                    }
-                  }}
-                >
-                  <span className={styles.walkIcon} aria-hidden="true" />
-                  <div>
-                    <strong>一緒に朝の散歩に行けそうな人</strong>
-                    <span>固定予定：毎週火曜　9:00ごろ</span>
-                  </div>
-                </button>
-                <div className={styles.recommendationList}>
-                  {recommendations.map((rec) => (
-                    <div
-                      key={rec.candidateId}
-                      onClick={() => router.push(`/discover/schedules/${rec.match.myPlanId}/people`)}
-                      className={styles.recommendationCard}
+              <div className={styles.recommendationGroups}>
+                {recommendationGroups.map((group) => (
+                  <div className={styles.recommendationPanel} key={group.fixedPlanId}>
+                    <button
+                      type="button"
+                      className={styles.recommendationIntro}
+                      onClick={() => router.push(`/discover/schedules/${group.fixedPlanId}/people`)}
                     >
-                      <div className={styles.personLine}>
-                        <div className={styles.avatarPlaceholder}>
-                          {rec.profile.avatarUrl ? <img src={rec.profile.avatarUrl} alt={rec.profile.nickname} width="33" height="33" /> : null}
-                        </div>
-                        <span>{rec.profile.nickname}さん</span>
+                      <span className={styles.walkIcon} aria-hidden="true" />
+                      <div>
+                        <strong>一緒に{group.title}できそうな人</strong>
+                        <span>固定予定：{group.scheduleLabel}</span>
                       </div>
-                      <div className={styles.tagList}>
-                        {rec.match.reasons.slice(0, 2).map((reasonCode) => (
-                          <span key={reasonCode} style={getTagStyle(reasonCode)}>
-                            {matchReasonLabels[reasonCode] || reasonCode}
-                          </span>
+                    </button>
+                    {group.recommendations.length === 0 ? (
+                      <div className={styles.recommendationEmpty}>
+                        現在おすすめできるユーザーがいません。<br />もう少しお待ちください。
+                      </div>
+                    ) : (
+                      <div className={styles.recommendationList}>
+                        {group.recommendations.map((rec) => (
+                          <div
+                            key={rec.candidateId}
+                            onClick={() => router.push(`/discover/schedules/${group.fixedPlanId}/people`)}
+                            className={styles.recommendationCard}
+                          >
+                            <div className={styles.personLine}>
+                              <div className={styles.avatarPlaceholder}>
+                                {rec.profile.avatarUrl ? <img src={rec.profile.avatarUrl} alt={rec.profile.nickname} width="33" height="33" /> : null}
+                              </div>
+                              <span>{rec.profile.nickname}さん</span>
+                            </div>
+                            <div className={styles.tagList}>
+                              {rec.match.reasons.slice(0, 2).map((reasonCode) => (
+                                <span key={reasonCode} style={getTagStyle(reasonCode)}>
+                                  {reasonCode === 'same_activity' ? `${group.title}が好き` : matchReasonLabels[reasonCode] || reasonCode}
+                                </span>
+                              ))}
+                            </div>
+                          </div>
                         ))}
                       </div>
-                    </div>
-                  ))}
-                </div>
+                    )}
+                  </div>
+                ))}
               </div>
             )}
           </section>
@@ -195,7 +229,7 @@ export const DiscoverView: React.FC<DiscoverViewProps> = ({ recommendations, has
               <button>すべて見る <span aria-hidden="true">›</span></button>
             </div>
 
-            <div className={styles.dayHeading}><strong>今日</strong><span>/ 土曜日</span></div>
+            <div className={styles.dayHeading}><strong>今日</strong><span>/ {todayWeekday}</span></div>
 
             <div className={styles.eventList}>
               {events.length === 0 ? (
@@ -203,7 +237,10 @@ export const DiscoverView: React.FC<DiscoverViewProps> = ({ recommendations, has
                   <p>現在予定されているイベントはありません。</p>
                 </div>
               ) : (
-                events.map((event) => (
+                events.map((event) => {
+                  const { visibleUsers, overflowCount } = getParticipantAvatarPreview(event.participantPreview);
+
+                  return (
                   <div
                     key={event.event_id}
                     onClick={() => router.push(`/events/${event.event_id}`)}
@@ -223,16 +260,35 @@ export const DiscoverView: React.FC<DiscoverViewProps> = ({ recommendations, has
                       ) : (
                         <svg aria-hidden="true" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="m21 15-5-5L5 21"/></svg>
                           )}
-
+                      {event.organizerAvatarUrl ? (
+                        <Image className={styles.organizerAvatar} src={event.organizerAvatarUrl} alt="" width={35} height={35} aria-hidden="true" />
+                      ) : null}
                     </div>
                     <div className={styles.eventDetails}>
-                      <h3>{event.title}</h3>
+                      <div className={styles.eventTitleRow}>
+                        <h3>{event.title}</h3>
+                        {event.isParticipating ? <span className={styles.participationBadge}>参加予定</span> : null}
+                      </div>
                       <div className={styles.metaLine}><ClockIcon /><span>{formatEventDateTime(event.start_at, event.end_at)}</span></div>
                       <div className={styles.metaLine}><PinIcon /><span>{event.place_name}</span></div>
-
+                      {visibleUsers.length > 0 || overflowCount > 0 ? (
+                        <div className={styles.participantStack} aria-label={`${event.participantPreview?.participantCount || 0}人が参加予定`}>
+                          {visibleUsers.map((participant) => (
+                            <Image
+                              key={participant.userId}
+                              src={participant.avatarUrl}
+                              alt={participant.nickname}
+                              width={20}
+                              height={20}
+                            />
+                          ))}
+                          {overflowCount > 0 ? <span>+{overflowCount}</span> : null}
+                        </div>
+                      ) : null}
                     </div>
                   </div>
-                ))
+                  );
+                })
               )}
             </div>
           </section>

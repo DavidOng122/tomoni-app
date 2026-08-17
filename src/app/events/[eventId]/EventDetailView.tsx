@@ -4,13 +4,13 @@ import React from 'react';
 import Link from 'next/link';
 import { PageContainer } from '@/components/layout/PageContainer';
 import { EventParticipationButton } from '@/components/events/EventParticipationButton';
-import { joinEventGroupChat } from '@/app/actions/joinEventGroupChat';
 import { EventTopNav } from '@/features/events/components/EventTopNav';
+import { getOfficialEventActions } from '@/features/events/domain/getOfficialEventActions';
+import { getEventOrganizerAvatarUrl } from '@/features/events/domain/getEventOrganizerAvatarUrl';
 import { EventParticipantPreviewData } from '@/features/events/lib/getEventParticipantPreview';
 import { Database } from '@/types/database.types';
 import { formatEventDateTime } from '@/utils/dateFormatter';
 import { useRouter } from 'next/navigation';
-import { useState, useTransition } from 'react';
 import styles from './EventDetailView.module.css';
 
 type EventRow = Database['public']['Tables']['events']['Row'];
@@ -33,71 +33,25 @@ export const EventDetailView: React.FC<EventDetailViewProps> = ({
   isCreator = false,
 }) => {
   const router = useRouter();
-  const [isPending, startTransition] = useTransition();
 
-  const handleJoinGroup = () => {
-    startTransition(async () => {
-      try {
-        const result = await joinEventGroupChat(event.event_id);
-        console.log("joinEventGroupChat result:", result);
-        
-        if (result.success) {
-          if (!result.conversationId || result.conversationId === 'undefined' || result.conversationId === 'null') {
-            alert('Error: conversationId is invalid. Value: ' + result.conversationId);
-            return;
-          }
-          router.push(`/chat/${result.conversationId}`);
-        } else {
-          alert('グループへの参加に失敗しました: ' + result.error);
-        }
-      } catch (err: any) {
-        alert('Exception in handleJoinGroup: ' + err.message);
-      }
-    });
+  const handleOpenParticipants = () => {
+    router.push(`/events/${event.event_id}/people`);
   };
 
-  let ctaUrl: string | null = null;
-  let ctaText: string | null = null;
-  let ctaDisabled = false;
-
-  const now = new Date();
-  const deadlinePassed = event.registration_deadline && new Date(event.registration_deadline) < now;
-
-  if (!event.registration_required || event.registration_status === 'not_required') {
-    if (event.official_url) {
-      ctaUrl = event.official_url;
-      ctaText = '公式サイトを見る';
-    }
-  } else if (event.registration_status === 'unknown') {
-    if (event.official_url) {
-      ctaUrl = event.official_url;
-      ctaText = '公式サイトを見る';
-    }
-  } else if (
-    event.registration_status === 'closed' ||
-    event.registration_status === 'full' ||
-    deadlinePassed
-  ) {
-    ctaDisabled = true;
-    ctaText = '受付終了';
-  } else if (event.registration_status === 'not_started') {
-    ctaDisabled = true;
-    ctaText = '受付前';
-  } else if (event.registration_status === 'open') {
-    if (event.registration_url) {
-      ctaUrl = event.registration_url;
-      ctaText = '公式サイトで申し込む';
-    } else if (event.official_url) {
-      ctaUrl = event.official_url;
-      ctaText = '公式サイトを見る';
-    }
-  } else if (event.official_url) {
-    ctaUrl = event.official_url;
-    ctaText = '公式サイトを見る';
-  }
+  const officialActions = getOfficialEventActions({
+    officialUrl: event.official_url,
+    registrationUrl: event.registration_url,
+    registrationRequired: event.registration_required,
+    registrationStatus: event.registration_status,
+    registrationDeadline: event.registration_deadline,
+  });
 
   const organizerName = creatorProfile?.nickname || event.source_name || '';
-  const organizerAvatar = creatorProfile?.avatar_url || null;
+  const organizerAvatar = getEventOrganizerAvatarUrl({
+    eventType: event.event_type,
+    sourceName: event.source_name,
+    creatorAvatarUrl: creatorProfile?.avatar_url || null,
+  });
   const participantCount = participantPreview?.participantCount || 0;
   const participants = participantPreview?.users || [];
   const remainingCount = Math.max(0, participantCount - participants.length);
@@ -118,22 +72,29 @@ export const EventDetailView: React.FC<EventDetailViewProps> = ({
             </div>
 
             <div className={styles.titleBlock}>
-              <div
-                className={`${styles.titleRow} ${
-                  event.registration_required ? styles.titleRowRegistration : ''
-                }`}
-              >
+              <div className={styles.titleRow}>
                 <h1>{event.title}</h1>
-                {event.registration_required && (
-                  <img
-                    className={styles.externalMark}
-                    src="/images/events/detail/external-link.svg"
-                    alt=""
-                    aria-hidden="true"
-                  />
-                )}
+                <div className={styles.titleActions}>
+                  {officialActions.officialSiteUrl && (
+                    <a
+                      className={styles.officialLinkIcon}
+                      href={officialActions.officialSiteUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      aria-label="公式サイトを開く"
+                    >
+                      <img
+                        src="/images/events/detail/external-link.svg"
+                        alt=""
+                        aria-hidden="true"
+                      />
+                    </a>
+                  )}
+                  {event.registration_required && (
+                    <span className={styles.registrationBadge}>要申込</span>
+                  )}
+                </div>
               </div>
-              {event.registration_required && <span className={styles.registrationBadge}>要申込</span>}
             </div>
 
             <div className={styles.organizerRow}>
@@ -181,10 +142,9 @@ export const EventDetailView: React.FC<EventDetailViewProps> = ({
               participation.arrival_time && (
                 <button 
                   className={styles.peopleLink} 
-                  onClick={handleJoinGroup}
-                  disabled={isPending}
+                  onClick={handleOpenParticipants}
                 >
-                  {isPending ? '参加中...' : '同じ時間に参加する人を見る'}
+                  同じ時間に参加する人を見る
                 </button>
               )}
 
@@ -213,6 +173,23 @@ export const EventDetailView: React.FC<EventDetailViewProps> = ({
 
       <div className={styles.actionBar}>
         <div>
+          {officialActions.registrationAction && (
+            officialActions.registrationAction.url && !officialActions.registrationAction.disabled ? (
+              <a
+                href={officialActions.registrationAction.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className={styles.externalButton}
+              >
+                {officialActions.registrationAction.label}
+              </a>
+            ) : (
+              <button type="button" disabled className={styles.externalButton}>
+                {officialActions.registrationAction.label}
+              </button>
+            )
+          )}
+
           <EventParticipationButton
             eventId={event.event_id}
             currentStatus={participation?.participation_status || null}
@@ -220,20 +197,6 @@ export const EventDetailView: React.FC<EventDetailViewProps> = ({
             eventStatus={event.event_status}
           />
 
-          {(ctaText || ctaDisabled) && (
-            <button
-              type="button"
-              onClick={() => {
-                if (ctaUrl && !ctaDisabled) {
-                  window.open(ctaUrl, '_blank', 'noopener,noreferrer');
-                }
-              }}
-              disabled={ctaDisabled}
-              className={styles.externalButton}
-            >
-              {ctaText}
-            </button>
-          )}
         </div>
       </div>
     </div>

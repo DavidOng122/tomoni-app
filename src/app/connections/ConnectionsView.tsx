@@ -12,6 +12,9 @@ export interface ActiveConversation {
   other_nickname: string;
   other_avatar_url: string | null;
   event_title: string;
+  is_fixed_plan?: boolean;
+  last_message: string | null;
+  last_message_at: string | null;
 }
 
 export interface EventInvitation {
@@ -67,12 +70,24 @@ interface ConnectionsViewProps {
 }
 
 const activityLabels: Record<string, string> = {
+  walking: '朝の散歩',
   morning_walk: '朝の散歩',
+  running: 'ランニング',
+  cycling: 'サイクリング',
 };
 
 const dayLabels: Record<string, string> = {
   mon: '月曜', tue: '火曜', wed: '水曜', thu: '木曜', fri: '金曜', sat: '土曜', sun: '日曜',
 };
+
+function formatMessageTime(timestamp: string | null) {
+  if (!timestamp) return null;
+  return new Intl.DateTimeFormat('ja-JP', {
+    hour: 'numeric',
+    minute: '2-digit',
+    hour12: false,
+  }).format(new Date(timestamp));
+}
 
 export default function ConnectionsView({ 
   eventInvitations, 
@@ -125,6 +140,7 @@ export default function ConnectionsView({
             onClick={() => setActiveTab('あいさつ')}
           >
             あいさつ
+            <span className={styles.tabNotice} aria-hidden="true" />
           </button>
           <button
             type="button"
@@ -134,7 +150,6 @@ export default function ConnectionsView({
             onClick={() => setActiveTab('同行予定')}
           >
             同行予定
-            <span className={styles.tabNotice} aria-hidden="true" />
           </button>
         </div>
 
@@ -200,7 +215,48 @@ export default function ConnectionsView({
               </section>
             )}
 
+            {sentPlanInvitations.length > 0 && (
+              <section className={styles.section}>
+                <div className={styles.sectionTitle}>
+                  <span className={`${styles.sectionIcon} ${styles.sentIcon}`} aria-hidden="true" />
+                  <div>
+                    <h2>送ったお誘い</h2>
+                    <p>あなたから送った同行のお誘い</p>
+                  </div>
+                </div>
 
+                <div className={styles.invitationList}>
+                  {sentPlanInvitations.map(invite => (
+                    <article
+                      key={invite.invitation_id}
+                      className={styles.sentCard}
+                      onClick={() => router.push(`/chat/${invite.conversation_id}`)}
+                    >
+                      <div className={styles.invitationAvatar}>
+                        {invite.receiver_avatar_url ? (
+                          <img src={invite.receiver_avatar_url} alt={invite.receiver_nickname} width="55" height="55" />
+                        ) : (
+                          <span className={styles.avatarFallback} aria-hidden="true">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><circle cx="12" cy="7" r="4"/><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/></svg>
+                          </span>
+                        )}
+                      </div>
+                      <div className={styles.sentDetails}>
+                        <strong>{invite.receiver_nickname}</strong>
+                        <span className={styles.activityLine}>
+                          <span className={styles.walkingIcon} aria-hidden="true" />
+                          {activityLabels[invite.activity_type] || invite.activity_type}
+                        </span>
+                        <span className={styles.invitationDate}>
+                          {invite.days_of_week.map(day => dayLabels[day] || day).join('・')} {invite.start_time.substring(0, 5).replace(/^0/, '')}ごろ
+                        </span>
+                      </div>
+                      <span className={styles.status}>返事待ち</span>
+                    </article>
+                  ))}
+                </div>
+              </section>
+            )}
 
             <section className={`${styles.section} ${styles.conversationSection}`}>
               <div className={styles.conversationHeading}>
@@ -209,7 +265,7 @@ export default function ConnectionsView({
               </div>
 
               <div className={styles.conversationList}>
-                {activeConversations.map((conv) => (
+                {activeConversations.filter((conv) => !conv.is_fixed_plan).map((conv) => (
                   <div key={conv.conversation_id} className={styles.conversationRow} onClick={() => router.push(`/chat/${conv.conversation_id}`)} style={{ cursor: 'pointer' }}>
                     {conv.other_avatar_url ? (
                       <img className={styles.conversationAvatar} src={conv.other_avatar_url} alt={conv.other_nickname} width="42" height="42" />
@@ -223,60 +279,16 @@ export default function ConnectionsView({
                     <div className={styles.conversationBody}>
                       <div className={styles.conversationTopline}>
                         <strong>{conv.other_nickname}</strong>
+                        {conv.last_message_at && <time dateTime={conv.last_message_at}>{formatMessageTime(conv.last_message_at)}</time>}
                       </div>
                       <div className={styles.messageLine}>
-                        <span style={{ fontSize: '13px', color: '#666' }}>{conv.event_title}</span>
+                        <span>{conv.last_message || conv.event_title}</span>
                       </div>
                     </div>
                   </div>
                 ))}
               </div>
             </section>
-
-            {/* Sent Pending Fixed Plan Invitations */}
-            {sentPlanInvitations.length > 0 && (
-              <section className={styles.section}>
-                <div className={styles.sectionTitle}>
-                  <span className={`${styles.sectionIcon} ${styles.receivedIcon}`} aria-hidden="true">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
-                  </span>
-                  <div>
-                    <h2>送ったお誘い</h2>
-                    <p>返事待ちの同行予定</p>
-                  </div>
-                </div>
-
-                <div className={styles.invitationList}>
-                  {sentPlanInvitations.map(invite => (
-                    <article key={invite.invitation_id} className={styles.receivedCard} onClick={() => router.push(`/chat/${invite.conversation_id}`)} style={{ cursor: 'pointer' }}>
-                      <div className={styles.invitationPerson}>
-                        <div className={styles.invitationAvatar}>
-                          {invite.receiver_avatar_url ? (
-                            <img src={invite.receiver_avatar_url} alt={invite.receiver_nickname} width="55" height="55" />
-                          ) : (
-                            <span className={styles.avatarFallback} aria-hidden="true">
-                              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><circle cx="12" cy="7" r="4"/><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/></svg>
-                            </span>
-                          )}
-                        </div>
-                        <div className={styles.receivedCopy}>
-                          <strong>{invite.receiver_nickname}</strong>
-                          <span style={{ color: '#666', fontSize: '13px' }}>{activityLabels[invite.activity_type] || invite.activity_type}</span>
-                          <span style={{ fontSize: '12px', color: '#888' }}>
-                            {invite.days_of_week.map(d => dayLabels[d] || d).join('・')} {invite.start_time.substring(0, 5).replace(/^0/, '')}
-                          </span>
-                        </div>
-                      </div>
-                      <div className={styles.invitationActions}>
-                        <span style={{ fontSize: '13px', fontWeight: 'bold', color: '#f39c12', padding: '6px 12px', backgroundColor: '#fff3cd', borderRadius: '4px' }}>
-                          返事待ち
-                        </span>
-                      </div>
-                    </article>
-                  ))}
-                </div>
-              </section>
-            )}
 
             {/* Closed Fixed Plan Conversations (Declined/Cancelled) */}
             {closedPlanConversations.length > 0 && (
@@ -334,7 +346,7 @@ export default function ConnectionsView({
                 </div>
 
                 <div className={styles.conversationList}>
-                  {activeConversations.filter(c => (c as any).is_fixed_plan).map((conv) => (
+                  {activeConversations.filter((conv) => conv.is_fixed_plan).map((conv) => (
                     <div key={conv.conversation_id} className={styles.conversationRow} onClick={() => router.push(`/chat/${conv.conversation_id}`)} style={{ cursor: 'pointer' }}>
                       {conv.other_avatar_url ? (
                         <img className={styles.conversationAvatar} src={conv.other_avatar_url} alt={conv.other_nickname} width="42" height="42" />
@@ -348,9 +360,10 @@ export default function ConnectionsView({
                       <div className={styles.conversationBody}>
                         <div className={styles.conversationTopline}>
                           <strong>{conv.other_nickname}</strong>
+                          {conv.last_message_at && <time dateTime={conv.last_message_at}>{formatMessageTime(conv.last_message_at)}</time>}
                         </div>
                         <div className={styles.messageLine}>
-                          <span style={{ fontSize: '13px', color: '#666' }}>{conv.event_title}</span>
+                          <span>{conv.last_message || conv.event_title}</span>
                         </div>
                       </div>
                     </div>

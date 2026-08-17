@@ -1,0 +1,79 @@
+.fixedPlanComposer {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  width: 100%;
+}
+
+.addButton {
+  position: relative;
+  width: 42px;
+  height: 42px;
+  flex: 0 0 42px;
+  overflow: visible;
+  border: 0;
+  padding: 0;
+  background: transparent;
+}
+
+.addButton img {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 87px;
+  height: 87px;
+  transform: translate(-50%, -50%);
+}
+
+.fixedPlanInputShell {
+  display: flex;
+  align-items: center;
+  width: min(297px, calc(100% - 52px));
+  height: 45px;
+  overflow: hidden;
+  border: 1px solid #c5c5c5;
+  border-radius: 37px;
+  background: #fbfbfb;
+  box-shadow: 0 0 19.3px rgba(0, 0, 0, 0.05);
+}
+
+.fixedPlanInput {
+  min-width: 0;
+  height: 43px;
+  flex: 1;
+  resize: none;
+  border: 0;
+  outline: 0;
+  padding: 13px 4px 10px 20px;
+  background: transparent;
+  color: #242424;
+  font: 400 14px/16px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  letter-spacing: 0.5px;
+}
+
+.fixedPlanInput::placeholder {
+  color: #9c9c9c;
+  opacity: 1;
+}
+
+.sendButton {
+  display: grid;
+  width: 44px;
+  height: 44px;
+  flex: 0 0 44px;
+  place-items: center;
+  border: 0;
+  padding: 0;
+  background: transparent;
+  cursor: pointer;
+}
+
+.sendButton:disabled {
+  cursor: default;
+}
+
+.sendButton img {
+  width: 20.4px;
+  height: 20.4px;
+}
