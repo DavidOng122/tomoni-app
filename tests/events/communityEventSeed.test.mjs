@@ -14,6 +14,10 @@ const candidateMigration = await readFile(
   new URL('../../supabase/migrations/20260817050000_seed_community_event_success_candidates.sql', import.meta.url),
   'utf8',
 );
+const supabaseConfig = await readFile(
+  new URL('../../supabase/config.toml', import.meta.url),
+  'utf8',
+);
 
 test('keeps the home community event separate from the Gyosen fixed plan', async () => {
   assert.match(seed, /篠崎公園 青空ストレッチ会/);
@@ -29,4 +33,10 @@ test('keeps the temporary unconnected candidates as cancelled history', () => {
   assert.match(candidateMigration, /10000000-0000-4000-8000-000000000006[\s\S]+?'17:10'/);
   assert.match(candidateMigration, /10000000-0000-4000-8000-000000000007[\s\S]+?'17:15'/);
   assert.match(candidateMigration, /on conflict \(event_id, user_id\) do update/);
+});
+
+test('rebuilds a fresh local Supabase with the complete Figma demo seed', () => {
+  assert.match(supabaseConfig, /sql_paths = \["\.\/snippets\/figma_mock_seed\.sql"\]/);
+  assert.match(candidateMigration, /if exists \([\s\S]+?from public\.events/);
+  assert.match(candidateMigration, /from auth\.users/);
 });

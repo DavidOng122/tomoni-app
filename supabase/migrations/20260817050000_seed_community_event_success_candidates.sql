@@ -1,3 +1,21 @@
+-- The complete local demo dataset is loaded after migrations by
+-- snippets/figma_mock_seed.sql. Keep this migration safe for both an existing
+-- seeded database and a brand-new `supabase db reset` database.
+do $$
+begin
+if exists (
+  select 1
+  from public.events
+  where event_id = '30000000-0000-4000-8000-000000000001'
+) and (
+  select count(*) = 3
+  from auth.users
+  where id in (
+    '10000000-0000-4000-8000-000000000005',
+    '10000000-0000-4000-8000-000000000006',
+    '10000000-0000-4000-8000-000000000007'
+  )
+) then
 insert into public.event_participations (
   participation_id,
   event_id,
@@ -41,3 +59,6 @@ on conflict (event_id, user_id) do update set
   planned_duration_minutes = excluded.planned_duration_minutes,
   participation_status = excluded.participation_status,
   updated_at = now();
+end if;
+end;
+$$;
