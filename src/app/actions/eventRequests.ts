@@ -18,6 +18,8 @@ export async function approveEventRequestAction(participationId: string) {
   if (eventId) {
     revalidatePath(`/events/${eventId}`);
     revalidatePath(`/events/${eventId}/requests`);
+    revalidatePath('/notifications');
+    revalidatePath('/discover');
   }
   
   return { success: true };
@@ -38,6 +40,8 @@ export async function rejectEventRequestAction(participationId: string) {
   if (eventId) {
     revalidatePath(`/events/${eventId}`);
     revalidatePath(`/events/${eventId}/requests`);
+    revalidatePath('/notifications');
+    revalidatePath('/discover');
   }
   
   return { success: true };

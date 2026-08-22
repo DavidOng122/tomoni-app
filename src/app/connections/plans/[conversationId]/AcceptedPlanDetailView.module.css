@@ -193,6 +193,13 @@
   line-height: 16px;
 }
 
+.address {
+  margin: 4px 0 0;
+  color: #667085;
+  font-size: 12px;
+  line-height: 17px;
+}
+
 .map {
   display: flex;
   align-items: center;
@@ -206,6 +213,33 @@
   background: #dedede;
   color: #667085;
   font-size: 13px;
+}
+
+.mapNotice {
+  margin: 7px 0 0;
+  color: #848484;
+  font-size: 11px;
+  line-height: 16px;
+}
+
+.noMeetupPlace {
+  margin-top: 8px;
+  padding: 16px;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  background: #fff;
+}
+
+.noMeetupPlace h2,
+.noMeetupPlace p {
+  margin: 0;
+}
+
+.noMeetupPlace p {
+  margin-top: 6px;
+  color: #667085;
+  font-size: 12px;
+  line-height: 18px;
 }
 
 .tags {

@@ -248,16 +248,20 @@ export type Database = {
           place_id: string | null
           place_name: string
           poster_url: string | null
+          recommendation_tags: string[]
           registration_deadline: string | null
           registration_required: boolean
           registration_status: string | null
           registration_url: string | null
+          source_dataset_id: string | null
+          source_event_id: string | null
           source_name: string | null
           source_updated_at: string | null
           start_at: string
           status_message: string | null
           title: string
           updated_at: string
+          venue_public_place_id: string | null
         }
         Insert: {
           address?: string | null
@@ -278,16 +282,20 @@ export type Database = {
           place_id?: string | null
           place_name: string
           poster_url?: string | null
+          recommendation_tags?: string[]
           registration_deadline?: string | null
           registration_required?: boolean
           registration_status?: string | null
           registration_url?: string | null
+          source_dataset_id?: string | null
+          source_event_id?: string | null
           source_name?: string | null
           source_updated_at?: string | null
           start_at: string
           status_message?: string | null
           title: string
           updated_at?: string
+          venue_public_place_id?: string | null
         }
         Update: {
           address?: string | null
@@ -308,16 +316,20 @@ export type Database = {
           place_id?: string | null
           place_name?: string
           poster_url?: string | null
+          recommendation_tags?: string[]
           registration_deadline?: string | null
           registration_required?: boolean
           registration_status?: string | null
           registration_url?: string | null
+          source_dataset_id?: string | null
+          source_event_id?: string | null
           source_name?: string | null
           source_updated_at?: string | null
           start_at?: string
           status_message?: string | null
           title?: string
           updated_at?: string
+          venue_public_place_id?: string | null
         }
         Relationships: [
           {
@@ -326,6 +338,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "users"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "events_venue_public_place_id_fkey"
+            columns: ["venue_public_place_id"]
+            isOneToOne: false
+            referencedRelation: "public_places"
+            referencedColumns: ["public_place_id"]
           },
         ]
       }
@@ -385,8 +404,81 @@ export type Database = {
           },
         ]
       }
+      invitation_plan_pairs: {
+        Row: {
+          created_at: string
+          invitation_id: string
+          invitation_plan_pair_id: string
+          receiver_fixed_plan_id: string
+          receiver_plan_snapshot: Json | null
+          sender_fixed_plan_id: string
+          sender_plan_snapshot: Json | null
+          suggested_event_id: string | null
+          suggested_public_place_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          invitation_id: string
+          invitation_plan_pair_id?: string
+          receiver_fixed_plan_id: string
+          receiver_plan_snapshot?: Json | null
+          sender_fixed_plan_id: string
+          sender_plan_snapshot?: Json | null
+          suggested_event_id?: string | null
+          suggested_public_place_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          invitation_id?: string
+          invitation_plan_pair_id?: string
+          receiver_fixed_plan_id?: string
+          receiver_plan_snapshot?: Json | null
+          sender_fixed_plan_id?: string
+          sender_plan_snapshot?: Json | null
+          suggested_event_id?: string | null
+          suggested_public_place_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "invitation_plan_pairs_invitation_id_fkey"
+            columns: ["invitation_id"]
+            isOneToOne: true
+            referencedRelation: "invitations"
+            referencedColumns: ["invitation_id"]
+          },
+          {
+            foreignKeyName: "invitation_plan_pairs_receiver_fixed_plan_id_fkey"
+            columns: ["receiver_fixed_plan_id"]
+            isOneToOne: false
+            referencedRelation: "fixed_plans"
+            referencedColumns: ["fixed_plan_id"]
+          },
+          {
+            foreignKeyName: "invitation_plan_pairs_sender_fixed_plan_id_fkey"
+            columns: ["sender_fixed_plan_id"]
+            isOneToOne: false
+            referencedRelation: "fixed_plans"
+            referencedColumns: ["fixed_plan_id"]
+          },
+          {
+            foreignKeyName: "invitation_plan_pairs_suggested_event_id_fkey"
+            columns: ["suggested_event_id"]
+            isOneToOne: false
+            referencedRelation: "events"
+            referencedColumns: ["event_id"]
+          },
+          {
+            foreignKeyName: "invitation_plan_pairs_suggested_public_place_id_fkey"
+            columns: ["suggested_public_place_id"]
+            isOneToOne: false
+            referencedRelation: "public_places"
+            referencedColumns: ["public_place_id"]
+          },
+        ]
+      }
       invitations: {
         Row: {
+          cancelled_by_user_id: string | null
           created_at: string
           event_id: string | null
           expires_at: string | null
@@ -400,6 +492,7 @@ export type Database = {
           sender_user_id: string
         }
         Insert: {
+          cancelled_by_user_id?: string | null
           created_at?: string
           event_id?: string | null
           expires_at?: string | null
@@ -413,6 +506,7 @@ export type Database = {
           sender_user_id: string
         }
         Update: {
+          cancelled_by_user_id?: string | null
           created_at?: string
           event_id?: string | null
           expires_at?: string | null
@@ -426,6 +520,13 @@ export type Database = {
           sender_user_id?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "invitations_cancelled_by_user_id_fkey"
+            columns: ["cancelled_by_user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "invitations_event_id_fkey"
             columns: ["event_id"]
@@ -548,6 +649,78 @@ export type Database = {
           },
         ]
       }
+      public_places: {
+        Row: {
+          address: string | null
+          attributes: Json
+          available_days: string[] | null
+          category: string
+          close_time: string | null
+          created_at: string
+          description: string | null
+          hours_note: string | null
+          last_checked_at: string
+          latitude: number
+          location_point: unknown
+          longitude: number
+          name: string
+          official_url: string | null
+          open_time: string | null
+          public_place_id: string
+          source_dataset_id: string
+          source_name: string
+          source_place_id: string
+          source_updated_at: string | null
+          updated_at: string
+        }
+        Insert: {
+          address?: string | null
+          attributes?: Json
+          available_days?: string[] | null
+          category: string
+          close_time?: string | null
+          created_at?: string
+          description?: string | null
+          hours_note?: string | null
+          last_checked_at: string
+          latitude: number
+          location_point?: unknown
+          longitude: number
+          name: string
+          official_url?: string | null
+          open_time?: string | null
+          public_place_id?: string
+          source_dataset_id: string
+          source_name: string
+          source_place_id: string
+          source_updated_at?: string | null
+          updated_at?: string
+        }
+        Update: {
+          address?: string | null
+          attributes?: Json
+          available_days?: string[] | null
+          category?: string
+          close_time?: string | null
+          created_at?: string
+          description?: string | null
+          hours_note?: string | null
+          last_checked_at?: string
+          latitude?: number
+          location_point?: unknown
+          longitude?: number
+          name?: string
+          official_url?: string | null
+          open_time?: string | null
+          public_place_id?: string
+          source_dataset_id?: string
+          source_name?: string
+          source_place_id?: string
+          source_updated_at?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       users: {
         Row: {
           account_status: string
@@ -577,10 +750,6 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      archive_fixed_plan: {
-        Args: { p_fixed_plan_id: string }
-        Returns: Json
-      }
       accept_event_invitation: {
         Args: { p_invitation_id: string }
         Returns: string
@@ -593,6 +762,12 @@ export type Database = {
         Args: { p_participation_id: string }
         Returns: string
       }
+      archive_fixed_plan: { Args: { p_fixed_plan_id: string }; Returns: Json }
+      build_fixed_plan_snapshot: {
+        Args: { p_plan: Database["public"]["Tables"]["fixed_plans"]["Row"] }
+        Returns: Json
+      }
+      can_view_event: { Args: { p_event_id: string }; Returns: boolean }
       cancel_event_invitation: {
         Args: { p_invitation_id: string }
         Returns: boolean
@@ -605,6 +780,7 @@ export type Database = {
         Args: { p_invitation_id: string }
         Returns: Json
       }
+      cancel_user_event: { Args: { p_event_id: string }; Returns: boolean }
       complete_onboarding: {
         Args: { p_profile: Json; p_schedules: Json }
         Returns: Json
@@ -614,7 +790,13 @@ export type Database = {
         Returns: string
       }
       create_fixed_schedule_invitation: {
-        Args: { p_fixed_plan_id: string; p_receiver_id: string }
+        Args: {
+          p_fixed_plan_id: string
+          p_receiver_fixed_plan_id: string
+          p_receiver_id: string
+          p_suggested_event_id?: string
+          p_suggested_public_place_id?: string
+        }
         Returns: Json
       }
       create_user_event: {
@@ -641,6 +823,18 @@ export type Database = {
         Args: { p_invitation_id: string }
         Returns: Json
       }
+      get_blocking_fixed_plan_pair_invitation: {
+        Args: { p_plan_a_id: string; p_plan_b_id: string }
+        Returns: {
+          conversation_id: string
+          invitation_id: string
+          invitation_status: string
+          receiver_fixed_plan_id: string
+          sender_fixed_plan_id: string
+          suggested_event_id: string
+          suggested_public_place_id: string
+        }[]
+      }
       get_discover_recommendations: {
         Args: { p_my_plan_id?: string }
         Returns: Json
@@ -662,6 +856,134 @@ export type Database = {
           nickname: string
           participant_count: number
           user_id: string
+        }[]
+      }
+      get_fixed_plan_event_recommendations: {
+        Args: {
+          p_limit?: number
+          p_receiver_fixed_plan_id: string
+          p_sender_fixed_plan_id: string
+        }
+        Returns: {
+          end_at: string
+          event_id: string
+          image_url: string
+          place_name: string
+          public_place_id: string
+          receiver_distance_meters: number
+          recommendation_id: string
+          recommendation_kind: string
+          registration_status: string
+          requires_hours_confirmation: boolean
+          sender_distance_meters: number
+          source_name: string
+          start_at: string
+          title: string
+        }[]
+      }
+      get_fixed_plan_invitation_display: {
+        Args: { p_invitation_id: string }
+        Returns: {
+          invitation_id: string
+          invitation_status: string
+          receiver_activity_type: string
+          receiver_custom_activity_name: string
+          receiver_days_of_week: string[]
+          receiver_fixed_plan_id: string
+          receiver_latitude: number
+          receiver_longitude: number
+          receiver_place_id: string
+          receiver_place_name: string
+          receiver_start_time: string
+          sender_activity_type: string
+          sender_custom_activity_name: string
+          sender_days_of_week: string[]
+          sender_fixed_plan_id: string
+          sender_latitude: number
+          sender_longitude: number
+          sender_place_id: string
+          sender_place_name: string
+          sender_start_time: string
+        }[]
+      }
+      get_fixed_plan_invitation_recommendation: {
+        Args: { p_invitation_id: string }
+        Returns: {
+          end_at: string
+          event_status: string
+          image_url: string
+          invitation_status: string
+          official_url: string
+          place_address: string
+          place_latitude: number
+          place_longitude: number
+          place_name: string
+          receiver_area_name: string
+          receiver_distance_meters: number
+          receiver_fixed_plan_id: string
+          recommendation_kind: string
+          registration_status: string
+          requires_hours_confirmation: boolean
+          sender_area_name: string
+          sender_distance_meters: number
+          sender_fixed_plan_id: string
+          source_name: string
+          start_at: string
+          suggested_event_id: string
+          suggested_public_place_id: string
+          title: string
+        }[]
+      }
+      get_fixed_plan_invitation_snapshots: {
+        Args: { p_invitation_id: string }
+        Returns: {
+          invitation_id: string
+          receiver_fixed_plan_id: string
+          receiver_plan_snapshot: Json
+          sender_fixed_plan_id: string
+          sender_plan_snapshot: Json
+        }[]
+      }
+      get_fixed_plan_invitation_suggested_place: {
+        Args: { p_invitation_id: string }
+        Returns: {
+          receiver_area_name: string
+          receiver_distance_meters: number
+          receiver_fixed_plan_id: string
+          sender_area_name: string
+          sender_distance_meters: number
+          sender_fixed_plan_id: string
+          suggested_place_address: string
+          suggested_place_latitude: number
+          suggested_place_longitude: number
+          suggested_place_name: string
+          suggested_place_source_name: string
+          suggested_public_place_id: string
+        }[]
+      }
+      get_my_fixed_plan_invitation_displays: {
+        Args: never
+        Returns: {
+          invitation_id: string
+          invitation_status: string
+          receiver_activity_type: string
+          receiver_custom_activity_name: string
+          receiver_days_of_week: string[]
+          receiver_fixed_plan_id: string
+          receiver_latitude: number
+          receiver_longitude: number
+          receiver_place_id: string
+          receiver_place_name: string
+          receiver_start_time: string
+          sender_activity_type: string
+          sender_custom_activity_name: string
+          sender_days_of_week: string[]
+          sender_fixed_plan_id: string
+          sender_latitude: number
+          sender_longitude: number
+          sender_place_id: string
+          sender_place_name: string
+          sender_start_time: string
         }[]
       }
       get_or_join_event_group_chat: {
@@ -690,6 +1012,11 @@ export type Database = {
           user_id: string
         }[]
       }
+      is_active_conversation_member: {
+        Args: { p_conversation_id: string }
+        Returns: boolean
+      }
+      is_active_product_user: { Args: { p_user_id: string }; Returns: boolean }
       is_conversation_member: {
         Args: { p_conversation_id: string }
         Returns: boolean
@@ -703,6 +1030,60 @@ export type Database = {
         }
         Returns: undefined
       }
+      recommend_sports_public_place: {
+        Args: {
+          p_receiver_latitude: number
+          p_receiver_longitude: number
+          p_sender_latitude: number
+          p_sender_longitude: number
+        }
+        Returns: {
+          address: string
+          latitude: number
+          longitude: number
+          name: string
+          public_place_id: string
+          receiver_distance_meters: number
+          sender_distance_meters: number
+          source_name: string
+        }[]
+      }
+      recommend_study_reading_public_place: {
+        Args: {
+          p_receiver_latitude: number
+          p_receiver_longitude: number
+          p_sender_latitude: number
+          p_sender_longitude: number
+        }
+        Returns: {
+          address: string
+          latitude: number
+          longitude: number
+          name: string
+          public_place_id: string
+          receiver_distance_meters: number
+          sender_distance_meters: number
+          source_name: string
+        }[]
+      }
+      recommend_walking_public_place: {
+        Args: {
+          p_receiver_latitude: number
+          p_receiver_longitude: number
+          p_sender_latitude: number
+          p_sender_longitude: number
+        }
+        Returns: {
+          address: string
+          latitude: number
+          longitude: number
+          name: string
+          public_place_id: string
+          receiver_distance_meters: number
+          sender_distance_meters: number
+          source_name: string
+        }[]
+      }
       reject_event_participant: {
         Args: { p_participation_id: string }
         Returns: string
@@ -710,6 +1091,14 @@ export type Database = {
       set_user_event_poster: {
         Args: { p_event_id: string; p_poster_url: string }
         Returns: undefined
+      }
+      sync_connection_state: {
+        Args: {
+          p_source_invitation_id?: string
+          p_user_1: string
+          p_user_2: string
+        }
+        Returns: string
       }
     }
     Enums: {

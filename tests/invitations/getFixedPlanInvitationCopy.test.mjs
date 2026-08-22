@@ -26,3 +26,15 @@ test('creates a fallback invitation message from the Supabase activity type', ()
   assert.equal(copy.headline, 'Kenさんからお誘いが届いています');
   assert.equal(copy.inviteMessage, '一緒にランニングに行きませんか？');
 });
+
+test('uses the product label for study and reading instead of its database code', () => {
+  const copy = getFixedPlanInvitationCopy({
+    activityType: 'study_reading',
+    invitationMessage: null,
+    isSender: true,
+    otherNickname: 'Haruto',
+  });
+
+  assert.equal(copy.activityLabel, '勉強・読書');
+  assert.equal(copy.inviteMessage, '一緒に勉強・読書に行きませんか？');
+});

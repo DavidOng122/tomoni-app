@@ -73,7 +73,7 @@ test('joins event candidates through the current profiles user_id schema', async
 test('ranks the three strongest eligible candidates by shared interests and plan reasons', async () => {
   const migration = await readFile(
     new URL(
-      '../../supabase/migrations/20260817060000_include_connections_in_event_candidates.sql',
+      '../../supabase/migrations/20260822190000_resolve_event_companion_and_capacity_conflicts.sql',
       import.meta.url,
     ),
     'utf8',
@@ -88,4 +88,6 @@ test('ranks the three strongest eligible candidates by shared interests and plan
   assert.match(migration, /limit 3;/);
   assert.doesNotMatch(migration, /connection\.connection_status\s*=\s*'active'/);
   assert.match(migration, /invitation\.invitation_type\s*=\s*'event'/);
+  assert.match(migration, /invitation\.invitation_status in \('pending', 'accepted', 'declined'\)/);
+  assert.match(migration, /public\.is_active_product_user\(candidate\.user_id\)/);
 });

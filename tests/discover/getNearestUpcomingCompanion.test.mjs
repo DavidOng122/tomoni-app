@@ -71,13 +71,63 @@ test('the home page no longer derives the companion card from the first owned pl
   assert.doesNotMatch(page, /const firstPlan/);
 });
 
-test('preserves the Figma person-walking icon aspect ratio', async () => {
-  const css = await readFile(
-    new URL('../../src/app/discover/DiscoverView.module.css', import.meta.url),
-    'utf8',
-  );
-  const walkIconRule = css.match(/\.walkIcon\s*\{([^}]+)\}/)?.[1] || '';
+test('Discover uses the same activity icons as onboarding', async () => {
+  const [constants, selector, view] = await Promise.all([
+    readFile(new URL('../../src/features/fixed-schedules/lib/constants.ts', import.meta.url), 'utf8'),
+    readFile(new URL('../../src/features/fixed-schedules/components/onboarding-form/ActivityTypeSelector.tsx', import.meta.url), 'utf8'),
+    readFile(new URL('../../src/app/discover/DiscoverView.tsx', import.meta.url), 'utf8'),
+  ]);
 
-  assert.match(walkIconRule, /background-image:\s*url\('\/images\/discover\/scheduled-people\/walking\.svg'\)/);
-  assert.match(walkIconRule, /background-size:\s*auto 17px/);
+  for (const [activityType, icon] of Object.entries({
+    walking: 'onboarding-walking.svg',
+    dog_walking: 'onboarding-dog.svg',
+    event: 'onboarding-event.svg',
+    study_reading: 'onboarding-study.svg',
+    sports: 'onboarding-sports.svg',
+    other: 'onboarding-other.svg',
+  })) {
+    assert.ok(constants.includes(`${activityType}: '/images/${icon}'`));
+  }
+
+  assert.match(selector, /ACTIVITY_ICONS\.dog_walking/);
+  assert.match(view, /ACTIVITY_ICONS\[group\.activityType\]/);
+  assert.doesNotMatch(view, /styles\.walkIcon/);
+});
+
+test('shows a pending-invitation notice and opens the notification feed', async () => {
+  const [page, view, css] = await Promise.all([
+    readFile(new URL('../../src/app/discover/page.tsx', import.meta.url), 'utf8'),
+    readFile(new URL('../../src/app/discover/DiscoverView.tsx', import.meta.url), 'utf8'),
+    readFile(new URL('../../src/app/discover/DiscoverView.module.css', import.meta.url), 'utf8'),
+  ]);
+
+  assert.match(page, /receiver_user_id', user\.id[\s\S]+invitation_status', 'pending'/);
+  assert.match(page, /pendingNotificationCount=\{pendingNotificationCount\}/);
+  assert.match(page, /getPendingEventJoinRequests\(user\.id\)/);
+  assert.match(view, /pendingNotificationCount > 0[\s\S]+styles\.notificationDot/);
+  assert.match(view, /onClick=\{\(\) => router\.push\('\/notifications'\)\}/);
+  assert.doesNotMatch(view, /router\.push\('\/connections\?tab=plans'\)/);
+  assert.match(css, /\.notificationDot\s*\{[\s\S]+background:\s*#ff6f59/);
+});
+
+test('opens an accepted companion detail from the current activity card', async () => {
+  const [page, view, css] = await Promise.all([
+    readFile(new URL('../../src/app/discover/page.tsx', import.meta.url), 'utf8'),
+    readFile(new URL('../../src/app/discover/DiscoverView.tsx', import.meta.url), 'utf8'),
+    readFile(new URL('../../src/app/discover/DiscoverView.module.css', import.meta.url), 'utf8'),
+  ]);
+
+  assert.match(page, /conversationId:\s*nearestCompanion\.conversationId/);
+  assert.match(view, /href=\{`\/connections\/plans\/\$\{currentActivity\.conversationId\}`\}/);
+  assert.match(view, /aria-label=\{`\$\{currentActivity\.name\}さんとの同行詳細を見る`\}/);
+  assert.match(css, /\.currentCard:focus-visible\s*\{/);
+});
+
+test('shows the accepted suggested public place instead of a coarse Fixed Plan area', async () => {
+  const page = await readFile(new URL('../../src/app/discover/page.tsx', import.meta.url), 'utf8');
+
+  assert.match(page, /rpc\('get_fixed_plan_invitation_suggested_place'/);
+  assert.match(page, /p_invitation_id:\s*nearestCompanion\.invitationId/);
+  assert.match(page, /location:\s*currentMeetingPlaceName \?\? '合流地点を確認中'/);
+  assert.doesNotMatch(page, /location:\s*nearestCompanion\.placeName/);
 });

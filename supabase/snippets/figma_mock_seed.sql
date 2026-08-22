@@ -8,16 +8,21 @@ begin;
 -- Demo login for Tomoni:
 --   email:    figma.demo@tomoni.local
 --   password: TomoniDemo!2026
+-- Workflow Demo Test Accounts:
+--   Account A: demo.workflow.a@yorimi.local / YorimiDemo!A2026
+--   Account B: demo.workflow.b@yorimi.local / YorimiDemo!B2026
 -- The remaining accounts exist to back realistic profiles and relationships.
-with demo_users(id, email) as (
+with demo_users(id, email, password) as (
   values
-    ('10000000-0000-4000-8000-000000000001'::uuid, 'figma.demo@tomoni.local'),
-    ('10000000-0000-4000-8000-000000000002'::uuid, 'figma.miki@tomoni.local'),
-    ('10000000-0000-4000-8000-000000000003'::uuid, 'figma.julia@tomoni.local'),
-    ('10000000-0000-4000-8000-000000000004'::uuid, 'figma.megan@tomoni.local'),
-    ('10000000-0000-4000-8000-000000000005'::uuid, 'figma.sora@tomoni.local'),
-    ('10000000-0000-4000-8000-000000000006'::uuid, 'figma.ken@tomoni.local'),
-    ('10000000-0000-4000-8000-000000000007'::uuid, 'figma.aoi@tomoni.local')
+    ('10000000-0000-4000-8000-000000000001'::uuid, 'figma.demo@tomoni.local', 'TomoniDemo!2026'),
+    ('10000000-0000-4000-8000-000000000002'::uuid, 'figma.miki@tomoni.local', 'TomoniDemo!2026'),
+    ('10000000-0000-4000-8000-000000000003'::uuid, 'figma.julia@tomoni.local', 'TomoniDemo!2026'),
+    ('10000000-0000-4000-8000-000000000004'::uuid, 'figma.megan@tomoni.local', 'TomoniDemo!2026'),
+    ('10000000-0000-4000-8000-000000000005'::uuid, 'figma.sora@tomoni.local', 'TomoniDemo!2026'),
+    ('10000000-0000-4000-8000-000000000006'::uuid, 'figma.ken@tomoni.local', 'TomoniDemo!2026'),
+    ('10000000-0000-4000-8000-000000000007'::uuid, 'figma.aoi@tomoni.local', 'TomoniDemo!2026'),
+    ('10000000-0000-4000-8000-0000000000a1'::uuid, 'demo.workflow.a@yorimi.local', 'YorimiDemo!A2026'),
+    ('10000000-0000-4000-8000-0000000000b1'::uuid, 'demo.workflow.b@yorimi.local', 'YorimiDemo!B2026')
 )
 insert into auth.users (
   instance_id,
@@ -48,7 +53,7 @@ select
   'authenticated',
   'authenticated',
   email,
-  extensions.crypt('TomoniDemo!2026', extensions.gen_salt('bf')),
+  extensions.crypt(password, extensions.gen_salt('bf')),
   now(),
   '',
   '',
@@ -132,7 +137,9 @@ values
   ('10000000-0000-4000-8000-000000000004', 'active', 'completed'),
   ('10000000-0000-4000-8000-000000000005', 'active', 'completed'),
   ('10000000-0000-4000-8000-000000000006', 'active', 'completed'),
-  ('10000000-0000-4000-8000-000000000007', 'active', 'completed')
+  ('10000000-0000-4000-8000-000000000007', 'active', 'completed'),
+  ('10000000-0000-4000-8000-0000000000a1', 'active', 'completed'),
+  ('10000000-0000-4000-8000-0000000000b1', 'active', 'completed')
 on conflict (id) do update set
   account_status = excluded.account_status,
   onboarding_status = excluded.onboarding_status,
@@ -149,13 +156,15 @@ insert into public.profiles (
   profile_status
 )
 values
-  ('10000000-0000-4000-8000-000000000001', 'Mika', 'prefer_not_to_say', '25-34', '/images/mypage/profile-miki.png', array['散歩', '地域交流'], '近所をゆっくり散歩するのが好きです。', 'active'),
-  ('10000000-0000-4000-8000-000000000002', 'Miki', 'female', '25-34', '/images/mypage/connection-miki.png', array['散歩', 'カフェ'], '朝の散歩仲間を探しています。', 'active'),
-  ('10000000-0000-4000-8000-000000000003', 'Julia', 'female', '25-34', '/images/mypage/connection-julia.png', array['散歩'], '公園を歩くことが日課です。', 'active'),
-  ('10000000-0000-4000-8000-000000000004', 'Megan', 'female', '25-34', '/images/mypage/connection-megan.png', array['散歩', '写真'], '景色を楽しみながら歩きたいです。', 'active'),
-  ('10000000-0000-4000-8000-000000000005', 'Sora', 'male', '25-34', '/images/discover/sora.png', array['散歩', 'スポーツ'], '気軽に声をかけてください。', 'active'),
-  ('10000000-0000-4000-8000-000000000006', 'Ken', 'male', '25-34', '/images/discover/ken.png', array['散歩'], '地域のイベントにも参加しています。', 'active'),
-  ('10000000-0000-4000-8000-000000000007', 'Aoi', 'female', '25-34', '/images/connections/emily.png', array['散歩', '地域交流'], '近所の人と一緒に歩くのが好きです。', 'active')
+  ('10000000-0000-4000-8000-000000000001', '美香', 'prefer_not_to_say', '25-34', '/images/mypage/profile-miki.png', array['散歩', '地域交流'], '近所をゆっくり散歩するのが好きです。', 'active'),
+  ('10000000-0000-4000-8000-000000000002', '美紀', 'female', '25-34', '/images/mypage/connection-miki.png', array['散歩', 'カフェ'], '朝の散歩仲間を探しています。', 'active'),
+  ('10000000-0000-4000-8000-000000000003', 'ジュリア', 'female', '25-34', '/images/mypage/connection-julia.png', array['散歩'], '公園を歩くことが日課です。', 'active'),
+  ('10000000-0000-4000-8000-000000000004', 'ミーガン', 'female', '25-34', '/images/mypage/connection-megan.png', array['散歩', '写真'], '景色を楽しみながら歩きたいです。', 'active'),
+  ('10000000-0000-4000-8000-000000000005', '蒼', 'male', '25-34', '/images/discover/sora.png', array['散歩', 'スポーツ'], '気軽に声をかけてください。', 'active'),
+  ('10000000-0000-4000-8000-000000000006', '健', 'male', '25-34', '/images/discover/ken.png', array['散歩'], '地域のイベントにも参加しています。', 'active'),
+  ('10000000-0000-4000-8000-000000000007', '葵', 'female', '25-34', '/images/connections/emily.png', array['散歩', '地域交流'], '近所の人と一緒に歩くのが好きです。', 'active'),
+  ('10000000-0000-4000-8000-0000000000a1', '美咲', 'female', '25-34', '/images/avatars/avatar-001.svg', array['散歩', 'カフェ'], '日常の散歩仲間を探しています。', 'active'),
+  ('10000000-0000-4000-8000-0000000000b1', '翔太', 'male', '25-34', '/images/avatars/avatar-002.svg', array['散歩', '健康'], '朝の時間を有効活用して散歩しましょう。', 'active')
 on conflict (user_id) do update set
   nickname = excluded.nickname,
   gender = excluded.gender,
@@ -180,14 +189,16 @@ insert into public.fixed_plans (
   longitude
 )
 values
-  ('20000000-0000-4000-8000-000000000001', '10000000-0000-4000-8000-000000000001', 'walking', array['tue', 'thu'], 'active', null, '09:00', 'figma-gyosen-park', '行船公園', 35.674600, 139.859100),
-  ('20000000-0000-4000-8000-000000000002', '10000000-0000-4000-8000-000000000001', 'study_reading', array['sat'], 'active', null, '14:00', 'figma-edogawa-library', '江戸川区立中央図書館', 35.706100, 139.868800),
-  ('20000000-0000-4000-8000-000000000003', '10000000-0000-4000-8000-000000000002', 'walking', array['tue'], 'active', null, '09:00', 'figma-funabori-station', '船堀駅前広場', 35.683700, 139.864300),
-  ('20000000-0000-4000-8000-000000000004', '10000000-0000-4000-8000-000000000003', 'walking', array['tue'], 'active', null, '09:00', 'figma-nishikasai-station', '西葛西駅', 35.665900, 139.859300),
-  ('20000000-0000-4000-8000-000000000005', '10000000-0000-4000-8000-000000000004', 'walking', array['tue'], 'active', null, '09:15', 'figma-kasai-station', '葛西駅', 35.663500, 139.872600),
-  ('20000000-0000-4000-8000-000000000006', '10000000-0000-4000-8000-000000000005', 'walking', array['tue'], 'active', null, '09:30', 'figma-ukita-park', '宇喜田公園', 35.675600, 139.872500),
-  ('20000000-0000-4000-8000-000000000007', '10000000-0000-4000-8000-000000000006', 'walking', array['tue'], 'active', null, '09:00', 'figma-shinsakongawa', '新川千本桜', 35.686500, 139.867000),
-  ('20000000-0000-4000-8000-000000000008', '10000000-0000-4000-8000-000000000007', 'walking', array['tue', 'thu'], 'active', null, '09:00', 'figma-gyosen-park-aoi', '行船公園', 35.674800, 139.859300)
+  ('20000000-0000-4000-8000-000000000001', '10000000-0000-4000-8000-000000000001', 'walking', array['tue', 'thu'], 'active', null, '09:00', null, '西葛西', 35.665900, 139.859300),
+  ('20000000-0000-4000-8000-000000000002', '10000000-0000-4000-8000-000000000001', 'study_reading', array['sat'], 'active', null, '14:00', null, '松江', 35.699300, 139.871900),
+  ('20000000-0000-4000-8000-000000000003', '10000000-0000-4000-8000-000000000002', 'walking', array['tue'], 'active', null, '09:00', null, '船堀', 35.683700, 139.864300),
+  ('20000000-0000-4000-8000-000000000004', '10000000-0000-4000-8000-000000000003', 'walking', array['tue'], 'active', null, '09:00', null, '西葛西', 35.665900, 139.859300),
+  ('20000000-0000-4000-8000-000000000005', '10000000-0000-4000-8000-000000000004', 'walking', array['tue'], 'active', null, '09:15', null, '葛西', 35.663500, 139.872600),
+  ('20000000-0000-4000-8000-000000000006', '10000000-0000-4000-8000-000000000005', 'walking', array['tue'], 'active', null, '09:30', null, '一之江', 35.686200, 139.882700),
+  ('20000000-0000-4000-8000-000000000007', '10000000-0000-4000-8000-000000000006', 'walking', array['tue'], 'active', null, '09:00', null, '船堀', 35.683700, 139.864300),
+  ('20000000-0000-4000-8000-000000000008', '10000000-0000-4000-8000-000000000007', 'walking', array['tue', 'thu'], 'active', null, '09:00', null, '船堀', 35.683700, 139.864300),
+  ('20000000-0000-4000-8000-0000000000a1', '10000000-0000-4000-8000-0000000000a1', 'walking', array['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun'], 'active', null, '08:00', null, '葛西', 35.663500, 139.872600),
+  ('20000000-0000-4000-8000-0000000000b1', '10000000-0000-4000-8000-0000000000b1', 'walking', array['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun'], 'active', null, '08:00', null, '西葛西', 35.665900, 139.859300)
 on conflict (fixed_plan_id) do update set
   user_id = excluded.user_id,
   activity_type = excluded.activity_type,
@@ -344,12 +355,27 @@ insert into public.invitations (
 values
   ('50000000-0000-4000-8000-000000000004', '10000000-0000-4000-8000-000000000001', '10000000-0000-4000-8000-000000000006', 'fixed_plan', '20000000-0000-4000-8000-000000000001', null, '一緒に朝の散歩に行きませんか？', 'pending', now() - interval '1 hour', null),
   ('50000000-0000-4000-8000-000000000001', '10000000-0000-4000-8000-000000000001', '10000000-0000-4000-8000-000000000002', 'fixed_plan', '20000000-0000-4000-8000-000000000001', null, '火曜日の朝、一緒に散歩しませんか？', 'accepted', now() - interval '4 days', now() - interval '3 days'),
-  ('50000000-0000-4000-8000-000000000002', '10000000-0000-4000-8000-000000000001', '10000000-0000-4000-8000-000000000003', 'fixed_plan', '20000000-0000-4000-8000-000000000001', null, '行船公園で一緒に歩きませんか？', 'accepted', now() - interval '3 days', now() - interval '2 days'),
+  ('50000000-0000-4000-8000-000000000002', '10000000-0000-4000-8000-000000000001', '10000000-0000-4000-8000-000000000003', 'fixed_plan', '20000000-0000-4000-8000-000000000001', null, '火曜日の朝、一緒に散歩しませんか？', 'accepted', now() - interval '3 days', now() - interval '2 days'),
   ('50000000-0000-4000-8000-000000000003', '10000000-0000-4000-8000-000000000001', '10000000-0000-4000-8000-000000000004', 'fixed_plan', '20000000-0000-4000-8000-000000000001', null, '朝の散歩をご一緒しませんか？', 'accepted', now() - interval '2 days', now() - interval '1 day')
 on conflict (invitation_id) do update set
   message = excluded.message,
   invitation_status = excluded.invitation_status,
   responded_at = excluded.responded_at;
+
+insert into public.invitation_plan_pairs (
+  invitation_plan_pair_id,
+  invitation_id,
+  sender_fixed_plan_id,
+  receiver_fixed_plan_id
+)
+values
+  ('51000000-0000-4000-8000-000000000004', '50000000-0000-4000-8000-000000000004', '20000000-0000-4000-8000-000000000001', '20000000-0000-4000-8000-000000000007'),
+  ('51000000-0000-4000-8000-000000000001', '50000000-0000-4000-8000-000000000001', '20000000-0000-4000-8000-000000000001', '20000000-0000-4000-8000-000000000003'),
+  ('51000000-0000-4000-8000-000000000002', '50000000-0000-4000-8000-000000000002', '20000000-0000-4000-8000-000000000001', '20000000-0000-4000-8000-000000000004'),
+  ('51000000-0000-4000-8000-000000000003', '50000000-0000-4000-8000-000000000003', '20000000-0000-4000-8000-000000000001', '20000000-0000-4000-8000-000000000005')
+on conflict (invitation_id) do update set
+  sender_fixed_plan_id = excluded.sender_fixed_plan_id,
+  receiver_fixed_plan_id = excluded.receiver_fixed_plan_id;
 
 insert into public.connections (
   connection_id,
@@ -413,7 +439,7 @@ insert into public.messages (
 )
 values
   ('80000000-0000-4000-8000-000000000001', '70000000-0000-4000-8000-000000000001', '10000000-0000-4000-8000-000000000001', 'text', '火曜日の朝、一緒に散歩しませんか？', now() - interval '2 days'),
-  ('80000000-0000-4000-8000-000000000002', '70000000-0000-4000-8000-000000000001', '10000000-0000-4000-8000-000000000002', 'text', 'ぜひ！9時に行船公園で会いましょう。', now() - interval '1 day'),
+  ('80000000-0000-4000-8000-000000000002', '70000000-0000-4000-8000-000000000001', '10000000-0000-4000-8000-000000000002', 'text', 'ぜひ！火曜日の9時ごろに歩きましょう。', now() - interval '1 day'),
   ('80000000-0000-4000-8000-000000000003', '70000000-0000-4000-8000-000000000001', '10000000-0000-4000-8000-000000000001', 'text', '楽しみにしています！', now())
 on conflict (message_id) do update set
   content = excluded.content,

@@ -138,8 +138,8 @@
 }
 
 .tagWalking {
-  background: #d1ecf1;
-  color: #0c6370;
+  background: #fff3cd;
+  color: #8b6914;
 }
 
 .tagTime {
@@ -149,12 +149,12 @@
 
 .tagNearby {
   background: #d4edda;
-  color: #155724;
+  color: #2b7a3e;
 }
 
-.tagFirst {
-  background: #fff3cd;
-  color: #8b6914;
+.tagSharedDay {
+  background: #d1ecf1;
+  color: #0c6370;
 }
 
 .personTime {
@@ -201,6 +201,223 @@
   font-size: 13px;
   line-height: 1.55;
   text-align: center;
+}
+
+.recommendationError {
+  margin: 16px 0 0;
+  color: #b42318;
+  font-size: 13px;
+  text-align: center;
+}
+
+.recommendationOverlay {
+  position: fixed;
+  z-index: 100;
+  inset: 0;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  padding: 20px 12px 0;
+  background: rgb(17 24 39 / 42%);
+}
+
+.recommendationSheet {
+  position: relative;
+  width: min(100%, 600px);
+  max-height: min(86vh, 760px);
+  overflow-y: auto;
+  padding: 14px 20px calc(24px + env(safe-area-inset-bottom));
+  border-radius: 28px 28px 0 0;
+  background: #fff;
+  box-shadow: 0 -12px 40px rgb(17 24 39 / 14%);
+}
+
+.sheetHandle {
+  display: block;
+  width: 42px;
+  height: 5px;
+  margin: 0 auto 18px;
+  border-radius: 999px;
+  background: #d9d9d9;
+}
+
+.sheetClose {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  width: 32px;
+  height: 32px;
+  border: 0;
+  border-radius: 50%;
+  background: #f3f4f6;
+  color: #333;
+  font-size: 24px;
+  line-height: 28px;
+  cursor: pointer;
+}
+
+.sheetEyebrow {
+  margin: 0 0 4px;
+  color: #ff6f59;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.recommendationSheet h2 {
+  margin: 0;
+  padding-right: 40px;
+  font-size: 23px;
+  line-height: 1.35;
+}
+
+.sheetDescription {
+  margin: 6px 0 18px;
+  color: #737373;
+  font-size: 13px;
+}
+
+.eventRecommendationList {
+  display: grid;
+  gap: 12px;
+}
+
+.eventRecommendationCard {
+  display: grid;
+  grid-template-columns: 94px minmax(0, 1fr);
+  gap: 14px;
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #e5e7eb;
+  border-radius: 18px;
+  background: #fff;
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.eventRecommendationCard:active {
+  border-color: #ff816b;
+  background: #fff8f5;
+}
+
+.eventRecommendationImage,
+.eventRecommendationPlaceholder {
+  width: 94px;
+  height: 108px;
+  border-radius: 13px;
+  object-fit: cover;
+  background: #f2f2f2;
+}
+
+.eventRecommendationPlaceholder {
+  display: grid;
+  place-items: center;
+  color: #ff8068;
+  font-size: 30px;
+}
+
+.eventRecommendationContent {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 3px;
+  color: #666;
+  font-size: 12px;
+  line-height: 1.35;
+}
+
+.eventRecommendationContent strong {
+  overflow: hidden;
+  color: #111;
+  font-size: 16px;
+  line-height: 1.35;
+  text-overflow: ellipsis;
+}
+
+.eventRecommendationKind {
+  align-self: flex-start;
+  padding: 3px 7px;
+  border-radius: 999px;
+  background: #fff0e9;
+  color: #e9603e;
+  font-size: 10px;
+  font-weight: 700;
+}
+
+.eventRecommendationDistances {
+  color: #333;
+  font-weight: 600;
+}
+
+.eventRecommendationSource {
+  color: #858585;
+}
+
+.hoursWarning {
+  color: #a15c00;
+}
+
+.decideLaterOption {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 9px;
+  margin-top: 14px;
+  padding-top: 14px;
+  border-top: 1px solid #ececec;
+  color: #777;
+  font-size: 12px;
+  line-height: 1.5;
+  text-align: center;
+}
+
+.decideLaterOption button {
+  width: 100%;
+  min-height: 44px;
+  border: 1px solid #ff765f;
+  border-radius: 13px;
+  background: #fff;
+  color: #e85e47;
+  cursor: pointer;
+  font: inherit;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.decideLaterOption button:disabled {
+  cursor: wait;
+  opacity: 0.55;
+}
+
+.noEventRecommendation {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 28px 20px 12px;
+  border-radius: 18px;
+  background: #f7f7f7;
+  color: #666;
+  font-size: 13px;
+  text-align: center;
+}
+
+.noEventRecommendation strong {
+  color: #222;
+  font-size: 16px;
+}
+
+.noEventRecommendation button {
+  width: 100%;
+  margin-top: 8px;
+  padding: 12px;
+  border: 0;
+  border-radius: 12px;
+  background: #ff765f;
+  color: #fff;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
 }
 
 @keyframes peopleEnter {

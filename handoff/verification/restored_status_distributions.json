@@ -1,0 +1,23 @@
+{
+  "events": {
+    "official:scheduled": 5,
+    "user_created:scheduled": 1
+  },
+  "connections": {
+    "active": 5,
+    "removed": 1
+  },
+  "invitations": {
+    "accepted": 7,
+    "cancelled": 2,
+    "declined": 1,
+    "pending": 4
+  },
+  "conversations": {
+    "active": 10,
+    "closed": 3
+  },
+  "event_participations": {
+    "going": 17
+  }
+}

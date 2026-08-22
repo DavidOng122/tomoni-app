@@ -2,7 +2,9 @@ import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 import test from 'node:test';
 
+import { groupEventsByTokyoDate } from '../../src/features/events/domain/groupEventsByTokyoDate.ts';
 import { sortCommunityEvents } from '../../src/features/events/domain/sortCommunityEvents.ts';
+import { formatEventTimeRange } from '../../src/utils/dateFormatter.ts';
 
 test('pins joined community events before earlier non-joined events', () => {
   const events = [
@@ -31,17 +33,57 @@ test('keeps joined and non-joined groups chronological', () => {
   );
 });
 
+test('groups timeline events by their Tokyo calendar date', () => {
+  const groups = groupEventsByTokyoDate([
+    { event_id: 'late-evening', start_at: '2026-08-28T14:30:00.000Z' },
+    { event_id: 'same-tokyo-day', start_at: '2026-08-28T23:30:00+09:00' },
+    { event_id: 'next-day', start_at: '2026-08-29T00:30:00+09:00' },
+  ]);
+
+  assert.deepEqual(groups.map((group) => ({
+    dateKey: group.dateKey,
+    dateLabel: group.dateLabel,
+    weekdayLabel: group.weekdayLabel,
+    eventIds: group.events.map((event) => event.event_id),
+  })), [
+    {
+      dateKey: '2026-08-28',
+      dateLabel: '8月28日',
+      weekdayLabel: '金曜日',
+      eventIds: ['late-evening', 'same-tokyo-day'],
+    },
+    {
+      dateKey: '2026-08-29',
+      dateLabel: '8月29日',
+      weekdayLabel: '土曜日',
+      eventIds: ['next-day'],
+    },
+  ]);
+});
+
+test('formats event rows as time-only ranges inside a dated timeline group', () => {
+  assert.equal(
+    formatEventTimeRange('2026-08-28T15:00:00+09:00', '2026-08-28T17:30:00+09:00'),
+    '15:00〜17:30',
+  );
+  assert.equal(formatEventTimeRange('2026-08-28T15:00:00+09:00', null), '15:00');
+  assert.equal(
+    formatEventTimeRange('2026-08-28T23:00:00+09:00', '2026-08-29T01:00:00+09:00'),
+    '23:00〜8月29日 01:00',
+  );
+});
+
 test('marks only Supabase going events with an explicit participation badge', async () => {
   const page = await readFile(
     new URL('../../src/app/discover/page.tsx', import.meta.url),
     'utf8',
   );
   const view = await readFile(
-    new URL('../../src/app/discover/DiscoverView.tsx', import.meta.url),
+    new URL('../../src/features/events/components/EventTimeline.tsx', import.meta.url),
     'utf8',
   );
   const styles = await readFile(
-    new URL('../../src/app/discover/DiscoverView.module.css', import.meta.url),
+    new URL('../../src/features/events/components/EventTimeline.module.css', import.meta.url),
     'utf8',
   );
 

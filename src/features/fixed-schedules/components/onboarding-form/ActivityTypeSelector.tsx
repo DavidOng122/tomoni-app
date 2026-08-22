@@ -2,15 +2,15 @@ import React from 'react';
 import Image from 'next/image';
 import styles from '../FixedScheduleOnboardingView.module.css';
 import { ActivityType } from '../../types';
-import { ACTIVITY_LABELS } from '../../lib/constants';
+import { ACTIVITY_ICONS, ACTIVITY_LABELS } from '../../lib/constants';
 
 const ACTIVITY_TYPES: { key: ActivityType; label: string; icon: string }[] = [
-  { key: 'walking', label: ACTIVITY_LABELS.walking, icon: '/images/onboarding-walking.svg' },
-  { key: 'dog_walking', label: ACTIVITY_LABELS.dog_walking, icon: '/images/onboarding-dog.svg' },
-  { key: 'event', label: ACTIVITY_LABELS.event, icon: '/images/onboarding-event.svg' },
-  { key: 'study_reading', label: ACTIVITY_LABELS.study_reading, icon: '/images/onboarding-study.svg' },
-  { key: 'sports', label: ACTIVITY_LABELS.sports, icon: '/images/onboarding-sports.svg' },
-  { key: 'other', label: ACTIVITY_LABELS.other, icon: '/images/onboarding-other.svg' },
+  { key: 'walking', label: ACTIVITY_LABELS.walking, icon: ACTIVITY_ICONS.walking },
+  { key: 'dog_walking', label: ACTIVITY_LABELS.dog_walking, icon: ACTIVITY_ICONS.dog_walking },
+  { key: 'event', label: ACTIVITY_LABELS.event, icon: ACTIVITY_ICONS.event },
+  { key: 'study_reading', label: ACTIVITY_LABELS.study_reading, icon: ACTIVITY_ICONS.study_reading },
+  { key: 'sports', label: ACTIVITY_LABELS.sports, icon: ACTIVITY_ICONS.sports },
+  { key: 'other', label: ACTIVITY_LABELS.other, icon: ACTIVITY_ICONS.other },
 ];
 
 interface ActivityTypeSelectorProps {

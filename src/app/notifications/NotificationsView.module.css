@@ -1,0 +1,339 @@
+.screen {
+  display: flex;
+  width: 100%;
+  max-width: var(--max-app-width);
+  min-height: 100dvh;
+  margin: 0 auto;
+  flex-direction: column;
+  background: #fff;
+}
+
+.page {
+  min-height: 100dvh;
+  padding-right: 0 !important;
+  padding-left: 0 !important;
+}
+
+.header {
+  position: relative;
+  display: flex;
+  height: 86px;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 86px;
+  padding: 20px 24px 0;
+}
+
+.header h1 {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 650;
+  line-height: 28px;
+}
+
+.backButton {
+  position: absolute;
+  bottom: 9px;
+  left: 20px;
+  display: grid;
+  width: 44px;
+  height: 44px;
+  place-items: center;
+  border: 1px solid #e4e4e4;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: 0 5px 12px rgb(0 0 0 / 4%);
+  color: #111;
+  cursor: pointer;
+}
+
+.backButton svg {
+  width: 23px;
+  height: 23px;
+}
+
+.permissionCard {
+  display: flex;
+  align-items: center;
+  flex-direction: column;
+  padding: 27px 30px 24px;
+  border-bottom: 1px solid #ececec;
+  text-align: center;
+}
+
+.bellVisual {
+  position: relative;
+  display: grid;
+  width: 58px;
+  height: 58px;
+  place-items: center;
+  border-radius: 19px;
+  background: #f7f7f7;
+  color: #c9c9c9;
+  box-shadow: inset 0 2px 8px rgb(0 0 0 / 4%);
+}
+
+.bellVisual svg {
+  width: 30px;
+  height: 30px;
+  filter: drop-shadow(0 4px 4px rgb(0 0 0 / 8%));
+}
+
+.bellDot {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  width: 11px;
+  height: 11px;
+  border: 2px solid #f7f7f7;
+  border-radius: 50%;
+  background: #ff5364;
+}
+
+.permissionCard h2 {
+  margin: 16px 0 0;
+  color: #111;
+  font-size: 19px;
+  font-weight: 650;
+  line-height: 26px;
+}
+
+.permissionCard > p {
+  max-width: 328px;
+  margin: 7px 0 0;
+  color: #9a9a9a;
+  font-size: 13px;
+  line-height: 20px;
+}
+
+.permissionActions {
+  display: flex;
+  margin-top: 18px;
+  gap: 8px;
+}
+
+.permissionActions button {
+  min-height: 43px;
+  border-radius: 999px;
+  padding: 0 20px;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.allowButton {
+  border: 1px solid #111;
+  background: #111;
+  color: #fff;
+  box-shadow: 0 6px 12px rgb(0 0 0 / 12%);
+}
+
+.laterButton {
+  border: 1px solid #e5e5e5;
+  background: #fff;
+  color: #666;
+}
+
+.permissionCard .permissionFeedback,
+.compactFeedback {
+  margin: 10px 0 0;
+  color: #777;
+  font-size: 11px;
+  line-height: 16px;
+}
+
+.compactFeedback {
+  padding: 8px 20px;
+  border-bottom: 1px solid #eee;
+  text-align: center;
+}
+
+.feed {
+  display: flex;
+  flex-direction: column;
+}
+
+.feedSection {
+  padding-top: 17px;
+}
+
+.feedSection + .feedSection {
+  border-top: 8px solid #f7f7f7;
+}
+
+.feedSection h2 {
+  margin: 0;
+  padding: 0 20px 11px;
+  color: #111;
+  font-size: 17px;
+  font-weight: 650;
+  line-height: 24px;
+}
+
+.feedSection ul {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.notificationItem {
+  margin: 0 18px;
+  border-top: 1px solid #f0f0f0;
+}
+
+.notificationItem:first-child {
+  border-top: 0;
+}
+
+.notificationRow {
+  display: grid;
+  width: 100%;
+  min-height: 92px;
+  grid-template-columns: 48px minmax(0, 1fr) auto;
+  align-items: start;
+  gap: 12px;
+  border: 0;
+  padding: 12px 0;
+  background: transparent;
+  color: #111;
+  cursor: pointer;
+  font-family: inherit;
+  text-align: left;
+}
+
+.notificationRow:focus-visible {
+  border-radius: 10px;
+  box-shadow: 0 0 0 3px rgb(255 118 34 / 18%);
+  outline: none;
+}
+
+.actorAvatar {
+  position: relative;
+  display: grid;
+  width: 48px;
+  height: 48px;
+  overflow: visible;
+  place-items: center;
+  border-radius: 50%;
+  background: #f1f1f1;
+}
+
+.actorAvatar > img {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.actorFallback {
+  display: grid;
+  width: 100%;
+  height: 100%;
+  place-items: center;
+  border-radius: 50%;
+  background: linear-gradient(145deg, #fff3ee, #ffd9cb);
+  color: #b54722;
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.itemKindBadge {
+  position: absolute;
+  right: -3px;
+  bottom: -2px;
+  display: grid;
+  width: 18px;
+  height: 18px;
+  place-items: center;
+  border: 2px solid #fff;
+  border-radius: 50%;
+  background: #ff7622;
+  color: #fff;
+  font-size: 8px;
+  line-height: 1;
+}
+
+.notificationCopy {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+}
+
+.notificationCopy strong {
+  display: -webkit-box;
+  overflow: hidden;
+  color: #151515;
+  font-size: 14px;
+  font-weight: 620;
+  line-height: 20px;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+
+.notificationBody {
+  display: -webkit-box;
+  overflow: hidden;
+  margin-top: 3px;
+  color: #777;
+  font-size: 12px;
+  line-height: 17px;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+
+.notificationCopy time {
+  margin-top: 3px;
+  color: #b0b0b0;
+  font-size: 11px;
+  line-height: 15px;
+}
+
+.notificationThumbnail {
+  width: 44px;
+  height: 44px;
+  border-radius: 8px;
+  object-fit: cover;
+}
+
+.rowChevron {
+  align-self: center;
+  padding: 0 4px;
+  color: #c5c5c5;
+  font-size: 25px;
+  line-height: 1;
+}
+
+.emptyState {
+  display: flex;
+  min-height: 260px;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  padding: 36px 32px;
+  text-align: center;
+}
+
+.emptyState h2 {
+  margin: 18px 0 0;
+  font-size: 18px;
+}
+
+.emptyState p {
+  margin: 8px 0 0;
+  color: #888;
+  font-size: 13px;
+  line-height: 20px;
+}
+
+@media (max-height: 760px) {
+  .permissionCard {
+    padding-top: 18px;
+    padding-bottom: 18px;
+  }
+
+  .permissionCard .bellVisual {
+    width: 50px;
+    height: 50px;
+  }
+}

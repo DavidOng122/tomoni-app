@@ -1,0 +1,52 @@
+{
+  "schemas": {
+    "auth": 23,
+    "public": 12,
+    "storage": 10
+  },
+  "storage_buckets": [
+    {
+      "id": "avatars",
+      "public": true,
+      "file_size_limit": null,
+      "allowed_mime_types": null
+    },
+    {
+      "id": "chat-images",
+      "public": false,
+      "file_size_limit": 10485760,
+      "allowed_mime_types": [
+        "image/jpeg",
+        "image/png",
+        "image/webp",
+        "image/gif"
+      ]
+    },
+    {
+      "id": "event-posters",
+      "public": true,
+      "file_size_limit": 5242880,
+      "allowed_mime_types": [
+        "image/jpeg",
+        "image/png",
+        "image/webp"
+      ]
+    }
+  ],
+  "public_place_categories": {
+    "cultural_facility": 4,
+    "library": 12,
+    "park": 475,
+    "sports_facility": 13
+  },
+  "public_place_datasets": {
+    "edogawa_parks": 475,
+    "edogawa_public_libraries": 12,
+    "edogawa_recreation_destinations": 4,
+    "edogawa_sports_facilities": 13
+  },
+  "event_datasets": {
+    "(user/legacy)": 2,
+    "edogawa_event_calendar": 4
+  }
+}

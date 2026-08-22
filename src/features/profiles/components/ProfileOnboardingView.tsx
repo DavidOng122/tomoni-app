@@ -8,8 +8,10 @@ import { Gender, AgeRange, ProfileDraft } from '../types';
 import { Button } from '@/components/ui/Button';
 import { FixedActionArea } from '@/components/layout/FixedActionArea';
 import { useOnboardingSchedules } from '@/features/fixed-schedules/onboarding/useOnboardingSchedules';
+import { normalizeFixedPlanDraft } from '@/features/fixed-schedules/domain/normalizeFixedPlanDraft';
 import { uploadAvatar } from '../lib/avatarStorage';
 import { createClient } from '@/infrastructure/auth/client';
+import type { Json } from '@/types/database.types';
 
 const GENDER_OPTIONS: { key: Gender; label: string }[] = [
   { key: 'male', label: '男性' },
@@ -163,20 +165,11 @@ export const ProfileOnboardingView: React.FC = () => {
         bio: draft.bio.trim() === "" ? null : draft.bio.trim()
       };
 
-      const p_schedules = schedules.map(plan => ({
-        activity_type: plan.activityType,
-        custom_activity_name: plan.activityType === "other" ? plan.customActivityName?.trim() || null : null,
-        days_of_week: plan.daysOfWeek,
-        start_time: plan.startTime + ":00",
-        place_id: plan.place?.placeId || '',
-        place_name: plan.place?.placeName || '',
-        latitude: plan.place?.latitude || 0,
-        longitude: plan.place?.longitude || 0
-      }));
+      const p_schedules = schedules.map((plan) => normalizeFixedPlanDraft(plan));
 
       const { error } = await supabase.rpc('complete_onboarding', {
         p_profile,
-        p_schedules
+        p_schedules: p_schedules as unknown as Json,
       });
 
       if (error) {

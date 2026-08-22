@@ -28,7 +28,7 @@ export default async function AcceptedPlanDetailPage({ params }: PageProps) {
       .select(`
         conversation_status,
         fixed_plan_id,
-        invitations(sender_user_id, receiver_user_id, invitation_status),
+        invitations(invitation_id, sender_user_id, receiver_user_id, invitation_status),
         fixed_plans(activity_type, custom_activity_name, days_of_week, start_time, place_name, latitude, longitude)
       `)
       .eq('conversation_id', conversationId)
@@ -80,9 +80,92 @@ export default async function AcceptedPlanDetailPage({ params }: PageProps) {
     notFound();
   }
 
+  const { data: fixedPlanDisplay, error: fixedPlanDisplayError } = await supabase
+    .rpc('get_fixed_plan_invitation_display', {
+      p_invitation_id: invitation.invitation_id,
+    })
+    .maybeSingle();
+  if (fixedPlanDisplayError || !fixedPlanDisplay) {
+    notFound();
+  }
+
+  const activityType = fixedPlanDisplay.sender_activity_type ?? fixedPlan.activity_type;
+  const customActivityName = fixedPlanDisplay.sender_custom_activity_name ?? fixedPlan.custom_activity_name;
+  const daysOfWeek = fixedPlanDisplay.sender_days_of_week ?? fixedPlan.days_of_week;
+  const startTime = fixedPlanDisplay.sender_start_time ?? fixedPlan.start_time;
+
+  let senderAreaName = fixedPlanDisplay.sender_place_name ?? fixedPlan.place_name ?? '';
+  let receiverAreaName = fixedPlanDisplay.receiver_place_name ?? '';
+  let suggestedPlace: {
+    kind: 'event' | 'cultural_facility' | 'public_place';
+    name: string;
+    address: string | null;
+    latitude: number;
+    longitude: number;
+    sourceName: string;
+    eventStartAt: string | null;
+    eventStatus: string | null;
+    officialUrl: string | null;
+    requiresHoursConfirmation: boolean;
+  } | null = null;
+
+  if (activityType === 'event') {
+    const { data: recommendation, error: recommendationError } = await supabase
+      .rpc('get_fixed_plan_invitation_recommendation', {
+        p_invitation_id: invitation.invitation_id,
+      })
+      .maybeSingle();
+    if (recommendationError || !recommendation) notFound();
+    senderAreaName = recommendation.sender_area_name;
+    receiverAreaName = recommendation.receiver_area_name;
+    suggestedPlace = recommendation.recommendation_kind
+      && recommendation.title
+      && recommendation.place_latitude !== null
+      && recommendation.place_longitude !== null
+      ? {
+          kind: recommendation.recommendation_kind === 'event' ? 'event' : 'cultural_facility',
+          name: recommendation.title,
+          address: recommendation.place_address || null,
+          latitude: recommendation.place_latitude,
+          longitude: recommendation.place_longitude,
+          sourceName: recommendation.source_name ?? '江戸川区',
+          eventStartAt: recommendation.start_at || null,
+          eventStatus: recommendation.event_status || null,
+          officialUrl: recommendation.official_url || null,
+          requiresHoursConfirmation: recommendation.requires_hours_confirmation,
+        }
+      : null;
+  } else {
+    const { data: invitationPlace, error: invitationPlaceError } = await supabase
+      .rpc('get_fixed_plan_invitation_suggested_place', {
+        p_invitation_id: invitation.invitation_id,
+      })
+      .maybeSingle();
+    if (invitationPlaceError || !invitationPlace) notFound();
+    senderAreaName = invitationPlace.sender_area_name;
+    receiverAreaName = invitationPlace.receiver_area_name;
+    suggestedPlace = invitationPlace.suggested_public_place_id
+      && invitationPlace.suggested_place_name
+      && invitationPlace.suggested_place_latitude !== null
+      && invitationPlace.suggested_place_longitude !== null
+      ? {
+          kind: 'public_place',
+          name: invitationPlace.suggested_place_name,
+          address: invitationPlace.suggested_place_address,
+          latitude: invitationPlace.suggested_place_latitude,
+          longitude: invitationPlace.suggested_place_longitude,
+          sourceName: invitationPlace.suggested_place_source_name ?? '江戸川区',
+          eventStartAt: null,
+          eventStatus: null,
+          officialUrl: null,
+          requiresHoursConfirmation: false,
+        }
+      : null;
+  }
+
   const { activityLabel } = getFixedPlanInvitationCopy({
-    activityType: fixedPlan.activity_type,
-    customActivityName: fixedPlan.custom_activity_name,
+    activityType,
+    customActivityName,
     isSender: invitation.sender_user_id === user.id,
     otherNickname: otherProfile.nickname,
   });
@@ -94,14 +177,20 @@ export default async function AcceptedPlanDetailPage({ params }: PageProps) {
         avatarUrl: otherProfile.avatar_url,
         ageRange: otherProfile.age_range,
       }}
-      plan={{
-        activityLabel,
-        daysOfWeek: fixedPlan.days_of_week,
-        startTime: fixedPlan.start_time,
-        placeName: fixedPlan.place_name,
-        latitude: fixedPlan.latitude,
-        longitude: fixedPlan.longitude,
+      activityAreas={{
+        sender: senderAreaName,
+        receiver: receiverAreaName,
+        other: invitation.sender_user_id === user.id
+          ? receiverAreaName
+          : senderAreaName,
       }}
+      plan={{
+        activityType,
+        activityLabel,
+        daysOfWeek,
+        startTime,
+      }}
+      suggestedPlace={suggestedPlace}
     />
   );
 }

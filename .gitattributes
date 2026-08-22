@@ -1,0 +1,5 @@
+# Keep exact-state handoff checksums stable across Windows/macOS/Linux clones.
+handoff/**/*.sql text eol=lf
+handoff/**/*.json text eol=lf
+handoff/**/*.txt text eol=lf
+handoff/**/*.md text eol=lf

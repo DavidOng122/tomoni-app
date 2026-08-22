@@ -25,7 +25,7 @@ export function EditScheduleView({
   const [draft, setDraft] = useState(initialDraft);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const isValid = isScheduleFormValid(draft) && !isSubmitting;
+  const isValid = isScheduleFormValid(draft, 'edogawa-area') && !isSubmitting;
 
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
@@ -47,7 +47,7 @@ export function EditScheduleView({
     <form className={styles.form} onSubmit={handleSubmit}>
       <header className={styles.header}>
         <h1 className={styles.title}>固定予定の編集</h1>
-        <p className={styles.description}>活動・曜日・時間帯を変更できます</p>
+        <p className={styles.description}>活動・曜日などを変更できます</p>
       </header>
 
       {error ? (
@@ -56,7 +56,7 @@ export function EditScheduleView({
         </p>
       ) : null}
 
-      <FixedScheduleForm draft={draft} onChange={setDraft}>
+      <FixedScheduleForm draft={draft} onChange={setDraft} locationMode="edogawa-area">
         <FixedActionArea transparentBorder>
           <div className={styles.actionContent}>
             <Button

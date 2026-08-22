@@ -29,6 +29,7 @@ export async function cancelFixedScheduleInvitation(
     }
 
     revalidatePath('/connections');
+    revalidatePath('/notifications');
     return { success: true };
   } catch (err) {
     console.error('Unexpected error in cancelFixedScheduleInvitation:', err);

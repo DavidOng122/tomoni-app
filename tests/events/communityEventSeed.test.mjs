@@ -11,7 +11,7 @@ const migration = await readFile(
   'utf8',
 );
 const candidateMigration = await readFile(
-  new URL('../../supabase/migrations/20260817050000_seed_community_event_success_candidates.sql', import.meta.url),
+  new URL('../../supabase/snippets/demo_candidates.sql', import.meta.url),
   'utf8',
 );
 const supabaseConfig = await readFile(
@@ -19,11 +19,18 @@ const supabaseConfig = await readFile(
   'utf8',
 );
 
-test('keeps the home community event separate from the Gyosen fixed plan', async () => {
+test('keeps the precise community event place separate from the coarse Fixed Plan area', async () => {
   assert.match(seed, /篠崎公園 青空ストレッチ会/);
   assert.match(seed, /\/images\/discover\/shinozaki-park\.jpg/);
   assert.match(seed, /'篠崎公園'/);
-  assert.match(seed, /'20000000-0000-4000-8000-000000000001'[\s\S]+?'行船公園'/);
+  assert.match(
+    seed,
+    /'20000000-0000-4000-8000-000000000001'[\s\S]+?'09:00',\s*null,\s*'西葛西'/,
+  );
+  assert.doesNotMatch(
+    seed,
+    /'20000000-0000-4000-8000-000000000001'[^\n]+?'行船公園'/,
+  );
   assert.match(migration, /where event_id = '30000000-0000-4000-8000-000000000001'/);
   await access(new URL('../../public/images/discover/shinozaki-park.jpg', import.meta.url));
 });
@@ -36,7 +43,7 @@ test('keeps the temporary unconnected candidates as cancelled history', () => {
 });
 
 test('rebuilds a fresh local Supabase with the complete Figma demo seed', () => {
-  assert.match(supabaseConfig, /sql_paths = \["\.\/snippets\/figma_mock_seed\.sql"\]/);
+  assert.match(supabaseConfig, /sql_paths = \["\.\/snippets\/figma_mock_seed\.sql"/);
   assert.match(candidateMigration, /if exists \([\s\S]+?from public\.events/);
   assert.match(candidateMigration, /from auth\.users/);
 });

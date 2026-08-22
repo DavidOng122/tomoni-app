@@ -299,6 +299,25 @@
   white-space: pre-wrap;
 }
 
+.cancelledNotice {
+  margin: 8px 0;
+  border-radius: 10px;
+  padding: 10px 12px;
+  background: #f1f1f1;
+  color: #666;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.cancelEventButton {
+  align-self: flex-start;
+  border: 0;
+  background: transparent;
+  color: #a33;
+  font-size: 11px;
+  text-decoration: underline;
+}
+
 .actionBar {
   position: fixed;
   z-index: 50;

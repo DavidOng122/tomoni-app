@@ -1,0 +1,18 @@
+{
+    "auth.users": 113,
+    "public.users": 113,
+    "public.events": 6,
+    "auth.identities": 9,
+    "public.messages": 3,
+    "public.profiles": 113,
+    "storage.buckets": 3,
+    "storage.objects": 0,
+    "public.connections": 6,
+    "public.fixed_plans": 442,
+    "public.invitations": 14,
+    "public.conversations": 13,
+    "public.public_places": 504,
+    "public.conversation_members": 26,
+    "public.event_participations": 17,
+    "public.invitation_plan_pairs": 14
+}

@@ -1,8 +1,8 @@
 import React from 'react';
 import Image from 'next/image';
 import styles from './RegisteredPlanCard.module.css';
-import { ActivityType, FixedPlanDraft } from '../types';
-import { ACTIVITY_LABELS } from '../lib/constants';
+import { FixedPlanDraft } from '../types';
+import { ACTIVITY_ICONS, ACTIVITY_LABELS } from '../lib/constants';
 import { formatWeekdays } from '../lib/formatters';
 
 interface RegisteredPlanCardProps {
@@ -11,18 +11,9 @@ interface RegisteredPlanCardProps {
   onDelete: (clientId: string) => void;
 }
 
-const ACTIVITY_ICONS: Record<ActivityType, string> = {
-  walking: '/images/onboarding-walking.svg',
-  event: '/images/onboarding-event.svg',
-  dog_walking: '/images/onboarding-dog.svg',
-  study_reading: '/images/onboarding-study.svg',
-  sports: '/images/onboarding-sports.svg',
-  other: '/images/onboarding-other.svg',
-};
-
 export const RegisteredPlanCard: React.FC<RegisteredPlanCardProps> = ({ schedule, onEdit, onDelete }) => {
   const daysStr = formatWeekdays(schedule.daysOfWeek);
-  const timeStr = schedule.startTime ? schedule.startTime : '';
+  const timeStr = schedule.activityType !== 'event' && schedule.startTime ? schedule.startTime : '';
   const placeName = schedule.place?.placeName || '';
   
   let activityLabel = schedule.activityType ? ACTIVITY_LABELS[schedule.activityType] : '';

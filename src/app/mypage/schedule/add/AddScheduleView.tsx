@@ -23,7 +23,7 @@ export const AddScheduleView: React.FC = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const isValid = isScheduleFormValid(draft) && !isSubmitting;
+  const isValid = isScheduleFormValid(draft, 'edogawa-area') && !isSubmitting;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -46,12 +46,12 @@ export const AddScheduleView: React.FC = () => {
     <form className={styles.form} onSubmit={handleSubmit}>
       <header className={styles.header}>
         <h1 className={styles.title}>固定予定の追加</h1>
-        <p className={styles.description}>活動・曜日・時間帯を選んでください</p>
+        <p className={styles.description}>活動・曜日などを選んでください</p>
       </header>
 
       {error && <div style={{ color: 'red', textAlign: 'center', marginBottom: '16px' }}>{error}</div>}
 
-      <FixedScheduleForm draft={draft} onChange={setDraft}>
+      <FixedScheduleForm draft={draft} onChange={setDraft} locationMode="edogawa-area">
         <FixedActionArea transparentBorder={true}>
           <div className={styles.actionContent}>
             <Button

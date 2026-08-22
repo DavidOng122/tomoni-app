@@ -1,8 +1,9 @@
 import { createClient } from '@/infrastructure/auth/server';
 import { notFound, redirect } from 'next/navigation';
-import ChatClient from './ChatClient';
+import ChatClient, { type FixedPlanContext } from './ChatClient';
 import { getFixedPlanInvitationCopy } from '@/features/invitations/domain/getFixedPlanInvitationCopy';
 import { getOtherParticipantUserId } from '@/features/chat/domain/getOtherParticipantUserId';
+import { getPublicPlaceImageUrl } from '@/features/public-places/domain/getPublicPlaceImageUrl';
 
 export default async function ChatPage(props: { params: Promise<{ conversationId: string }> }) {
   const params = await props.params;
@@ -28,7 +29,7 @@ export default async function ChatPage(props: { params: Promise<{ conversationId
       related_invitation_id, 
       fixed_plan_id, 
       events(title, start_at, place_name),
-      invitations(sender_user_id, receiver_user_id, invitation_status, message),
+      invitations(sender_user_id, receiver_user_id, invitation_status, cancelled_by_user_id, message),
       fixed_plans(fixed_plan_id, activity_type, custom_activity_name, days_of_week, start_time, place_name)
     `)
     .eq('conversation_id', conversationId)
@@ -43,9 +44,10 @@ export default async function ChatPage(props: { params: Promise<{ conversationId
 
   const isGroupChat = !!(conversationData.event_id && !conversationData.related_invitation_id && !conversationData.fixed_plan_id);
   const isFixedPlan = !!(conversationData.fixed_plan_id && conversationData.related_invitation_id);
+  const isEventCompanion = !!(conversationData.event_id && conversationData.related_invitation_id && !conversationData.fixed_plan_id);
 
   if (conversationData.conversation_status === 'closed') {
-    if (!isFixedPlan) {
+    if (!isFixedPlan && !isEventCompanion) {
       notFound();
     } else {
       const inv = Array.isArray(conversationData.invitations) ? conversationData.invitations[0] : conversationData.invitations;
@@ -129,52 +131,149 @@ export default async function ChatPage(props: { params: Promise<{ conversationId
 
   const DAY_LABELS: Record<string, string> = { mon: '月', tue: '火', wed: '水', thu: '木', fri: '金', sat: '土', sun: '日' };
 
-  let fixedPlanContext: {
-    invitationId: string;
-    invitationStatus: string;
-    isSender: boolean;
-    otherNickname: string;
-    otherAvatarUrl: string | null;
-    headline: string;
-    activityLabel: string;
-    inviteMessage: string;
-    days_of_week: string;
-    start_time: string;
-    place_name: string;
-    discoveryUrl: string;
-    isConversationClosed: boolean;
-  } | null = null;
+  let fixedPlanContext: FixedPlanContext | null = null;
 
   if (isFixedPlan) {
     const inv = Array.isArray(conversationData.invitations) ? conversationData.invitations[0] : conversationData.invitations;
     const plan = Array.isArray(conversationData.fixed_plans) ? conversationData.fixed_plans[0] : conversationData.fixed_plans;
     if (inv && plan) {
+      const { data: invitationDisplay, error: invitationDisplayError } = await supabase
+        .rpc('get_fixed_plan_invitation_display', {
+          p_invitation_id: conversationData.related_invitation_id as string,
+        })
+        .maybeSingle();
+      if (invitationDisplayError) {
+        throw new Error(`Failed to load fixed-plan snapshot: ${invitationDisplayError.message}`);
+      }
+
       const isSender = inv.sender_user_id === user.id;
+      const activityType = invitationDisplay?.sender_activity_type ?? plan.activity_type;
+      const customActivityName = invitationDisplay?.sender_custom_activity_name ?? plan.custom_activity_name;
+      const snapshotDays = invitationDisplay?.sender_days_of_week ?? plan.days_of_week;
+      const snapshotStartTime = invitationDisplay?.sender_start_time ?? plan.start_time;
+      let senderFixedPlanId = invitationDisplay?.sender_fixed_plan_id ?? plan.fixed_plan_id;
+      let receiverFixedPlanId: string | null = invitationDisplay?.receiver_fixed_plan_id ?? null;
+      let senderAreaName = invitationDisplay?.sender_place_name ?? plan.place_name ?? '';
+      let receiverAreaName = invitationDisplay?.receiver_place_name ?? '';
+      let suggestedPlace: FixedPlanContext['suggestedPlace'] = null;
+
+      if (activityType === 'event') {
+        const { data: recommendation, error: recommendationError } = await supabase
+          .rpc('get_fixed_plan_invitation_recommendation', {
+            p_invitation_id: conversationData.related_invitation_id as string,
+          })
+          .maybeSingle();
+        if (recommendationError) {
+          throw new Error(`Failed to load event recommendation: ${recommendationError.message}`);
+        }
+        senderFixedPlanId = recommendation?.sender_fixed_plan_id ?? senderFixedPlanId;
+        receiverFixedPlanId = recommendation?.receiver_fixed_plan_id ?? null;
+        senderAreaName = recommendation?.sender_area_name ?? senderAreaName;
+        receiverAreaName = recommendation?.receiver_area_name ?? '';
+        suggestedPlace = recommendation?.recommendation_kind
+          && recommendation.title
+          && recommendation.place_name
+          && recommendation.source_name
+          && recommendation.sender_distance_meters !== null
+          && recommendation.receiver_distance_meters !== null
+          ? {
+              kind: recommendation.recommendation_kind === 'event' ? 'event' : 'cultural_facility',
+              name: recommendation.title,
+              placeName: recommendation.place_name,
+              sourceName: recommendation.source_name,
+              imageUrl: recommendation.image_url || null,
+              viewerDistanceMeters: isSender
+                ? recommendation.sender_distance_meters
+                : recommendation.receiver_distance_meters,
+              otherDistanceMeters: isSender
+                ? recommendation.receiver_distance_meters
+                : recommendation.sender_distance_meters,
+              eventStartAt: recommendation.start_at || null,
+              eventStatus: recommendation.event_status || null,
+              registrationStatus: recommendation.registration_status || null,
+              requiresHoursConfirmation: recommendation.requires_hours_confirmation,
+            }
+          : null;
+      } else {
+        const { data: invitationPlace, error: invitationPlaceError } = await supabase
+          .rpc('get_fixed_plan_invitation_suggested_place', {
+            p_invitation_id: conversationData.related_invitation_id as string,
+          })
+          .maybeSingle();
+        if (invitationPlaceError) {
+          throw new Error(`Failed to load suggested place: ${invitationPlaceError.message}`);
+        }
+        senderFixedPlanId = invitationPlace?.sender_fixed_plan_id ?? senderFixedPlanId;
+        receiverFixedPlanId = invitationPlace?.receiver_fixed_plan_id ?? null;
+        senderAreaName = invitationPlace?.sender_area_name ?? senderAreaName;
+        receiverAreaName = invitationPlace?.receiver_area_name ?? '';
+
+        const { data: suggestedPlaceMedia, error: suggestedPlaceMediaError } = invitationPlace?.suggested_public_place_id
+          ? await supabase
+              .from('public_places')
+              .select('attributes')
+              .eq('public_place_id', invitationPlace.suggested_public_place_id)
+              .maybeSingle()
+          : { data: null, error: null };
+        if (suggestedPlaceMediaError) {
+          throw new Error(`Failed to load suggested place media: ${suggestedPlaceMediaError.message}`);
+        }
+        suggestedPlace = invitationPlace?.suggested_public_place_id
+          && invitationPlace.suggested_place_name
+          && invitationPlace.suggested_place_source_name
+          && invitationPlace.sender_distance_meters !== null
+          && invitationPlace.receiver_distance_meters !== null
+          ? {
+              kind: 'public_place',
+              name: invitationPlace.suggested_place_name,
+              placeName: invitationPlace.suggested_place_name,
+              sourceName: invitationPlace.suggested_place_source_name,
+              imageUrl: getPublicPlaceImageUrl(suggestedPlaceMedia?.attributes),
+              viewerDistanceMeters: isSender
+                ? invitationPlace.sender_distance_meters
+                : invitationPlace.receiver_distance_meters,
+              otherDistanceMeters: isSender
+                ? invitationPlace.receiver_distance_meters
+                : invitationPlace.sender_distance_meters,
+              eventStartAt: null,
+              eventStatus: null,
+              registrationStatus: null,
+              requiresHoursConfirmation: false,
+            }
+          : null;
+      }
+
       const invitationCopy = getFixedPlanInvitationCopy({
-        activityType: plan.activity_type,
-        customActivityName: plan.custom_activity_name,
+        activityType,
+        customActivityName,
         invitationMessage: inv.message,
         isSender,
         otherNickname,
       });
-      // Sender → their own fixed plan's people page
-      // Receiver → /discover (schema does not store which receiver plan was matched)
       const discoveryUrl = isSender
-        ? `/discover/schedules/${plan.fixed_plan_id}/people`
-        : '/discover';
+        ? `/discover/schedules/${senderFixedPlanId}/people`
+        : receiverFixedPlanId
+          ? `/discover/schedules/${receiverFixedPlanId}/people`
+          : '/discover';
 
       fixedPlanContext = {
         invitationId: conversationData.related_invitation_id as string,
         invitationStatus: inv.invitation_status,
+        cancelledByCurrentUser: inv.cancelled_by_user_id
+          ? inv.cancelled_by_user_id === user.id
+          : null,
         isSender,
         otherNickname,
         otherAvatarUrl,
         headline: invitationCopy.headline,
+        activityType,
         activityLabel: invitationCopy.activityLabel,
         inviteMessage: invitationCopy.inviteMessage,
-        days_of_week: (plan.days_of_week as string[]).map((d) => DAY_LABELS[d] || d).join('・'),
-        start_time: plan.start_time.substring(0, 5),
-        place_name: (plan as Record<string, unknown>).place_name as string || '',
+        days_of_week: (snapshotDays as string[]).map((d) => DAY_LABELS[d] || d).join('・'),
+        start_time: snapshotStartTime.substring(0, 5),
+        sender_area_name: senderAreaName,
+        receiver_area_name: receiverAreaName,
+        suggestedPlace,
         discoveryUrl,
         isConversationClosed: conversationData.conversation_status === 'closed',
       };
@@ -195,6 +294,7 @@ export default async function ChatPage(props: { params: Promise<{ conversationId
       isGroupChat={isGroupChat}
       participantCount={participantCount}
       fixedPlanContext={fixedPlanContext}
+      isConversationClosed={conversationData.conversation_status === 'closed'}
     />
   );
 }

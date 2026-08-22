@@ -11,23 +11,51 @@ interface AcceptedPlanDetailViewProps {
     avatarUrl: string;
     ageRange: string;
   };
+  activityAreas: {
+    sender: string;
+    receiver: string;
+    other: string;
+  };
   plan: {
+    activityType: string;
     activityLabel: string;
     daysOfWeek: string[];
     startTime: string;
-    placeName: string;
+  };
+  suggestedPlace: {
+    kind: 'event' | 'cultural_facility' | 'public_place';
+    name: string;
+    address: string | null;
     latitude: number;
     longitude: number;
-  };
+    sourceName: string;
+    eventStartAt: string | null;
+    eventStatus: string | null;
+    officialUrl: string | null;
+    requiresHoursConfirmation: boolean;
+  } | null;
 }
 
 function formatStartTime(value: string) {
   return value.substring(0, 5).replace(/^0/, '');
 }
 
+function formatEventDate(value: string) {
+  return new Intl.DateTimeFormat('ja-JP', {
+    timeZone: 'Asia/Tokyo',
+    month: 'numeric',
+    day: 'numeric',
+    weekday: 'short',
+    hour: 'numeric',
+    minute: '2-digit',
+  }).format(new Date(value));
+}
+
 export default function AcceptedPlanDetailView({
   person,
+  activityAreas,
   plan,
+  suggestedPlace,
 }: AcceptedPlanDetailViewProps) {
   const weekdayLabel = formatWeekdays(plan.daysOfWeek as DayOfWeek[]);
 
@@ -57,7 +85,7 @@ export default function AcceptedPlanDetailView({
               <strong>{person.nickname} さん</strong>
               <span>{person.ageRange}歳</span>
             </p>
-            <p className={styles.personArea}>{plan.placeName}周辺で活動しています</p>
+            <p className={styles.personArea}>{activityAreas.other}周辺で活動しています</p>
           </div>
         </section>
 
@@ -82,7 +110,7 @@ export default function AcceptedPlanDetailView({
                 width={17}
                 height={17}
               />
-              <span>{weekdayLabel} {formatStartTime(plan.startTime)}ごろ</span>
+              <span>{weekdayLabel}{plan.activityType === 'event' ? '' : ` ${formatStartTime(plan.startTime)}ごろ`}</span>
             </p>
             <p>
               <Image
@@ -91,28 +119,60 @@ export default function AcceptedPlanDetailView({
                 width={13}
                 height={17}
               />
-              <span>{plan.placeName}</span>
+              <span>{activityAreas.sender} × {activityAreas.receiver}</span>
             </p>
           </div>
         </article>
 
         <section className={styles.meetup}>
-          <p className={styles.eyebrow}>おすすめの合流地点</p>
-          <h2>{plan.placeName}</h2>
-          <p className={styles.explanation}>
-            地域のOpen Dataをもとに、会いやすい合流地点を提案しています。
+          <p className={styles.eyebrow}>
+            {suggestedPlace?.kind === 'event' ? 'おすすめのイベント' : 'おすすめの合流地点'}
           </p>
-          <GoogleMap
-            className={styles.map}
-            latitude={plan.latitude}
-            longitude={plan.longitude}
-            placeName={plan.placeName}
-          />
-          <div className={styles.tags} aria-label="合流地点の特徴">
-            <span>入口がわかりやすい</span>
-            <span>公共の場所</span>
-            <span>活動エリアに近い</span>
-          </div>
+          {suggestedPlace ? (
+            <>
+              <h2>{suggestedPlace.name}</h2>
+              {suggestedPlace.eventStartAt && (
+                <p className={styles.address}>{formatEventDate(suggestedPlace.eventStartAt)}</p>
+              )}
+              {suggestedPlace.address && (
+                <p className={styles.address}>{suggestedPlace.address}</p>
+              )}
+              <p className={styles.explanation}>
+                {suggestedPlace.sourceName} Open Dataをもとに、ふたりが参加しやすい候補を提案しています。
+              </p>
+              {suggestedPlace.eventStatus && suggestedPlace.eventStatus !== 'scheduled' && (
+                <p className={styles.address}>イベント情報が変更されています。公式情報をご確認ください。</p>
+              )}
+              {suggestedPlace.requiresHoursConfirmation && (
+                <p className={styles.address}>営業時間・入場条件は公式ページでご確認ください。</p>
+              )}
+              {suggestedPlace.officialUrl && (
+                <p><a href={suggestedPlace.officialUrl} target="_blank" rel="noreferrer">公式ページを見る</a></p>
+              )}
+              <GoogleMap
+                className={styles.map}
+                latitude={suggestedPlace.latitude}
+                longitude={suggestedPlace.longitude}
+                placeName={suggestedPlace.name}
+              />
+              <p className={styles.mapNotice}>
+                地図はOpen Dataの参考地点を示しています。入口の位置とは限りません。
+              </p>
+              <div className={styles.tags} aria-label="合流地点の特徴">
+                <span>公共の場所</span>
+                <span>{suggestedPlace.kind === 'public_place' ? '双方の活動エリアから3.2km以内' : '江戸川区内のおすすめ'}</span>
+              </div>
+            </>
+          ) : (
+            <div className={styles.noMeetupPlace}>
+              <h2>集合場所を確認してください</h2>
+              <p>
+                {plan.activityType === 'event'
+                  ? 'おすすめできるイベント・文化施設が見つかりませんでした。チャットで行き先を確認してください。'
+                  : 'おすすめできる大型公園が見つかりませんでした。チャットで集合場所を確認してください。'}
+              </p>
+            </div>
+          )}
         </section>
 
         <aside className={styles.privacyNotice}>

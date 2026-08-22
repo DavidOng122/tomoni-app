@@ -4,6 +4,7 @@ import test from 'node:test';
 
 import { getOfficialEventActions } from '../../src/features/events/domain/getOfficialEventActions.ts';
 import { getEventOrganizerAvatarUrl } from '../../src/features/events/domain/getEventOrganizerAvatarUrl.ts';
+import { getEventPosterUrl } from '../../src/features/events/domain/getEventPosterUrl.ts';
 
 const baseEvent = {
   officialUrl: 'https://example.com/event',
@@ -40,6 +41,16 @@ test('disables official registration after its deadline', () => {
 test('uses the Edogawa organizer logo when an official event has no creator profile', () => {
   assert.equal(getEventOrganizerAvatarUrl({
     eventType: 'official',
+    sourceDatasetId: 'edogawa_event_calendar',
+    sourceName: '東京都',
+    creatorAvatarUrl: null,
+  }), '/images/events/detail/organizer-edogawa.png');
+});
+
+test('keeps the legacy Edogawa organizer logo fallback for official seed events', () => {
+  assert.equal(getEventOrganizerAvatarUrl({
+    eventType: 'official',
+    sourceDatasetId: null,
     sourceName: '江戸川区公式',
     creatorAvatarUrl: null,
   }), '/images/events/detail/organizer-edogawa.png');
@@ -48,9 +59,34 @@ test('uses the Edogawa organizer logo when an official event has no creator prof
 test('prefers the real Supabase creator avatar for a user-created event', () => {
   assert.equal(getEventOrganizerAvatarUrl({
     eventType: 'user_created',
+    sourceDatasetId: null,
     sourceName: 'Miki',
     creatorAvatarUrl: '/profiles/miki.png',
   }), '/profiles/miki.png');
+});
+
+test('uses a local placeholder for an Edogawa event without an authorized poster', () => {
+  assert.equal(getEventPosterUrl({
+    eventType: 'official',
+    sourceDatasetId: 'edogawa_event_calendar',
+    posterUrl: null,
+  }), '/images/events/official/edogawa-event-placeholder.svg');
+});
+
+test('prefers a real event poster over the official placeholder', () => {
+  assert.equal(getEventPosterUrl({
+    eventType: 'official',
+    sourceDatasetId: 'edogawa_event_calendar',
+    posterUrl: '/event-posters/real-poster.jpg',
+  }), '/event-posters/real-poster.jpg');
+});
+
+test('does not add the official placeholder to a user-created event', () => {
+  assert.equal(getEventPosterUrl({
+    eventType: 'user_created',
+    sourceDatasetId: null,
+    posterUrl: null,
+  }), null);
 });
 
 test('renders the official action before the Tomoni participation action', async () => {

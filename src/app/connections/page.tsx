@@ -30,7 +30,7 @@ export default async function ConnectionsPage({ searchParams }: { searchParams: 
       related_invitation_id,
       fixed_plan_id,
       events ( title, poster_url, start_at, end_at ),
-      fixed_plans ( activity_type ),
+      fixed_plans ( activity_type, days_of_week, start_time ),
       invitations ( invitation_status ),
       conversation_members (
         user_id,
@@ -94,17 +94,30 @@ export default async function ConnectionsPage({ searchParams }: { searchParams: 
     latestMessageByConversation = getLatestMessagesByConversation(latestMessages || []);
   }
 
+  const { data: fixedPlanDisplays, error: fixedPlanDisplaysError } = await supabase
+    .rpc('get_my_fixed_plan_invitation_displays');
+  if (fixedPlanDisplaysError) {
+    console.error('Failed to load fixed-plan invitation snapshots');
+  }
+  const fixedPlanDisplayByInvitationId = new Map(
+    (fixedPlanDisplays ?? []).map((display) => [display.invitation_id, display] as const),
+  );
+
   const activeConversations = await Promise.all(filteredConvs.map(async conv => {
     const isGroupChat = conv.event_id && !conv.related_invitation_id && !conv.fixed_plan_id;
     const isFixedPlan = !!conv.fixed_plan_id;
     const otherMember = conv.conversation_members?.find((m: any) => m.user_id !== user.id);
     const eventInfo = Array.isArray(conv.events) ? conv.events[0] : conv.events;
     const planInfo = Array.isArray(conv.fixed_plans) ? conv.fixed_plans[0] : conv.fixed_plans;
+    const planDisplay = conv.related_invitation_id
+      ? fixedPlanDisplayByInvitationId.get(conv.related_invitation_id)
+      : null;
     const latestMessage = latestMessageByConversation.get(conv.conversation_id);
     
     let displayName = 'ユーザー';
     let displayAvatar = null;
     let subtitle = '予定';
+    let meetingPlaceName: string | null = null;
 
     if (isGroupChat) {
       displayName = eventInfo?.title || 'イベント';
@@ -120,7 +133,22 @@ export default async function ConnectionsPage({ searchParams }: { searchParams: 
       
       if (isFixedPlan) {
         const activityLabels: Record<string, string> = { walking: '朝の散歩', morning_walk: '朝の散歩', running: 'ランニング', cycling: 'サイクリング' };
-        subtitle = planInfo?.activity_type ? (activityLabels[planInfo.activity_type] || planInfo.activity_type) : '同行予定';
+        const activityType = planDisplay?.sender_activity_type ?? planInfo?.activity_type;
+        subtitle = activityType ? (activityLabels[activityType] || activityType) : '同行予定';
+
+        if (conv.related_invitation_id) {
+          const { data: suggestedPlace, error: suggestedPlaceError } = await supabase
+            .rpc('get_fixed_plan_invitation_suggested_place', {
+              p_invitation_id: conv.related_invitation_id,
+            })
+            .maybeSingle();
+
+          if (suggestedPlaceError) {
+            console.error('Failed to load accepted meeting place');
+          } else {
+            meetingPlaceName = suggestedPlace?.suggested_place_name ?? null;
+          }
+        }
       } else {
         subtitle = eventInfo?.title || 'イベント';
       }
@@ -134,6 +162,10 @@ export default async function ConnectionsPage({ searchParams }: { searchParams: 
       is_fixed_plan: isFixedPlan,
       last_message: latestMessage?.content || null,
       last_message_at: latestMessage?.created_at || null,
+      fixed_plan_days_of_week: planDisplay?.sender_days_of_week ?? planInfo?.days_of_week ?? [],
+      fixed_plan_start_time: (planDisplay?.sender_start_time ?? planInfo?.start_time)?.substring(0, 5) ?? null,
+      fixed_plan_activity_type: planDisplay?.sender_activity_type ?? planInfo?.activity_type ?? null,
+      meeting_place_name: meetingPlaceName,
     };
   }));
 
@@ -198,15 +230,16 @@ export default async function ConnectionsPage({ searchParams }: { searchParams: 
     const receiverProfile = planProfilesMap.get(inv.receiver_user_id);
     const planInfo = Array.isArray(inv.fixed_plans) ? inv.fixed_plans[0] : inv.fixed_plans;
     const conversationInfo = Array.isArray(inv.conversations) ? inv.conversations[0] : inv.conversations;
+    const planDisplay = fixedPlanDisplayByInvitationId.get(inv.invitation_id);
 
     return {
       invitation_id: inv.invitation_id,
       conversation_id: conversationInfo?.conversation_id || '',
       receiver_nickname: receiverProfile?.nickname || 'ユーザー',
       receiver_avatar_url: receiverProfile?.avatar_url || null,
-      activity_type: planInfo?.activity_type || '',
-      days_of_week: planInfo?.days_of_week || [],
-      start_time: planInfo?.start_time || ''
+      activity_type: planDisplay?.sender_activity_type ?? planInfo?.activity_type ?? '',
+      days_of_week: planDisplay?.sender_days_of_week ?? planInfo?.days_of_week ?? [],
+      start_time: planDisplay?.sender_start_time ?? planInfo?.start_time ?? ''
     };
   });
 
@@ -214,86 +247,16 @@ export default async function ConnectionsPage({ searchParams }: { searchParams: 
     const senderProfile = planProfilesMap.get(inv.sender_user_id);
     const planInfo = Array.isArray(inv.fixed_plans) ? inv.fixed_plans[0] : inv.fixed_plans;
     const conversationInfo = Array.isArray(inv.conversations) ? inv.conversations[0] : inv.conversations;
+    const planDisplay = fixedPlanDisplayByInvitationId.get(inv.invitation_id);
 
     return {
       invitation_id: inv.invitation_id,
       conversation_id: conversationInfo?.conversation_id || '',
       sender_nickname: senderProfile?.nickname || 'ユーザー',
       sender_avatar_url: senderProfile?.avatar_url || null,
-      activity_type: planInfo?.activity_type || '',
-      days_of_week: planInfo?.days_of_week || [],
-      start_time: planInfo?.start_time || ''
-    };
-  });
-
-  // Fetch closed Fixed Schedule conversations (declined/cancelled) where current user is a member
-  const { data: closedConvsData, error: closedConvError } = await supabase
-    .from('conversations')
-    .select(`
-      conversation_id,
-      fixed_plan_id,
-      related_invitation_id,
-      fixed_plans ( activity_type, days_of_week, start_time ),
-      invitations ( invitation_id, invitation_status, sender_user_id, receiver_user_id ),
-      conversation_members ( user_id, left_at )
-    `)
-    .eq('conversation_status', 'closed')
-    .not('fixed_plan_id', 'is', null)
-    .not('related_invitation_id', 'is', null)
-    .is('event_id', null);
-
-  if (closedConvError) {
-    console.error('Error fetching closed fixed plan conversations:', closedConvError);
-  }
-
-  // Filter: current user must be a member + invitation must be declined or cancelled
-  const closedFixedConvs = (closedConvsData || []).filter(conv => {
-    const myMember = conv.conversation_members?.find((m: any) => m.user_id === user.id);
-    if (!myMember) return false;
-    const inv = Array.isArray(conv.invitations) ? conv.invitations[0] : conv.invitations;
-    return inv?.invitation_status === 'declined' || inv?.invitation_status === 'cancelled';
-  });
-
-  // Collect other-user IDs from closed conversations
-  const closedProfileIds = new Set<string>();
-  closedFixedConvs.forEach(conv => {
-    const inv = Array.isArray(conv.invitations) ? conv.invitations[0] : conv.invitations;
-    if (inv) {
-      const otherId = inv.sender_user_id === user.id ? inv.receiver_user_id : inv.sender_user_id;
-      closedProfileIds.add(otherId);
-    }
-  });
-
-  const closedProfilesMap = new Map<string, { nickname: string; avatar_url: string | null }>();
-  if (closedProfileIds.size > 0) {
-    const { data: closedProfilesData } = await supabase
-      .from('profiles')
-      .select('user_id, nickname, avatar_url')
-      .in('user_id', Array.from(closedProfileIds));
-    closedProfilesData?.forEach(p => closedProfilesMap.set(p.user_id, p));
-  }
-
-  const activityLabelsMap: Record<string, string> = {
-    walking: '朝の散歩', morning_walk: '朝の散歩', running: 'ランニング', cycling: 'サイクリング',
-  };
-
-  const closedPlanConversations = closedFixedConvs.map(conv => {
-    const inv = Array.isArray(conv.invitations) ? conv.invitations[0] : conv.invitations;
-    const plan = Array.isArray(conv.fixed_plans) ? conv.fixed_plans[0] : conv.fixed_plans;
-    const isSender = inv?.sender_user_id === user.id;
-    const otherId = isSender ? inv?.receiver_user_id : inv?.sender_user_id;
-    const otherProfile = otherId ? closedProfilesMap.get(otherId) : null;
-
-    return {
-      conversation_id: conv.conversation_id,
-      invitation_status: inv?.invitation_status || 'declined',
-      is_sender: isSender,
-      other_nickname: otherProfile?.nickname || 'ユーザー',
-      other_avatar_url: otherProfile?.avatar_url || null,
-      activity_type: plan?.activity_type || '',
-      activity_label: plan?.activity_type ? (activityLabelsMap[plan.activity_type] || plan.activity_type) : '',
-      days_of_week: plan?.days_of_week || [],
-      start_time: (plan?.start_time || '').substring(0, 5),
+      activity_type: planDisplay?.sender_activity_type ?? planInfo?.activity_type ?? '',
+      days_of_week: planDisplay?.sender_days_of_week ?? planInfo?.days_of_week ?? [],
+      start_time: planDisplay?.sender_start_time ?? planInfo?.start_time ?? ''
     };
   });
 
@@ -302,7 +265,6 @@ export default async function ConnectionsPage({ searchParams }: { searchParams: 
     activeConversations={activeConversations} 
     sentPlanInvitations={sentPlanInvitations}
     receivedPlanInvitations={receivedPlanInvitations}
-    closedPlanConversations={closedPlanConversations}
     initialTab={initialTab}
   />;
 }

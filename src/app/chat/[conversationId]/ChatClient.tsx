@@ -13,6 +13,7 @@ import { acceptFixedScheduleInvitation } from '@/app/actions/acceptFixedSchedule
 import { declineFixedScheduleInvitation } from '@/app/actions/declineFixedScheduleInvitation';
 import { cancelFixedScheduleInvitation } from '@/app/actions/cancelFixedScheduleInvitation';
 import { getMessageAvatarUrl } from '@/features/chat/domain/getMessageAvatarUrl';
+import { deleteChatImage, uploadChatImage } from '@/infrastructure/chat/chatImageStorage';
 import styles from './ChatClient.module.css';
 
 type MessageRow = Database['public']['Tables']['messages']['Row'];
@@ -21,15 +22,31 @@ type MessageRow = Database['public']['Tables']['messages']['Row'];
 export interface FixedPlanContext {
   invitationId: string;
   invitationStatus: string;
+  cancelledByCurrentUser: boolean | null;
   isSender: boolean;
   otherNickname: string;
   otherAvatarUrl: string | null;
   headline: string;
+  activityType: string;
   activityLabel: string;
   inviteMessage: string;
   days_of_week: string;
   start_time: string;
-  place_name: string;
+  sender_area_name: string;
+  receiver_area_name: string;
+  suggestedPlace: {
+    kind: 'event' | 'cultural_facility' | 'public_place';
+    name: string;
+    placeName: string;
+    sourceName: string;
+    imageUrl: string | null;
+    viewerDistanceMeters: number;
+    otherDistanceMeters: number;
+    eventStartAt: string | null;
+    eventStatus: string | null;
+    registrationStatus: string | null;
+    requiresHoursConfirmation: boolean;
+  } | null;
   discoveryUrl: string;
   isConversationClosed: boolean;
 }
@@ -47,6 +64,7 @@ interface ChatClientProps {
   isGroupChat?: boolean;
   participantCount?: number;
   fixedPlanContext?: FixedPlanContext | null;
+  isConversationClosed?: boolean;
 }
 
 // ─── Back Arrow SVG ─────────────────────────────────────────────────────────
@@ -63,10 +81,12 @@ function BackArrow() {
 function FixedPlanChatHeader({
   ctx,
   onBack,
+  onMore,
   isActionLoading,
 }: {
   ctx: FixedPlanContext;
   onBack: () => void;
+  onMore: () => void;
   isActionLoading: boolean;
 }) {
   const isPending = ctx.invitationStatus === 'pending';
@@ -78,7 +98,7 @@ function FixedPlanChatHeader({
     badgeText = '返事待ち';
     badgeClassName = styles.statusBadge;
   } else if (isClosed) {
-    badgeText = 'キャンセル済';
+    badgeText = '見送り済';
     badgeClassName = `${styles.statusBadge} ${styles.statusClosed}`;
   }
 
@@ -110,7 +130,20 @@ function FixedPlanChatHeader({
           </div>
           <span className={styles.personName}>{ctx.otherNickname}</span>
         </div>
-        <Image className={styles.moreIcon} src="/images/discover/invite-preview/more.svg" alt="" width={20} height={4} />
+        {ctx.invitationStatus === 'accepted' && !isClosed ? (
+          <button
+            className={styles.moreButton}
+            type="button"
+            onClick={onMore}
+            aria-label="同行予定のメニューを開く"
+            aria-haspopup="dialog"
+            disabled={isActionLoading}
+          >
+            <Image className={styles.moreIcon} src="/images/discover/invite-preview/more.svg" alt="" width={20} height={4} />
+          </button>
+        ) : (
+          <span className={styles.morePlaceholder} aria-hidden="true" />
+        )}
       </div>
     </header>
   );
@@ -119,9 +152,12 @@ function FixedPlanChatHeader({
 // ─── Terminal State Card (declined / cancelled) ────────────────────────────
 function TerminalCard({ ctx, onDiscovery, onClose }: { ctx: FixedPlanContext; onDiscovery: () => void; onClose: () => void; }) {
   const isDeclined = ctx.invitationStatus === 'declined';
+  const activityAreas = [ctx.sender_area_name, ctx.receiver_area_name]
+    .filter(Boolean)
+    .join(' × ');
 
   let primaryText = '';
-  let secondaryText = '同行予定はキャンセルされました';
+  const secondaryText = '同行予定はキャンセルされました';
 
   if (isDeclined) {
     primaryText = ctx.isSender
@@ -129,111 +165,128 @@ function TerminalCard({ ctx, onDiscovery, onClose }: { ctx: FixedPlanContext; on
       : 'このお誘いを見送りました';
   } else {
     // cancelled
-    primaryText = ctx.isSender
-      ? '招待を取り消しました'
-      : `${ctx.otherNickname}さんが招待を取り消しました`;
+    primaryText = ctx.cancelledByCurrentUser === true
+      ? '今回は見送ることにしました'
+      : ctx.cancelledByCurrentUser === false
+        ? `${ctx.otherNickname}さんが今回は見送ることにしました`
+        : ctx.isSender
+          ? '今回は見送ることにしました'
+          : `${ctx.otherNickname}さんが今回は見送ることにしました`;
   }
 
   return (
-    <div style={{
-      margin: '24px auto',
-      width: '301px',
-      maxWidth: 'calc(100% - 32px)',
-      backgroundColor: '#fff',
-      border: '1px solid #E9E9EB',
-      borderRadius: '26px',
-      boxShadow: 'inset 0 1px 3px rgba(0,0,0,0.06)',
-      padding: '20px 16px 16px',
-    }}>
-      {/* Status icon */}
-      <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '12px' }}>
-        <div style={{
-          width: '40px',
-          height: '40px',
-          borderRadius: '50%',
-          backgroundColor: '#F5F5F5',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-        }}>
-          <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="#757575" strokeWidth="2" strokeLinecap="round">
-            <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
-            <line x1="16" y1="2" x2="16" y2="6" />
-            <line x1="8" y1="2" x2="8" y2="6" />
-            <line x1="3" y1="10" x2="21" y2="10" />
-            <line x1="10" y1="15" x2="14" y2="15" />
-          </svg>
+    <section
+      className={styles.terminalSheet}
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="terminal-state-title"
+      aria-describedby="terminal-state-description"
+    >
+      <div className={styles.terminalHeading}>
+        <div className={styles.terminalIcon} aria-hidden="true">
+          <Image
+            src="/images/discover/invite-preview/declined-calendar.svg"
+            alt=""
+            width={44}
+            height={44}
+          />
+          <span className={styles.terminalIconBadge}>
+            <Image
+              src="/images/discover/invite-preview/declined-x.svg"
+              alt=""
+              width={10}
+              height={10}
+            />
+          </span>
         </div>
+        <h2 id="terminal-state-title">{primaryText}</h2>
+        <p id="terminal-state-description">{secondaryText}</p>
       </div>
 
-      {/* Status text */}
-      <p style={{ color: '#1E2939', fontSize: '15px', fontWeight: 590, lineHeight: '20px', textAlign: 'center', margin: '0 0 4px' }}>
-        {primaryText}
-      </p>
-      <p style={{ color: '#4F4F4F', fontSize: '13px', fontWeight: 510, lineHeight: '18px', textAlign: 'center', margin: '0 0 16px' }}>
-        {secondaryText}
-      </p>
-
-      {/* Divider */}
-      <div style={{ height: '1px', backgroundColor: '#F0F0F0', margin: '0 0 12px' }} />
-
-      {/* Schedule context */}
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', marginBottom: '16px' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-          <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="#757575" strokeWidth="2" strokeLinecap="round">
-            <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
-            <line x1="16" y1="2" x2="16" y2="6" />
-            <line x1="8" y1="2" x2="8" y2="6" />
-            <line x1="3" y1="10" x2="21" y2="10" />
-          </svg>
-          <span style={{ color: '#4F4F4F', fontSize: '12px' }}>{ctx.days_of_week} {ctx.start_time}ごろ</span>
-        </div>
-        {ctx.place_name && (
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="#757575" strokeWidth="2" strokeLinecap="round">
-              <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
-              <circle cx="12" cy="10" r="3" />
-            </svg>
-            <span style={{ color: '#4F4F4F', fontSize: '12px' }}>{ctx.place_name}</span>
-          </div>
+      <div
+        className={`${styles.terminalPlanSummary} ${ctx.suggestedPlace?.imageUrl ? styles.terminalPlanSummaryWithImage : ''}`}
+        aria-label="キャンセルされた同行予定"
+      >
+        {ctx.suggestedPlace?.imageUrl && (
+          <>
+            {/* The source is identical to the suggested-park photo used in the invitation card. */}
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              className={styles.terminalPlanImage}
+              src={ctx.suggestedPlace.imageUrl}
+              alt=""
+              loading="eager"
+              onError={(event) => { event.currentTarget.hidden = true; }}
+            />
+          </>
         )}
+        <span className={styles.terminalPlanShade} aria-hidden="true" />
+        <div className={styles.terminalPlanDetails}>
+          <div>
+            <Image src="/images/discover/invite-preview/calendar.svg" alt="" width={14} height={14} />
+            <span>{ctx.days_of_week}{ctx.activityType === 'event' ? '' : ` ${ctx.start_time}ごろ`}</span>
+          </div>
+          {activityAreas && (
+            <div>
+              <Image src="/images/discover/invite-preview/location.svg" alt="" width={11} height={14} />
+              <span>{activityAreas}</span>
+            </div>
+          )}
+        </div>
       </div>
 
-      {/* Actions */}
-      <div style={{ display: 'flex', gap: '8px' }}>
-        <button
-          onClick={onDiscovery}
-          style={{
-            flex: 1,
-            backgroundColor: '#fff',
-            border: '1px solid #FF7622',
-            borderRadius: '11px',
-            color: '#FF7622',
-            fontSize: '13px',
-            fontWeight: 500,
-            padding: '10px 0',
-            cursor: 'pointer',
-          }}
-        >
-          他の人をみる
+      <div className={styles.terminalActions}>
+        <button type="button" onClick={onDiscovery}>
+          <Image src="/images/discover/invite-preview/declined-people.svg" alt="" width={15} height={13} />
+          <span>他の人をみる</span>
         </button>
-        <button
-          onClick={onClose}
-          style={{
-            flex: 1,
-            backgroundColor: '#fff',
-            border: '1px solid #CCCCCC',
-            borderRadius: '11px',
-            color: '#000',
-            fontSize: '13px',
-            fontWeight: 500,
-            padding: '10px 0',
-            cursor: 'pointer',
-          }}
-        >
-          トークを閉じる
+        <button type="button" onClick={onClose}>
+          <Image src="/images/discover/invite-preview/declined-close.svg" alt="" width={14} height={14} />
+          <span>トークを閉じる</span>
         </button>
       </div>
+    </section>
+  );
+}
+
+function SuggestedPlaceVisual({
+  imageUrl,
+  placeName,
+}: {
+  imageUrl: string | null;
+  placeName: string;
+}) {
+  const [imageFailed, setImageFailed] = useState(false);
+
+  if (imageUrl && !imageFailed) {
+    return (
+      <div className={styles.suggestedPlaceVisual}>
+        {/* The official Open Data host is loaded directly because its response is not compatible with the Next image optimizer. */}
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src={imageUrl}
+          alt={`${placeName}の写真`}
+          loading="lazy"
+          decoding="async"
+          onError={() => setImageFailed(true)}
+        />
+      </div>
+    );
+  }
+
+  return (
+    <div className={`${styles.suggestedPlaceVisual} ${styles.suggestedPlacePlaceholder}`} aria-hidden="true">
+      <svg className={styles.mapLines} viewBox="0 0 269 112" preserveAspectRatio="none">
+        <path d="M-8 78C30 53 54 58 83 42s56-20 84-5 57 8 110-22" />
+        <path d="M40-8c8 35 5 62-11 88s-13 38-4 47" />
+        <path d="M221-7c-17 31-22 55-12 76s7 36-11 52" />
+      </svg>
+      <span className={styles.mapPin}>
+        <svg viewBox="0 0 24 24" width="23" height="23" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true">
+          <path d="M20 10c0 5.5-8 12-8 12S4 15.5 4 10a8 8 0 1 1 16 0Z" />
+          <circle cx="12" cy="10" r="2.5" />
+        </svg>
+      </span>
     </div>
   );
 }
@@ -255,6 +308,9 @@ function InvitationCard({
   isActionLoading: boolean;
 }) {
   const isPending = ctx.invitationStatus === 'pending';
+  const activityAreas = [ctx.sender_area_name, ctx.receiver_area_name]
+    .filter(Boolean)
+    .join(' × ');
 
   if (!isPending) {
     return (
@@ -274,12 +330,12 @@ function InvitationCard({
         <div className={styles.acceptedPlanDetails}>
           <div>
             <Image src="/images/discover/invite-preview/accepted-calendar.svg" alt="" width={17} height={17} />
-            <span>{ctx.days_of_week} {ctx.start_time}ごろ</span>
+            <span>{ctx.days_of_week}{ctx.activityType === 'event' ? '' : ` ${ctx.start_time}ごろ`}</span>
           </div>
-          {ctx.place_name && (
+          {activityAreas && (
             <div>
               <Image src="/images/discover/invite-preview/accepted-location.svg" alt="" width={13} height={17} />
-              <span>{ctx.place_name}</span>
+              <span>{activityAreas}</span>
             </div>
           )}
         </div>
@@ -300,18 +356,69 @@ function InvitationCard({
           )}
         </div>
         <p className={styles.inviteMessage}>{ctx.inviteMessage}</p>
-        <div className={styles.scheduleImage}>
+        <section className={styles.invitationSummary} aria-label="同行のお誘い">
           <div className={styles.scheduleRow}>
             <Image src="/images/discover/invite-preview/calendar.svg" alt="" width={14} height={14} />
-            <span>{ctx.days_of_week} {ctx.start_time}ごろ</span>
+            <span>{ctx.days_of_week}{ctx.activityType === 'event' ? '' : ` ${ctx.start_time}ごろ`}</span>
           </div>
-        {ctx.place_name && (
+        {activityAreas && (
           <div className={styles.scheduleRow}>
             <Image className={styles.locationIcon} src="/images/discover/invite-preview/location.svg" alt="" width={11} height={14} />
-            <span>{ctx.place_name}</span>
+            <span>{activityAreas}</span>
           </div>
         )}
-        </div>
+        </section>
+        <section className={styles.suggestedPlace} aria-label="おすすめの場所">
+          {ctx.suggestedPlace ? (
+            <>
+              <SuggestedPlaceVisual
+                key={ctx.suggestedPlace.imageUrl ?? ctx.suggestedPlace.name}
+                imageUrl={ctx.suggestedPlace.imageUrl}
+                placeName={ctx.suggestedPlace.name}
+              />
+              <div className={styles.suggestedPlaceBody}>
+                <p className={styles.suggestedPlaceLabel}>
+                  {ctx.suggestedPlace.kind === 'event' ? 'おすすめのイベント' : 'おすすめの場所'}
+                </p>
+                <h3>{ctx.suggestedPlace.name}</h3>
+                {ctx.suggestedPlace.eventStartAt && (
+                  <p className={styles.suggestedPlaceEventDate}>
+                    {formatSuggestedEventDate(ctx.suggestedPlace.eventStartAt)}
+                  </p>
+                )}
+                {ctx.suggestedPlace.placeName !== ctx.suggestedPlace.name && (
+                  <p className={styles.suggestedPlaceEventVenue}>{ctx.suggestedPlace.placeName}</p>
+                )}
+                <p className={styles.suggestedPlaceSource}>{ctx.suggestedPlace.sourceName} Open Data</p>
+                <dl className={styles.suggestedPlaceDistances}>
+                  <div>
+                    <dt>あなたから</dt>
+                    <dd>約{formatApproximateDistance(ctx.suggestedPlace.viewerDistanceMeters)}</dd>
+                  </div>
+                  <div>
+                    <dt>{ctx.otherNickname}さんから</dt>
+                    <dd>約{formatApproximateDistance(ctx.suggestedPlace.otherDistanceMeters)}</dd>
+                  </div>
+                </dl>
+                {ctx.suggestedPlace.eventStatus && ctx.suggestedPlace.eventStatus !== 'scheduled' && (
+                  <p className={styles.suggestedPlaceUnavailable}>イベント情報が変更されています</p>
+                )}
+                {ctx.suggestedPlace.requiresHoursConfirmation && (
+                  <p className={styles.suggestedPlaceHours}>営業時間・入場条件は公式ページでご確認ください</p>
+                )}
+                <p className={styles.suggestedPlaceNotice}>集合場所は同行成立後に確定します</p>
+              </div>
+            </>
+          ) : (
+            <>
+              <SuggestedPlaceVisual imageUrl={null} placeName="おすすめの場所" />
+              <div className={styles.suggestedPlaceBody}>
+                <p className={styles.suggestedPlaceLabel}>おすすめの場所</p>
+                <p className={styles.noSuggestedPlace}>同行成立後に集合場所を確認できます</p>
+              </div>
+            </>
+          )}
+        </section>
       </div>
       {isPending && (
         <div className={styles.cardActions}>
@@ -335,6 +442,25 @@ function InvitationCard({
   );
 }
 
+function formatApproximateDistance(distanceMeters: number) {
+  if (distanceMeters < 1000) {
+    return `${Math.round(distanceMeters / 100) * 100}m`;
+  }
+
+  return `${(distanceMeters / 1000).toFixed(1)}km`;
+}
+
+function formatSuggestedEventDate(iso: string) {
+  return new Intl.DateTimeFormat('ja-JP', {
+    timeZone: 'Asia/Tokyo',
+    month: 'numeric',
+    day: 'numeric',
+    weekday: 'short',
+    hour: 'numeric',
+    minute: '2-digit',
+  }).format(new Date(iso));
+}
+
 // ─── Main ChatClient ─────────────────────────────────────────────────────────
 export default function ChatClient({
   conversationId,
@@ -345,12 +471,15 @@ export default function ChatClient({
   isGroupChat = false,
   participantCount = 2,
   fixedPlanContext = null,
+  isConversationClosed = false,
 }: ChatClientProps) {
   const router = useRouter();
   const supabase = createClient();
   const [messages, setMessages] = useState<MessageRow[]>(initialMessages);
   const [isSending, setIsSending] = useState(false);
+  const [isUploadingImage, setIsUploadingImage] = useState(false);
   const [isActionLoading, setIsActionLoading] = useState(false);
+  const [isCancelDialogOpen, setIsCancelDialogOpen] = useState(false);
 
   useEffect(() => {
     const channel = supabase
@@ -402,14 +531,56 @@ export default function ChatClient({
     }
   };
 
-  const formatEventTime = (isoString: string) => {
-    const d = new Date(isoString);
-    return `${d.getMonth() + 1}月${d.getDate()}日 ${d.getHours()}:${d.getMinutes().toString().padStart(2, '0')}`;
+  const handleSendImage = async (file: File) => {
+    if (isUploadingImage || isSending) return;
+    setIsUploadingImage(true);
+    let storagePath: string | null = null;
+
+    try {
+      storagePath = await uploadChatImage({ conversationId, userId: currentUserId, file });
+      const { data, error } = await supabase
+        .from('messages')
+        .insert({
+          conversation_id: conversationId,
+          sender_user_id: currentUserId,
+          message_type: 'image',
+          content: storagePath,
+        })
+        .select()
+        .single();
+
+      if (error) throw error;
+      if (data) {
+        setMessages((previous) => {
+          if (previous.some((message) => message.message_id === data.message_id)) return previous;
+          return [...previous, data];
+        });
+      }
+    } catch (error) {
+      if (storagePath) {
+        await deleteChatImage(storagePath);
+      }
+      throw error;
+    } finally {
+      setIsUploadingImage(false);
+    }
   };
 
   const formatMessageTime = (isoString: string) => {
+    const date = new Date(isoString);
+    if (Number.isNaN(date.getTime())) return '';
+
+    return new Intl.DateTimeFormat('ja-JP', {
+      hour: '2-digit',
+      minute: '2-digit',
+      hour12: false,
+      timeZone: 'Asia/Tokyo',
+    }).format(date);
+  };
+
+  const formatEventTime = (isoString: string) => {
     const d = new Date(isoString);
-    return `${d.getHours()}:${d.getMinutes().toString().padStart(2, '0')}`;
+    return `${d.getMonth() + 1}月${d.getDate()}日 ${d.getHours()}:${d.getMinutes().toString().padStart(2, '0')}`;
   };
 
   const hasMessageFromOther = messages.some(m => m.sender_user_id !== currentUserId);
@@ -418,13 +589,17 @@ export default function ChatClient({
   // ── Fixed Schedule Chat layout ──────────────────────────────────
   if (fixedPlanContext) {
     const ctx = fixedPlanContext;
+    const connectionsBackUrl = ctx.invitationStatus === 'accepted' && !ctx.isConversationClosed
+      ? '/connections?tab=plans'
+      : '/connections';
 
     const handleCancel = async () => {
       if (isActionLoading) return;
       setIsActionLoading(true);
       const res = await cancelFixedScheduleInvitation(ctx.invitationId);
       if (res.success) {
-        router.push('/connections?tab=plans');
+        setIsCancelDialogOpen(false);
+        router.refresh();
       } else {
         alert(res.error || '取り消しに失敗しました');
         setIsActionLoading(false);
@@ -455,31 +630,11 @@ export default function ChatClient({
       }
     };
 
-    // ── Terminal state (declined / cancelled) ────────────────────────────
-    if (ctx.isConversationClosed) {
-      return (
-        <div style={{ height: '100dvh', display: 'flex', flexDirection: 'column' }}>
-          <FixedPlanChatHeader
-            ctx={ctx}
-            onBack={() => router.push('/connections?tab=plans')}
-            isActionLoading={false}
-          />
-          <div style={{ flex: 1, overflowY: 'auto', backgroundColor: '#F8F8F8', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
-            <TerminalCard
-              ctx={ctx}
-              onDiscovery={() => router.push(ctx.discoveryUrl)}
-              onClose={() => router.push('/connections?tab=plans')}
-            />
-          </div>
-        </div>
-      );
-    }
-
-    const messageList = (
-      <div className={`${styles.messageList} ${ctx.invitationStatus === 'accepted' ? styles.acceptedMessageList : ''}`}>
+    const renderMessageList = (displayContext: FixedPlanContext) => (
+      <div className={`${styles.messageList} ${displayContext.invitationStatus === 'accepted' ? styles.acceptedMessageList : ''}`}>
         {/* Invitation context card — always shown above messages */}
         <InvitationCard
-          ctx={ctx}
+          ctx={displayContext}
           onAccept={handleAccept}
           onCancel={handleCancel}
           onDecline={handleDecline}
@@ -495,8 +650,9 @@ export default function ChatClient({
                 key={msg.message_id}
                 id={msg.message_id}
                 content={msg.content || ''}
-                isMine={msg.sender_user_id === currentUserId}
+                messageType={msg.message_type}
                 time={formatMessageTime(msg.created_at)}
+                isMine={msg.sender_user_id === currentUserId}
                 avatarUrl={getMessageAvatarUrl({
                   currentUserId,
                   senderUserId: msg.sender_user_id,
@@ -509,17 +665,103 @@ export default function ChatClient({
       </div>
     );
 
+    // Keep the existing conversation visible beneath the terminal-state scrim.
+    // The background is inert and presents the invitation as it looked before it closed.
+    if (ctx.isConversationClosed) {
+      const terminalBackgroundContext: FixedPlanContext = {
+        ...ctx,
+        invitationStatus: 'pending',
+        isConversationClosed: false,
+      };
+
+      return (
+        <div className={`${styles.fixedPlanScreen} ${styles.terminalStateScreen}`}>
+          <div className={styles.terminalBackground} aria-hidden="true" inert>
+            <FixedPlanChatHeader
+              ctx={terminalBackgroundContext}
+              onBack={() => router.push(connectionsBackUrl)}
+              onMore={() => {}}
+              isActionLoading={false}
+            />
+            <main className={styles.fixedPlanMain}>{renderMessageList(terminalBackgroundContext)}</main>
+            <footer className={styles.fixedPlanFooter}>
+              <ChatComposer
+                onSend={handleSend}
+                onSendImage={handleSendImage}
+                isSending={isSending}
+                isUploadingImage={isUploadingImage}
+                variant="fixed-plan"
+              />
+            </footer>
+          </div>
+          <div className={styles.terminalScrim} aria-hidden="true" />
+          <div className={styles.terminalOverlay}>
+            <TerminalCard
+              ctx={ctx}
+              onDiscovery={() => router.push(ctx.discoveryUrl)}
+              onClose={() => router.push('/connections')}
+            />
+          </div>
+        </div>
+      );
+    }
+
+    const messageList = renderMessageList(ctx);
+
     return (
       <div className={styles.fixedPlanScreen}>
         <FixedPlanChatHeader
           ctx={ctx}
-          onBack={() => router.push('/connections?tab=plans')}
+          onBack={() => router.push(connectionsBackUrl)}
+          onMore={() => setIsCancelDialogOpen(true)}
           isActionLoading={isActionLoading}
         />
         <main className={styles.fixedPlanMain}>{messageList}</main>
         <footer className={styles.fixedPlanFooter}>
-          <ChatComposer onSend={handleSend} isSending={isSending} variant="fixed-plan" />
+          <ChatComposer
+            onSend={handleSend}
+            onSendImage={handleSendImage}
+            isSending={isSending}
+            isUploadingImage={isUploadingImage}
+            variant="fixed-plan"
+          />
         </footer>
+        {isCancelDialogOpen ? (
+          <div className={styles.cancelDialogLayer} role="presentation">
+            <button
+              className={styles.cancelDialogScrim}
+              type="button"
+              aria-label="キャンセル確認を閉じる"
+              onClick={() => setIsCancelDialogOpen(false)}
+              disabled={isActionLoading}
+            />
+            <section
+              className={styles.cancelDialog}
+              role="dialog"
+              aria-modal="true"
+              aria-labelledby="cancel-plan-title"
+              aria-describedby="cancel-plan-description"
+            >
+              <h2 id="cancel-plan-title">同行予定をキャンセルしますか？</h2>
+              <p id="cancel-plan-description">
+                キャンセルすると、{ctx.otherNickname}さんに見送りの通知が届きます。
+              </p>
+              <div className={styles.cancelDialogActions}>
+                <button type="button" onClick={() => setIsCancelDialogOpen(false)} disabled={isActionLoading}>
+                  戻る
+                </button>
+                <button
+                  type="button"
+                  className={styles.confirmCancelButton}
+                  onClick={handleCancel}
+                  disabled={isActionLoading}
+                >
+                  {isActionLoading ? '処理中...' : '同行予定をキャンセル'}
+                </button>
+              </div>
+            </section>
+          </div>
+        ) : null}
       </div>
     );
   }
@@ -573,14 +815,26 @@ export default function ChatClient({
                   key={msg.message_id}
                   id={msg.message_id}
                   content={msg.content || ''}
-                  isMine={msg.sender_user_id === currentUserId}
+                  messageType={msg.message_type}
                   time={formatMessageTime(msg.created_at)}
+                  isMine={msg.sender_user_id === currentUserId}
                 />
               ))}
             </div>
           )
         }
-        inputArea={!isAloneInGroup ? <ChatComposer onSend={handleSend} isSending={isSending} /> : null}
+        inputArea={!isAloneInGroup && !isConversationClosed ? (
+          <ChatComposer
+            onSend={handleSend}
+            onSendImage={handleSendImage}
+            isSending={isSending}
+            isUploadingImage={isUploadingImage}
+          />
+        ) : isConversationClosed ? (
+          <div style={{ padding: '16px', textAlign: 'center', color: '#777', background: '#fff' }}>
+            このトークは終了しました。履歴のみ確認できます。
+          </div>
+        ) : null}
       />
     </div>
   );

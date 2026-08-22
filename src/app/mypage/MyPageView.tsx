@@ -173,7 +173,9 @@ export const MyPageView: React.FC<MyPageViewProps> = ({ profile, fixedPlans, att
                         <img src="/images/mypage/calendar.svg" alt="" aria-hidden="true" />
                         <span>
                           {formatWeekdays(plan.days_of_week)}{' '}
-                          {plan.start_time.substring(0, 5).replace(/^0/, '')}〜
+                          {plan.activity_type === 'event'
+                            ? null
+                            : `${plan.start_time.substring(0, 5).replace(/^0/, '')}〜`}
                         </span>
                       </p>
                       <p>

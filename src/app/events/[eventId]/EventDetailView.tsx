@@ -1,16 +1,18 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 import Link from 'next/link';
 import { PageContainer } from '@/components/layout/PageContainer';
 import { EventParticipationButton } from '@/components/events/EventParticipationButton';
 import { EventTopNav } from '@/features/events/components/EventTopNav';
 import { getOfficialEventActions } from '@/features/events/domain/getOfficialEventActions';
 import { getEventOrganizerAvatarUrl } from '@/features/events/domain/getEventOrganizerAvatarUrl';
+import { getEventPosterUrl } from '@/features/events/domain/getEventPosterUrl';
 import { EventParticipantPreviewData } from '@/features/events/lib/getEventParticipantPreview';
 import { Database } from '@/types/database.types';
 import { formatEventDateTime } from '@/utils/dateFormatter';
 import { useRouter } from 'next/navigation';
+import { cancelEvent } from '@/app/actions/cancelEvent';
 import styles from './EventDetailView.module.css';
 
 type EventRow = Database['public']['Tables']['events']['Row'];
@@ -33,9 +35,22 @@ export const EventDetailView: React.FC<EventDetailViewProps> = ({
   isCreator = false,
 }) => {
   const router = useRouter();
+  const [isCancelling, setIsCancelling] = useState(false);
 
   const handleOpenParticipants = () => {
     router.push(`/events/${event.event_id}/people`);
+  };
+
+  const handleCancelEvent = async () => {
+    if (isCancelling || !window.confirm('このイベントを中止しますか？')) return;
+    setIsCancelling(true);
+    const result = await cancelEvent(event.event_id);
+    if (!result.success) {
+      alert(result.error || 'イベントを中止できませんでした');
+      setIsCancelling(false);
+      return;
+    }
+    router.refresh();
   };
 
   const officialActions = getOfficialEventActions({
@@ -49,8 +64,14 @@ export const EventDetailView: React.FC<EventDetailViewProps> = ({
   const organizerName = creatorProfile?.nickname || event.source_name || '';
   const organizerAvatar = getEventOrganizerAvatarUrl({
     eventType: event.event_type,
+    sourceDatasetId: event.source_dataset_id,
     sourceName: event.source_name,
     creatorAvatarUrl: creatorProfile?.avatar_url || null,
+  });
+  const posterUrl = getEventPosterUrl({
+    eventType: event.event_type,
+    sourceDatasetId: event.source_dataset_id,
+    posterUrl: event.poster_url,
   });
   const participantCount = participantPreview?.participantCount || 0;
   const participants = participantPreview?.users || [];
@@ -64,8 +85,8 @@ export const EventDetailView: React.FC<EventDetailViewProps> = ({
 
           <main className={styles.content}>
             <div className={styles.hero}>
-              {event.poster_url ? (
-                <img src={event.poster_url} alt={event.title} />
+              {posterUrl ? (
+                <img src={posterUrl} alt={event.title} />
               ) : (
                 <div className={styles.heroPlaceholder}>No Poster Available</div>
               )}
@@ -96,6 +117,21 @@ export const EventDetailView: React.FC<EventDetailViewProps> = ({
                 </div>
               </div>
             </div>
+
+            {event.event_status === 'cancelled' && (
+              <p className={styles.cancelledNotice}>このイベントは中止されました</p>
+            )}
+
+            {isCreator && event.event_type === 'user_created' && event.event_status === 'scheduled' && (
+              <button
+                type="button"
+                className={styles.cancelEventButton}
+                onClick={handleCancelEvent}
+                disabled={isCancelling}
+              >
+                {isCancelling ? '処理中…' : 'イベントを中止'}
+              </button>
+            )}
 
             <div className={styles.organizerRow}>
               <div className={styles.organizer}>

@@ -375,6 +375,10 @@
   border-bottom: 0;
 }
 
+.fixedPlanConversationRow {
+  min-height: 96px;
+}
+
 .conversationAvatar {
   display: block;
   width: 42px;
@@ -406,6 +410,70 @@
   letter-spacing: -0.02em;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+.fixedPlanConversationTopline {
+  display: flex;
+  min-width: 0;
+  align-items: baseline;
+  gap: 8px;
+}
+
+.fixedPlanConversationTopline strong {
+  overflow: hidden;
+  font-size: 17px;
+  font-weight: 650;
+  line-height: 22px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.fixedPlanConversationTopline > span {
+  overflow: hidden;
+  color: #111;
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 18px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.fixedPlanConversationTopline > span::before {
+  margin-right: 8px;
+  content: "|";
+}
+
+.fixedPlanMetadata {
+  display: flex;
+  margin-top: 3px;
+  flex-direction: column;
+  gap: 2px;
+  color: #676767;
+  font-size: 12px;
+  line-height: 17px;
+}
+
+.fixedPlanMetadata > div {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: 6px;
+}
+
+.fixedPlanMetadata svg {
+  width: 14px;
+  height: 14px;
+  flex: 0 0 14px;
+}
+
+.fixedPlanMetadata span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.fixedPlanMetadata .meetingPlacePending {
+  color: #999;
 }
 
 .conversationTopline time {

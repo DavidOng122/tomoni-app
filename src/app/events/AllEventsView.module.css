@@ -1,0 +1,88 @@
+.screen {
+  min-height: 100dvh;
+  background: #fff;
+  color: #111;
+}
+
+.page {
+  --page-padding-x: 21px;
+}
+
+.stage {
+  width: 100%;
+  max-width: 402px;
+  margin: 0 auto;
+}
+
+.header {
+  position: sticky;
+  z-index: 10;
+  top: 0;
+  display: grid;
+  min-height: 82px;
+  align-items: center;
+  padding: 18px 0 14px;
+  background: rgb(255 255 255 / 94%);
+  backdrop-filter: blur(14px);
+  grid-template-columns: 42px minmax(0, 1fr) 42px;
+}
+
+.backButton {
+  display: grid;
+  width: 36px;
+  height: 36px;
+  place-items: center;
+  border: 1px solid #eceae8;
+  border-radius: 50%;
+  color: #111;
+}
+
+.backButton svg {
+  width: 19px;
+  height: 19px;
+}
+
+.titleBlock {
+  min-width: 0;
+  text-align: center;
+}
+
+.titleBlock span {
+  display: block;
+  margin-bottom: 2px;
+  color: #9a9a9a;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+}
+
+.titleBlock h1 {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 680;
+  line-height: 1.2;
+}
+
+.count {
+  color: #999;
+  font-size: 12px;
+  font-weight: 600;
+  text-align: right;
+}
+
+.content {
+  padding: 12px 0 48px;
+}
+
+@media (max-width: 390px) {
+  .page {
+    --page-padding-x: 18px;
+  }
+}
+
+@media (hover: hover) {
+  .backButton:hover {
+    border-color: #ffb29a;
+    color: #ff6f42;
+  }
+}

@@ -126,7 +126,33 @@
 .moreIcon {
   width: 20px;
   height: 4px;
-  margin-top: 17px;
+}
+
+.moreButton,
+.morePlaceholder {
+  width: 35px;
+  height: 35px;
+  flex: 0 0 35px;
+}
+
+.moreButton {
+  display: grid;
+  place-items: center;
+  border: 0;
+  border-radius: 50%;
+  padding: 0;
+  background: transparent;
+  cursor: pointer;
+}
+
+.moreButton:focus-visible {
+  outline: 2px solid #ff7622;
+  outline-offset: 2px;
+}
+
+.moreButton:disabled {
+  cursor: wait;
+  opacity: 0.5;
 }
 
 .fixedPlanMain {
@@ -315,48 +341,177 @@
   white-space: nowrap;
 }
 
-.scheduleImage {
-  position: relative;
+.invitationSummary {
   display: flex;
-  height: 103px;
   flex-direction: column;
-  justify-content: flex-end;
-  gap: 5px;
-  overflow: hidden;
+  gap: 7px;
+  border: 1px solid #e7ece9;
   border-radius: 12px;
-  padding: 0 15px 11px;
-  background: #ececec url('/images/discover/event-walk.png') center 49% / cover no-repeat;
-  color: #fff;
-}
-
-.scheduleImage::before {
-  position: absolute;
-  inset: 30% 0 0;
-  background: linear-gradient(transparent, rgba(0, 0, 0, 0.48));
-  content: '';
+  padding: 10px 13px;
+  background: #f7faf8;
+  color: #1a2e24;
 }
 
 .scheduleRow {
-  position: relative;
-  z-index: 1;
   display: flex;
   align-items: center;
   gap: 6px;
+  color: #4f5f56;
   font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-  font-size: 11px;
-  font-weight: 600;
-  line-height: 11px;
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 16px;
   white-space: nowrap;
 }
 
 .scheduleRow img {
   width: 14px;
   height: 14px;
-  filter: invert(1);
 }
 
 .scheduleRow img.locationIcon {
   width: 11px;
+}
+
+.suggestedPlace {
+  margin-top: 14px;
+  overflow: hidden;
+  border: 1px solid #ffe0d6;
+  border-radius: 14px;
+  background: #fff8f5;
+  color: #1a2e24;
+}
+
+.suggestedPlaceVisual {
+  position: relative;
+  width: 100%;
+  height: 112px;
+  overflow: hidden;
+  background: #edf1ee;
+}
+
+.suggestedPlaceVisual > img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.suggestedPlacePlaceholder {
+  display: grid;
+  place-items: center;
+  background:
+    linear-gradient(135deg, rgb(255 255 255 / 45%), transparent 62%),
+    #edf1ee;
+  color: #ff8058;
+}
+
+.mapLines {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  fill: none;
+  stroke: #d7dfda;
+  stroke-width: 2;
+}
+
+.mapPin {
+  position: relative;
+  display: grid;
+  width: 44px;
+  height: 44px;
+  place-items: center;
+  border: 1px solid #ffd8cb;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: 0 5px 15px rgb(58 72 64 / 12%);
+}
+
+.suggestedPlaceBody {
+  padding: 12px 13px;
+}
+
+.suggestedPlaceLabel,
+.suggestedPlaceSource,
+.suggestedPlaceNotice,
+.suggestedPlaceEventDate,
+.suggestedPlaceEventVenue,
+.suggestedPlaceUnavailable,
+.suggestedPlaceHours,
+.noSuggestedPlace {
+  margin: 0;
+}
+
+.suggestedPlaceEventDate,
+.suggestedPlaceEventVenue {
+  margin-top: 3px;
+  color: #444;
+  font-size: 11px;
+  line-height: 16px;
+}
+
+.suggestedPlaceUnavailable,
+.suggestedPlaceHours {
+  margin-top: 8px;
+  color: #a15c00;
+  font-size: 10px;
+  line-height: 15px;
+}
+
+.suggestedPlaceLabel {
+  color: #ff7622;
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 16px;
+}
+
+.suggestedPlace h3 {
+  margin: 4px 0 0;
+  font-size: 16px;
+  line-height: 22px;
+}
+
+.suggestedPlaceSource {
+  color: #777;
+  font-size: 10px;
+  line-height: 15px;
+}
+
+.suggestedPlaceDistances {
+  display: grid;
+  gap: 3px;
+  margin: 10px 0 0;
+  font-size: 11px;
+  line-height: 16px;
+}
+
+.suggestedPlaceDistances div {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.suggestedPlaceDistances dt,
+.suggestedPlaceDistances dd {
+  margin: 0;
+}
+
+.suggestedPlaceDistances dt {
+  color: #555;
+}
+
+.suggestedPlaceDistances dd {
+  font-weight: 700;
+}
+
+.suggestedPlaceNotice,
+.noSuggestedPlace {
+  margin-top: 10px;
+  color: #777;
+  font-size: 10px;
+  line-height: 15px;
 }
 
 .cardActions {
@@ -429,6 +584,296 @@
   background: #f5f5f5;
 }
 
+.cancelDialogLayer {
+  position: fixed;
+  z-index: 50;
+  inset: 0;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+}
+
+.cancelDialogScrim {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  border: 0;
+  padding: 0;
+  background: rgb(0 0 0 / 35%);
+}
+
+.cancelDialog {
+  position: relative;
+  width: min(370px, calc(100% - 32px));
+  margin-bottom: max(24px, env(safe-area-inset-bottom));
+  border-radius: 24px;
+  padding: 28px 20px 20px;
+  background: #fff;
+  box-shadow: 0 18px 48px rgb(0 0 0 / 18%);
+  text-align: center;
+}
+
+.cancelDialog h2 {
+  margin: 0;
+  color: #111;
+  font-size: 18px;
+  line-height: 1.45;
+}
+
+.cancelDialog p {
+  margin: 10px 0 0;
+  color: #707070;
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+.cancelDialogActions {
+  display: grid;
+  grid-template-columns: 1fr 1.45fr;
+  gap: 10px;
+  margin-top: 24px;
+}
+
+.cancelDialogActions button {
+  min-height: 48px;
+  border: 1px solid #ddd;
+  border-radius: 15px;
+  background: #fff;
+  color: #222;
+  cursor: pointer;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.cancelDialogActions .confirmCancelButton {
+  border-color: #ff6f59;
+  background: #ff6f59;
+  color: #fff;
+}
+
+.cancelDialogActions button:disabled {
+  cursor: wait;
+  opacity: 0.55;
+}
+
+.terminalStateScreen {
+  position: relative;
+  isolation: isolate;
+}
+
+.terminalBackground {
+  display: flex;
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+  flex-direction: column;
+}
+
+.terminalScrim,
+.terminalOverlay {
+  position: absolute;
+  inset: 0;
+}
+
+.terminalScrim {
+  z-index: 10;
+  background: rgb(0 0 0 / 31%);
+}
+
+.terminalOverlay {
+  z-index: 11;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  padding: 16px 16px max(24px, env(safe-area-inset-bottom));
+  pointer-events: none;
+}
+
+.terminalSheet {
+  display: flex;
+  width: min(342px, calc(100% - 32px));
+  min-height: 314px;
+  overflow: hidden;
+  flex-direction: column;
+  border: 1px solid #f7f7f7;
+  border-radius: 26px;
+  background: #fff;
+  box-shadow: inset 5px 8px 20.9px rgb(0 0 0 / 9%);
+  color: #000;
+  pointer-events: auto;
+}
+
+.terminalHeading {
+  display: flex;
+  min-height: 146px;
+  align-items: center;
+  flex: 0 0 146px;
+  flex-direction: column;
+  padding: 32px 16px 8px;
+  text-align: center;
+}
+
+.terminalIcon {
+  position: relative;
+  width: 52px;
+  height: 57px;
+  flex: 0 0 57px;
+}
+
+.terminalIcon > img {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 44px;
+  height: 44px;
+}
+
+.terminalIconBadge {
+  position: absolute;
+  right: 0;
+  bottom: 5px;
+  display: grid;
+  width: 20px;
+  height: 20px;
+  place-items: center;
+  border-radius: 50%;
+  background: #ff5364;
+}
+
+.terminalIconBadge img {
+  width: 10px;
+  height: 10px;
+}
+
+.terminalHeading h2 {
+  margin: 0;
+  color: #1e2939;
+  font-size: 15px;
+  font-weight: 600;
+  line-height: 20px;
+}
+
+.terminalHeading p {
+  margin: 0;
+  color: #4f4f4f;
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 18px;
+}
+
+.terminalPlanSummary {
+  position: relative;
+  display: flex;
+  width: calc(100% - 42px);
+  min-height: 110px;
+  margin: 0 21px;
+  align-items: flex-start;
+  justify-content: center;
+  flex: 0 0 110px;
+  flex-direction: column;
+  overflow: hidden;
+  border-radius: 10px;
+  padding: 0 32px;
+  background: #ececec;
+}
+
+.terminalPlanImage,
+.terminalPlanShade {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.terminalPlanImage {
+  z-index: 0;
+  object-fit: cover;
+}
+
+.terminalPlanShade {
+  z-index: 1;
+  display: none;
+  background: linear-gradient(90deg, rgb(0 0 0 / 61%), rgb(0 0 0 / 28%));
+}
+
+.terminalPlanSummaryWithImage {
+  color: #fff;
+  text-shadow: 0 1px 2px rgb(0 0 0 / 48%);
+}
+
+.terminalPlanSummaryWithImage .terminalPlanShade {
+  display: block;
+}
+
+.terminalPlanSummaryWithImage .terminalPlanDetails img {
+  filter: brightness(0) invert(1);
+}
+
+.terminalPlanDetails {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.terminalPlanDetails > div {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 11px;
+  font-weight: 400;
+  line-height: 14px;
+  white-space: nowrap;
+}
+
+.terminalPlanDetails img {
+  flex: 0 0 auto;
+}
+
+.terminalActions {
+  display: flex;
+  width: calc(100% - 42px);
+  min-height: 49px;
+  margin: 9px 21px 0;
+  border-top: 1px solid #efefef;
+}
+
+.terminalActions button {
+  display: flex;
+  min-width: 0;
+  height: 48px;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  border: 0;
+  padding: 0;
+  background: transparent;
+  color: #000;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 18px;
+  white-space: nowrap;
+}
+
+.terminalActions button:first-child {
+  flex: 1.14;
+  color: #ff7622;
+}
+
+.terminalActions button:last-child {
+  flex: 1;
+}
+
+.terminalActions button:focus-visible {
+  border-radius: 8px;
+  box-shadow: 0 0 0 3px rgb(255 118 34 / 22%);
+  outline: none;
+}
+
 @media (max-height: 700px) {
   .fixedPlanHeader {
     height: 120px;
@@ -443,5 +888,9 @@
   .fixedPlanFooter {
     height: 90px;
     flex-basis: 90px;
+  }
+
+  .terminalOverlay {
+    padding-bottom: max(12px, env(safe-area-inset-bottom));
   }
 }

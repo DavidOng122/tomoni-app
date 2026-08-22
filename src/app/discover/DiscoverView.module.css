@@ -36,6 +36,22 @@
   cursor: pointer;
 }
 
+.notificationButton {
+  position: relative;
+}
+
+.notificationDot {
+  position: absolute;
+  top: 7px;
+  right: 2px;
+  width: 8px;
+  height: 8px;
+  border: 1.5px solid #fff;
+  border-radius: 50%;
+  background: #ff6f59;
+  box-shadow: 0 0 0 1px rgb(255 111 89 / 12%);
+}
+
 .content {
   display: flex;
   flex-direction: column;
@@ -54,6 +70,14 @@
   border-radius: 15px;
   background: #fff;
   box-shadow: 0 1px 8.5px rgb(0 0 0 / 4%);
+  color: inherit;
+  cursor: pointer;
+  text-decoration: none;
+}
+
+.currentCard:focus-visible {
+  outline: 2px solid #ff6f59;
+  outline-offset: 3px;
 }
 
 .currentAvatarGroup {
@@ -215,7 +239,7 @@
   cursor: pointer;
 }
 
-.walkIcon {
+.activityIcon {
   display: grid;
   width: 31px;
   height: 31px;
@@ -224,10 +248,13 @@
   border: 1px solid #111;
   border-radius: 50%;
   background: #fff;
-  background-image: url('/images/discover/scheduled-people/walking.svg');
-  background-position: center;
-  background-repeat: no-repeat;
-  background-size: auto 17px;
+}
+
+.activityIcon img {
+  display: block;
+  width: 18px;
+  height: 18px;
+  object-fit: contain;
 }
 
 .recommendationIntro div {
@@ -386,13 +413,12 @@
 .dayHeading {
   display: flex;
   gap: 4px;
-  margin-top: 7px;
-  font-size: 15px;
+  font-size: 17px;
   line-height: 1.4;
 }
 
 .dayHeading strong {
-  font-weight: 550;
+  font-weight: 650;
 }
 
 .dayHeading span {
@@ -400,18 +426,36 @@
   font-weight: 510;
 }
 
+.eventTimeline {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  margin-top: 9px;
+}
+
+.eventDayGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 13px;
+}
+
 .eventList {
   display: flex;
   flex-direction: column;
-  gap: 16px;
 }
 
 .eventRow {
   display: flex;
   min-width: 0;
   align-items: flex-start;
-  gap: 40px;
+  gap: 16px;
+  padding: 0 0 15px;
   cursor: pointer;
+}
+
+.eventRow + .eventRow {
+  padding-top: 15px;
+  border-top: 1px solid #efedeb;
 }
 
 .poster {
@@ -632,6 +676,7 @@
 
   .recommendationIntro:hover,
   .recommendationCard:hover,
+  .currentCard:hover,
   .eventRow:hover {
     opacity: 0.82;
   }
@@ -639,6 +684,7 @@
 
 @media (prefers-reduced-motion: no-preference) {
   .iconButton,
+  .currentCard,
   .recommendationIntro,
   .recommendationCard,
   .eventRow,

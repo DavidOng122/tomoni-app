@@ -54,9 +54,8 @@ export default async function EventDetailPage({ params }: PageProps) {
     }
   }
 
-  // Under RLS, if they can read it, we will render the detail.
-  // The policy `events_select_scheduled` restricts reading to `event_status = 'scheduled'`.
-  // So cancelled/ended events naturally return nothing and fall into notFound() above.
+  // Scheduled events are public to authenticated users. Historical events remain
+  // readable only to their creator, participants, or involved invitation users.
 
   // Fetch current user participation status
   const participation = await EventParticipationRepository.getOwnParticipation(eventId);

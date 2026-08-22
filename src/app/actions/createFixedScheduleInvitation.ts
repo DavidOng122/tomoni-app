@@ -1,10 +1,13 @@
 'use server';
 
 import { createClient } from '@/infrastructure/auth/server';
+import type { SelectedFixedPlanRecommendation } from '@/features/invitations/domain/eventRecommendationTypes';
 
 export async function createFixedScheduleInvitation(
   fixedPlanId: string,
-  receiverId: string
+  receiverId: string,
+  receiverFixedPlanId: string,
+  recommendation?: SelectedFixedPlanRecommendation | null,
 ): Promise<{ success: boolean; conversationId?: string; error?: string }> {
   try {
     const supabase = await createClient();
@@ -14,15 +17,23 @@ export async function createFixedScheduleInvitation(
       return { success: false, error: 'Unauthorized' };
     }
 
+    const recommendationArgs = recommendation?.kind === 'event'
+      ? { p_suggested_event_id: recommendation.id }
+      : recommendation?.kind === 'cultural_facility'
+        ? { p_suggested_public_place_id: recommendation.id }
+        : {};
     const { data, error } = await supabase.rpc('create_fixed_schedule_invitation', {
       p_fixed_plan_id: fixedPlanId,
       p_receiver_id: receiverId,
+      p_receiver_fixed_plan_id: receiverFixedPlanId,
+      ...recommendationArgs,
     });
 
     if (error) {
       console.error('[createFixedScheduleInvitation] FAILED', {
         fixedPlanId,
         receiverId,
+        receiverFixedPlanId,
         userId: user.id,
         code: error.code,
         message: error.message,

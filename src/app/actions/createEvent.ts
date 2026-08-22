@@ -1,6 +1,7 @@
 'use server';
 
 import { createClient } from '@/infrastructure/auth/server';
+import { toTotalEventCapacity } from '@/features/events/domain/toTotalEventCapacity';
 import { revalidatePath } from 'next/cache';
 
 export async function createEventAction(formData: FormData) {
@@ -20,6 +21,12 @@ export async function createEventAction(formData: FormData) {
   const approvalRequired = formData.get('approvalRequired') === 'true';
   const recruitingCountStr = formData.get('recruitingCount') as string | undefined;
   const recruitingCount = recruitingCountStr ? parseInt(recruitingCountStr, 10) : undefined;
+  let totalCapacity: number | null;
+  try {
+    totalCapacity = toTotalEventCapacity(recruitingCount);
+  } catch {
+    return { success: false, error: '募集人数は1人以上で入力してください' };
+  }
   const posterFile = formData.get('poster') as File | null;
 
   // Timezone conversion (+09:00 for Asia/Tokyo)
@@ -39,7 +46,7 @@ export async function createEventAction(formData: FormData) {
     p_longitude: longitude,
     p_description: description,
     p_approval_required: approvalRequired,
-    p_capacity: recruitingCount
+    p_capacity: totalCapacity ?? undefined
   });
 
   if (createError || !eventId) {

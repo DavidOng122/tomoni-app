@@ -2,6 +2,8 @@ import React from 'react';
 import { createClient } from '@/infrastructure/auth/server';
 import { redirect } from 'next/navigation';
 import { getRecommendations } from '@/features/discover/server/getRecommendations';
+import { filterRecommendationsForPlan } from '@/features/discover/domain/filterRecommendationsForPlan';
+import { ACTIVITY_LABELS } from '@/features/fixed-schedules/lib/constants';
 import { ScheduledPeopleView } from './ScheduledPeopleView';
 
 
@@ -31,7 +33,19 @@ export default async function ScheduledPeoplePage({ params }: { params: Promise<
   }
 
   // Fetch recommendations for this specific plan
-  const recommendations = await getRecommendations(scheduleId);
+  const recommendations = filterRecommendationsForPlan(
+    await getRecommendations(scheduleId),
+    scheduleId,
+  );
+  const activityTitle = plan.activity_type === 'other'
+    ? plan.custom_activity_name || 'その他'
+    : ACTIVITY_LABELS[plan.activity_type as keyof typeof ACTIVITY_LABELS] || plan.activity_type;
 
-  return <ScheduledPeopleView plan={plan} recommendations={recommendations} />;
+  return (
+    <ScheduledPeopleView
+      plan={plan}
+      activityTitle={activityTitle}
+      recommendations={recommendations}
+    />
+  );
 }

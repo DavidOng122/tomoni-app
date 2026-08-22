@@ -6,10 +6,13 @@ import { getRecommendations } from '@/features/discover/server/getRecommendation
 import { DiscoverRecommendation } from '@/features/discover/types';
 import { Database } from '@/types/database.types';
 import { ACTIVITY_LABELS } from '@/features/fixed-schedules/lib/constants';
+import type { ActivityType } from '@/features/fixed-schedules/types';
 import { formatWeekdays } from '@/features/fixed-schedules/lib/formatters';
 import { filterRecommendationsForPlan } from '@/features/discover/domain/filterRecommendationsForPlan';
 import { getEventParticipantPreview } from '@/features/events/lib/getEventParticipantPreview';
 import { getEventOrganizerAvatarUrl } from '@/features/events/domain/getEventOrganizerAvatarUrl';
+import { getEventPosterUrl } from '@/features/events/domain/getEventPosterUrl';
+import { getPendingEventJoinRequests } from '@/features/events/lib/getPendingEventJoinRequests';
 import { sortCommunityEvents } from '@/features/events/domain/sortCommunityEvents';
 import {
   formatUpcomingCompanionDateTime,
@@ -24,6 +27,20 @@ export default async function DiscoverPage() {
   if (!user) {
     redirect('/welcome');
   }
+
+  const [{ count: pendingInvitationCount, error: pendingInvitationCountError }, pendingEventJoinRequests] = await Promise.all([
+    supabase
+      .from('invitations')
+      .select('invitation_id', { count: 'exact', head: true })
+      .eq('receiver_user_id', user.id)
+      .eq('invitation_status', 'pending'),
+    getPendingEventJoinRequests(user.id),
+  ]);
+
+  if (pendingInvitationCountError) {
+    console.error('Failed to count pending invitations:', pendingInvitationCountError);
+  }
+  const pendingNotificationCount = (pendingInvitationCount ?? 0) + pendingEventJoinRequests.length;
 
   const { data: fixedPlans } = await supabase
     .from('fixed_plans')
@@ -109,7 +126,23 @@ export default async function DiscoverPage() {
     }),
   );
 
+  let currentMeetingPlaceName: string | null = null;
+  if (nearestCompanion) {
+    const { data: invitationPlace, error: invitationPlaceError } = await supabase
+      .rpc('get_fixed_plan_invitation_suggested_place', {
+        p_invitation_id: nearestCompanion.invitationId,
+      })
+      .maybeSingle();
+
+    if (invitationPlaceError) {
+      console.error('Failed to load the current companion meeting place');
+    }
+
+    currentMeetingPlaceName = invitationPlace?.suggested_place_name ?? null;
+  }
+
   const currentActivity = nearestCompanion ? {
+    conversationId: nearestCompanion.conversationId,
     name: nearestCompanion.nickname,
     verified: true,
     eventTitle: nearestCompanion.activityType === 'other'
@@ -117,7 +150,7 @@ export default async function DiscoverPage() {
       : ACTIVITY_LABELS[nearestCompanion.activityType as keyof typeof ACTIVITY_LABELS]
         || nearestCompanion.activityType,
     dateTime: formatUpcomingCompanionDateTime(nearestCompanion.nextOccurrence),
-    location: nearestCompanion.placeName,
+    location: currentMeetingPlaceName ?? '合流地点を確認中',
     avatarUrl: nearestCompanion.avatarUrl,
   } : null;
 
@@ -126,10 +159,13 @@ export default async function DiscoverPage() {
 
     return {
       fixedPlanId: plan.fixed_plan_id,
+      activityType: plan.activity_type as ActivityType,
       title: plan.activity_type === 'other'
         ? plan.custom_activity_name || 'その他'
         : ACTIVITY_LABELS[plan.activity_type as keyof typeof ACTIVITY_LABELS] || plan.activity_type,
-      scheduleLabel: `毎週${formatWeekdays(plan.days_of_week as any[])}曜 ${plan.start_time.substring(0, 5).replace(/^0/, '')}ごろ`,
+      scheduleLabel: plan.activity_type === 'event'
+        ? `毎週${formatWeekdays(plan.days_of_week as any[])}曜`
+        : `毎週${formatWeekdays(plan.days_of_week as any[])}曜 ${plan.start_time.substring(0, 5).replace(/^0/, '')}ごろ`,
       recommendations: filterRecommendationsForPlan(planRecommendations, plan.fixed_plan_id),
     };
   }));
@@ -202,10 +238,16 @@ export default async function DiscoverPage() {
     isParticipating: joinedEventIds.has(event.event_id),
     organizerAvatarUrl: getEventOrganizerAvatarUrl({
       eventType: event.event_type,
+      sourceDatasetId: event.source_dataset_id,
       sourceName: event.source_name,
       creatorAvatarUrl: event.created_by_user_id
         ? organizerAvatarByUserId.get(event.created_by_user_id) || null
         : null,
+    }),
+    displayPosterUrl: getEventPosterUrl({
+      eventType: event.event_type,
+      sourceDatasetId: event.source_dataset_id,
+      posterUrl: event.poster_url,
     }),
     participantPreview: await getEventParticipantPreview(event.event_id),
   })));
@@ -216,10 +258,7 @@ export default async function DiscoverPage() {
       events={events}
       currentActivity={currentActivity}
       recommendationGroups={recommendationGroups}
-      todayWeekday={new Intl.DateTimeFormat('ja-JP', {
-        weekday: 'long',
-        timeZone: 'Asia/Tokyo',
-      }).format(new Date())}
+      pendingNotificationCount={pendingNotificationCount}
     />
   );
 }

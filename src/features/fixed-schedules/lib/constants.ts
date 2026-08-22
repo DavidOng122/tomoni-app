@@ -1,4 +1,4 @@
-import { ActivityType, DayOfWeek } from '../types';
+import type { ActivityType, DayOfWeek } from '../types.ts';
 
 export const ACTIVITY_LABELS: Record<ActivityType, string> = {
   walking: '散歩',
@@ -7,6 +7,15 @@ export const ACTIVITY_LABELS: Record<ActivityType, string> = {
   study_reading: '勉強・読書',
   sports: 'スポーツ',
   other: 'その他',
+};
+
+export const ACTIVITY_ICONS: Record<ActivityType, string> = {
+  walking: '/images/onboarding-walking.svg',
+  dog_walking: '/images/onboarding-dog.svg',
+  event: '/images/onboarding-event.svg',
+  study_reading: '/images/onboarding-study.svg',
+  sports: '/images/onboarding-sports.svg',
+  other: '/images/onboarding-other.svg',
 };
 
 export const DAY_LABELS: Record<DayOfWeek, string> = {

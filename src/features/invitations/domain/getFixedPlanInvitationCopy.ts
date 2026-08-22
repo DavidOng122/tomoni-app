@@ -1,4 +1,6 @@
-const ACTIVITY_LABELS: Record<string, string> = {
+import { ACTIVITY_LABELS } from '../../fixed-schedules/lib/constants.ts';
+
+const INVITATION_ACTIVITY_LABEL_OVERRIDES: Record<string, string> = {
   walking: '朝の散歩',
   morning_walk: '朝の散歩',
   running: 'ランニング',
@@ -21,7 +23,8 @@ export function getFixedPlanInvitationCopy({
   otherNickname,
 }: FixedPlanInvitationCopyInput) {
   const activityLabel = customActivityName?.trim()
-    || ACTIVITY_LABELS[activityType]
+    || INVITATION_ACTIVITY_LABEL_OVERRIDES[activityType]
+    || ACTIVITY_LABELS[activityType as keyof typeof ACTIVITY_LABELS]
     || activityType;
 
   return {

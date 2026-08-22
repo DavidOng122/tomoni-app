@@ -1,16 +1,19 @@
 import React from 'react';
 import Image from 'next/image';
+import { ChatImage } from './ChatImage';
 
 interface ChatMessageProps {
   id: string;
   content: string;
-  isMine: string | boolean; // string 'true' / 'false' or boolean
+  messageType: string;
   time: string;
+  isMine: string | boolean; // string 'true' / 'false' or boolean
   avatarUrl?: string | null;
 }
 
-export const ChatMessage: React.FC<ChatMessageProps> = ({ content, isMine, time, avatarUrl }) => {
+export const ChatMessage: React.FC<ChatMessageProps> = ({ content, messageType, time, isMine, avatarUrl }) => {
   const mine = String(isMine) === 'true';
+  const isImage = messageType === 'image';
 
   return (
     <div style={{
@@ -33,20 +36,21 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({ content, isMine, time,
       )}
       <div style={{ display: 'flex', flexDirection: 'column', alignItems: mine ? 'flex-end' : 'flex-start' }}>
         <div style={{
-          backgroundColor: mine ? '#FF8861' : '#F1F1F1',
+          backgroundColor: isImage ? '#FFF' : mine ? '#FF8861' : '#FFF',
           color: mine ? '#FFF' : '#333',
-          padding: '12px 16px',
+          padding: isImage ? 0 : '12px 16px',
           borderRadius: '16px',
           maxWidth: '240px',
+          overflow: 'hidden',
           wordBreak: 'break-word',
           fontSize: '15px',
           lineHeight: '1.4'
         }}>
-          {content}
+          {isImage ? <ChatImage storagePath={content} /> : content}
         </div>
-        <div style={{ fontSize: '11px', color: '#999', marginTop: '4px' }}>
+        <time dateTime={time} style={{ marginTop: '5px', color: '#9A9A9A', fontSize: '12px', lineHeight: 1 }}>
           {time}
-        </div>
+        </time>
       </div>
     </div>
   );

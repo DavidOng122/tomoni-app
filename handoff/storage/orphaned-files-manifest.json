@@ -1,0 +1,92 @@
+[
+  {
+    "bucket": "avatars",
+    "object_name": "20000000-0000-4000-8000-000000000001/avatar",
+    "internal_version": "ad0daf1c-99e1-4afc-8dbc-5e4d7a7c600a",
+    "size_bytes": 17744,
+    "sha256": "2c8dceed32803f8c90c476c00fd1ed85477831ddb0442e17d7187ce2372012d1",
+    "referenced_by_storage_metadata": false,
+    "restore_by_default": false
+  },
+  {
+    "bucket": "avatars",
+    "object_name": "5ee9ec04-366b-4e4b-8a42-54a7a4fb4a82/avatar",
+    "internal_version": "4eb68d91-ed60-4457-8ab3-fb81074f2359",
+    "size_bytes": 22929,
+    "sha256": "ebbb8b8dd659b4de745cb3a5edd638b300f683242cae95dfc10b605bdc2d2d9d",
+    "referenced_by_storage_metadata": false,
+    "restore_by_default": false
+  },
+  {
+    "bucket": "avatars",
+    "object_name": "62acc528-a0f6-47ac-89e7-f9ff1b3faa32/avatar",
+    "internal_version": "161b6e1a-cce8-4e7d-9721-5bcdd9d82bcd",
+    "size_bytes": 238095,
+    "sha256": "3eb929a2684a96f3673e8c0fdde6aa56b4ed79a4b31541cb4678e2f90e23dda4",
+    "referenced_by_storage_metadata": false,
+    "restore_by_default": false
+  },
+  {
+    "bucket": "avatars",
+    "object_name": "65ec6a19-5214-4262-a2cc-d6974b3518ec/avatar",
+    "internal_version": "37ae5b47-0253-435b-ac9b-138742870e94",
+    "size_bytes": 39284,
+    "sha256": "9f2281f03fd4cebe89a296618c3461fb13b0594c42880b1a4a30a83f18d5e22a",
+    "referenced_by_storage_metadata": false,
+    "restore_by_default": false
+  },
+  {
+    "bucket": "avatars",
+    "object_name": "6cf3aa4e-d293-43de-a963-a4f68fbbc000/avatar",
+    "internal_version": "a1bc7f0d-43d6-48ae-b0a0-64f50a3f1b3d",
+    "size_bytes": 5941,
+    "sha256": "35453b34caab5892b843f2eb7e05193bf06b32b6dc3b0d1a8b2ebb154e758023",
+    "referenced_by_storage_metadata": false,
+    "restore_by_default": false
+  },
+  {
+    "bucket": "avatars",
+    "object_name": "9c9e7c41-7c3e-41f6-86af-eec8124f2ad4/avatar",
+    "internal_version": "4483b33d-9c32-4b91-a030-d20528e6e2d4",
+    "size_bytes": 238095,
+    "sha256": "3eb929a2684a96f3673e8c0fdde6aa56b4ed79a4b31541cb4678e2f90e23dda4",
+    "referenced_by_storage_metadata": false,
+    "restore_by_default": false
+  },
+  {
+    "bucket": "avatars",
+    "object_name": "ff18e99d-533e-4eb1-96db-cd8cfdddfcc7/avatar",
+    "internal_version": "fe1cd3a8-e714-4ceb-83a6-bf7cf1909166",
+    "size_bytes": 238095,
+    "sha256": "3eb929a2684a96f3673e8c0fdde6aa56b4ed79a4b31541cb4678e2f90e23dda4",
+    "referenced_by_storage_metadata": false,
+    "restore_by_default": false
+  },
+  {
+    "bucket": "event-posters",
+    "object_name": "10000000-0000-4000-8000-000000000001/061f474a-f84c-466d-a09b-ae64fb10c021/poster-1787068214971.png",
+    "internal_version": "cd10a8fb-92a0-4bd5-9608-e63cf749355d",
+    "size_bytes": 271216,
+    "sha256": "b681fd6fab21877ebcb1ea223454e57725571d6e9bdc706a804234d43a09eb57",
+    "referenced_by_storage_metadata": false,
+    "restore_by_default": false
+  },
+  {
+    "bucket": "event-posters",
+    "object_name": "10000000-0000-4000-8000-000000000001/12fd8957-6c4a-4bbe-9369-ecb2d1f13998/poster-1787067906228.png",
+    "internal_version": "6b408213-11fd-44b8-a0e1-a66464fabe11",
+    "size_bytes": 271216,
+    "sha256": "b681fd6fab21877ebcb1ea223454e57725571d6e9bdc706a804234d43a09eb57",
+    "referenced_by_storage_metadata": false,
+    "restore_by_default": false
+  },
+  {
+    "bucket": "event-posters",
+    "object_name": "6cf3aa4e-d293-43de-a963-a4f68fbbc000/c7e8ce42-e402-4026-9618-27030c4a899a/poster-1787325142353.png",
+    "internal_version": "ff8aa598-6d44-446e-b61d-2b3e459d555a",
+    "size_bytes": 271216,
+    "sha256": "b681fd6fab21877ebcb1ea223454e57725571d6e9bdc706a804234d43a09eb57",
+    "referenced_by_storage_metadata": false,
+    "restore_by_default": false
+  }
+]
