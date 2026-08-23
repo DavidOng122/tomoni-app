@@ -14,6 +14,10 @@ export async function GET(request: Request) {
   }
 
   const cookieStore = await cookies();
+  const allCookies = cookieStore.getAll();
+  console.log("Auth callback triggered.");
+  console.log("Code length:", code?.length);
+  console.log("Cookies present:", allCookies.map(c => c.name));
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY!,
@@ -40,6 +44,7 @@ export async function GET(request: Request) {
   const { error } = await supabase.auth.exchangeCodeForSession(code);
   
   if (error) {
+    console.error("Auth callback exchangeCodeForSession error:", error);
     return NextResponse.redirect(`${origin}/welcome?error=exchange_failed`);
   }
 
