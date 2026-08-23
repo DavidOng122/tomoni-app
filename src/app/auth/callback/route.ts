@@ -45,7 +45,11 @@ export async function GET(request: Request) {
   
   if (error) {
     console.error("Auth callback exchangeCodeForSession error:", error);
-    return NextResponse.redirect(`${origin}/welcome?error=exchange_failed`);
+    // Return the error directly to the browser for debugging
+    return new NextResponse(`Authentication failed: ${error.message}\nName: ${error.name}\nStatus: ${error.status}`, { 
+      status: 400,
+      headers: { 'Content-Type': 'text/plain' }
+    });
   }
 
   const destination = await getAuthDestination();
