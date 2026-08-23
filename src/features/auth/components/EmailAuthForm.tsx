@@ -14,6 +14,7 @@ export const EmailAuthForm: React.FC<EmailAuthFormProps> = ({ onBack }) => {
   const [isSignUp, setIsSignUp] = useState(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [verificationSent, setVerificationSent] = useState(false);
@@ -113,16 +114,21 @@ export const EmailAuthForm: React.FC<EmailAuthFormProps> = ({ onBack }) => {
               <Image src="/images/welcome/auth-lock.svg" alt="" width={20} height={20} />
               <input
                 id="password"
-                type="password"
+                type={showPassword ? "text" : "password"}
                 placeholder="パスワード"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
                 minLength={6}
               />
-              <span className={styles.eyeIcon} aria-hidden="true">
+              <button 
+                type="button" 
+                className={styles.eyeIcon} 
+                onClick={() => setShowPassword(!showPassword)}
+                aria-label={showPassword ? "パスワードを隠す" : "パスワードを表示する"}
+              >
                 <Image src="/images/welcome/auth-eye.svg" alt="" width={20} height={20} />
-              </span>
+              </button>
             </label>
           </div>
 
