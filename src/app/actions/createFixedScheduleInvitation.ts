@@ -8,7 +8,7 @@ export async function createFixedScheduleInvitation(
   receiverId: string,
   receiverFixedPlanId: string,
   recommendation?: SelectedFixedPlanRecommendation | null,
-): Promise<{ success: boolean; conversationId?: string; error?: string }> {
+): Promise<{ success: boolean; conversationId?: string; invitationId?: string; error?: string }> {
   try {
     const supabase = await createClient();
 
@@ -49,7 +49,11 @@ export async function createFixedScheduleInvitation(
 
     const result = data as { conversation_id: string; invitation_id: string };
 
-    return { success: true, conversationId: result.conversation_id };
+    return {
+      success: true,
+      conversationId: result.conversation_id,
+      invitationId: result.invitation_id,
+    };
   } catch (err) {
     console.error('Unexpected error in createFixedScheduleInvitation:', err);
     return { success: false, error: '予期せぬエラーが発生しました' };

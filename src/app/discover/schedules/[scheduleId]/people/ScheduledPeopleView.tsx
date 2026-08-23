@@ -10,6 +10,7 @@ import {
   getRecommendationReasonLabel,
 } from '@/features/discover/domain/getRecommendationPresentation';
 import { createFixedScheduleInvitation } from '@/app/actions/createFixedScheduleInvitation';
+import { autoAcceptFixedScheduleInvitationForDemo } from '@/app/actions/autoAcceptFixedScheduleInvitationForDemo';
 import { getFixedPlanEventRecommendations } from '@/app/actions/getFixedPlanEventRecommendations';
 import type {
   FixedPlanEventRecommendation,
@@ -47,6 +48,8 @@ const dayLabels: Record<string, string> = {
   sun: '日曜',
 };
 
+const DEMO_AUTO_ACCEPT_DELAY_MS = 10_000;
+
 export const ScheduledPeopleView: React.FC<ScheduledPeopleViewProps> = ({ plan, activityTitle, recommendations }) => {
   const router = useRouter();
   const [invitingId, setInvitingId] = useState<string | null>(null);
@@ -82,7 +85,13 @@ export const ScheduledPeopleView: React.FC<ScheduledPeopleViewProps> = ({ plan, 
       recommendation,
     );
     
-    if (result.success && result.conversationId) {
+    if (result.success && result.conversationId && result.invitationId) {
+      window.setTimeout(async () => {
+        const autoAcceptResult = await autoAcceptFixedScheduleInvitationForDemo(result.invitationId!);
+        if (autoAcceptResult.success) {
+          router.refresh();
+        }
+      }, DEMO_AUTO_ACCEPT_DELAY_MS);
       router.push(`/chat/${result.conversationId}`);
     } else {
       alert(result.error || 'エラーが発生しました');
