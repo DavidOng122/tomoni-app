@@ -48,7 +48,9 @@ const dayLabels: Record<string, string> = {
   sun: '日曜',
 };
 
-const DEMO_AUTO_ACCEPT_DELAY_MS = 10_000;
+const DEMO_AUTO_ACCEPT_DELAY_MS = process.env.NEXT_PUBLIC_DEMO_AUTO_ACCEPT_FIXED_SCHEDULE_INVITATIONS === 'true'
+  ? 10_000
+  : null;
 
 export const ScheduledPeopleView: React.FC<ScheduledPeopleViewProps> = ({ plan, activityTitle, recommendations }) => {
   const router = useRouter();
@@ -86,12 +88,17 @@ export const ScheduledPeopleView: React.FC<ScheduledPeopleViewProps> = ({ plan, 
     );
     
     if (result.success && result.conversationId && result.invitationId) {
-      window.setTimeout(async () => {
-        const autoAcceptResult = await autoAcceptFixedScheduleInvitationForDemo(result.invitationId!);
-        if (autoAcceptResult.success) {
-          router.refresh();
-        }
-      }, DEMO_AUTO_ACCEPT_DELAY_MS);
+      const invitationId = result.invitationId;
+
+      if (DEMO_AUTO_ACCEPT_DELAY_MS !== null) {
+        window.setTimeout(async () => {
+          const autoAcceptResult = await autoAcceptFixedScheduleInvitationForDemo(invitationId);
+          if (autoAcceptResult.success) {
+            router.refresh();
+          }
+        }, DEMO_AUTO_ACCEPT_DELAY_MS);
+      }
+
       router.push(`/chat/${result.conversationId}`);
     } else {
       alert(result.error || 'エラーが発生しました');

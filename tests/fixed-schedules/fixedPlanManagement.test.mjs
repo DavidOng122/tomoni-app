@@ -80,8 +80,10 @@ test('demo auto-accept waits ten seconds and preserves the fixed-plan acceptance
 });
 
 test('the fixed-plan invite screen schedules the demo auto-accept and refreshes the accepted chat state', () => {
-  assert.match(scheduledPeopleView, /const DEMO_AUTO_ACCEPT_DELAY_MS = 10_000/);
+  assert.match(scheduledPeopleView, /NEXT_PUBLIC_DEMO_AUTO_ACCEPT_FIXED_SCHEDULE_INVITATIONS === 'true'/);
+  assert.match(scheduledPeopleView, /\? 10_000/);
+  assert.match(scheduledPeopleView, /DEMO_AUTO_ACCEPT_DELAY_MS !== null/);
   assert.match(scheduledPeopleView, /window\.setTimeout\(async \(\) =>/);
-  assert.match(scheduledPeopleView, /autoAcceptFixedScheduleInvitationForDemo\(result\.invitationId!\)/);
+  assert.match(scheduledPeopleView, /autoAcceptFixedScheduleInvitationForDemo\(invitationId\)/);
   assert.match(scheduledPeopleView, /router\.refresh\(\)/);
 });
